@@ -136,9 +136,22 @@ Unter jeder Antwortnachricht in Open WebUI findest du im Info-Icon (Metadaten) d
 
 ---
 
+## 📦 Enthaltene Kernkomponenten
+
+| Komponente | Priorität | Aufgabe | Technologien |
+| :--- | :--- | :--- | :--- |
+| **[`pii_filter.py`](pii_filter.py)** | `0` | **Datenschutz & Anonymisierung:** Scannt Prompts, schwärzt sensible Daten (IBAN, Karten, Namen, Orte), speichert Mapping in `metadata.pii_map` und stellt im Outlet/Stream den Originaltext wieder her. | Regex + spaCy NER (`de_core_news_sm`), adaptiver Stream-Buffer |
+| **[`model_router.py`](model_router.py)** | `10` | **Intelligentes Gateway:** Wertet PII-Counters, Aufgabentyp (Coding, Mathe, Text) und Komplexität aus. Sperrt bei kritischer PII die Cloud und setzt optimale Hyperparameter. | Intent Regex, Dynamic Model Swapping, Auto-Sampling |
+
+---
+
 ## 🧪 Lokale Tests ausführen
 
 ```bash
+# 1. PII-Filter Tests (Regex, Reversibilität, Stream-Buffer, Audit-Log):
+python -m unittest test_pii_filter.py
+
+# 2. Model-Router Tests (Privacy Gate, Intent-Routing, Tags, Sampling):
 python -m unittest test_model_router.py
 ```
 

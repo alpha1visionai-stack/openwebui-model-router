@@ -84,20 +84,87 @@ Dein KI-System kombiniert zwei Sicherheits- und Performance-Ebenen zu einer voll
 
 ---
 
-## 🛡️ 4. Die Datenschutz-Logik (Privacy Gate)
+## 🛡️ 4. Die PII-Datenschutz-Komponente im Detail (`pii_filter.py`)
 
-Das Gateway arbeitet nach klaren Sicherheits-Regeln:
+Das System setzt auf einen hochentwickelten, zweilagigen und **vollständig reversiblen** Anonymisierungs-Filter, der als vorgeschalteter Wächter (Priority 0) in Open WebUI agiert. Er stellt sicher, dass weder echte Identitäten noch kritische Finanzdaten jemals ungeschützt an externe Cloud-APIs übertragen werden.
 
-1. **Rote Flagge (Kritische PII):**
-   * Erkennt der PII-Filter `IBAN`, `CREDIT_CARD`, `SSN_US`, `URL_WITH_AUTH` oder `TAX_ID_DE`, wird **die Cloud sofort gesperrt**.
-   * Die Anfrage bleibt **zwingend lokal auf deiner Workstation**.
-   * Selbst wenn du im Prompt `#cloud` oder `#opus` schreibst, verhindert der Filter ein Abfließen in die Cloud!
-2. **Grüne Flagge (Maskierte Standard-PII):**
-   * Erkennt der Filter Namen von Personen oder Orten, werden diese durch Tokens (`[[NAME_PER_1]]`, `[[NAME_LOC_1]]`) ersetzt.
-   * Das Cloud-Modell sieht nur abstrakte Bezeichner und kann die komplexe Aufgabe bearbeiten, ohne jemals echte Namen zu sehen.
-   * Auf dem Minisforum-Server werden beim Rücklauf die Originalnamen wieder eingesetzt.
-3. **Zero Cloud Credits (Spar-Modus):**
-   * Routine-Aufgaben (z. B. *"Übersetze bitte..."*, *"Korrigiere Rechtschreibung..."*, Textformatierung) gehen standardmäßig an **Gemma 4 auf der Workstation**. Dein OpenRouter-Guthaben wird dafür nicht angetastet.
+### 4.1 Die 2-Schichten Erkennungs-Engine
+
+| Schicht | Technologie | Erkannte Datentypen & Entitäten | Erzeugter Platzhalter | Auswirkung auf Cloud-Routing |
+| :--- | :--- | :--- | :--- | :--- |
+| **Layer 1: Strukturierte Daten** | Präzise reguläre Ausdrücke (Regex) | **IBAN** (Deutsche & internat. Kontonummern) | `[[IBAN_1]]` | 🔒 **Hard Lockdown** (Cloud strikt verboten) |
+| | | **Kreditkarten** (Visa, MC, Amex 13–19 stellig) | `[[CREDIT_CARD_1]]` | 🔒 **Hard Lockdown** (Cloud strikt verboten) |
+| | | **Passwörter in URLs** (`https://user:pass@...`) | `[[URL_WITH_AUTH_1]]` | 🔒 **Hard Lockdown** (Cloud strikt verboten) |
+| | | **US SSN / Sozialversicherungsnr.** | `[[SSN_US_1]]` | 🔒 **Hard Lockdown** (Cloud strikt verboten) |
+| | | **E-Mail-Adressen** (Geschäftlich & privat) | `[[EMAIL_1]]` | 🟡 Maskiert & an Cloud erlaubt (sofern kein Lockdown) |
+| | | **Telefonnummern** (DE Mobil/Festnetz & Intl) | `[[PHONE_DE_1]]`, `[[PHONE_INTL_1]]`| 🟡 Maskiert & an Cloud erlaubt |
+| | | **IPv4-Adressen** (Netzwerk-Infrastruktur) | `[[IPV4_1]]` | 🟡 Maskiert & an Cloud erlaubt |
+| **Layer 2: Unstrukturierte Entitäten** | spaCy NER (`de_core_news_sm`) | **Personen & Namen** (`PER` / `PERSON`) | `[[PER_1]]` (oder `[[NAME_PER_1]]`) | 🟡 Maskiert & an Cloud erlaubt |
+| | | **Orte & Städte** (`LOC` / `GPE`) | `[[LOC_1]]` | 🟡 Maskiert & an Cloud erlaubt |
+| | | **Organisationen & Firmen** (`ORG`) | `[[ORG_1]]` | 🟡 Maskiert & an Cloud erlaubt |
+| | | **Sonstige Entitäten** (`MISC`) | `[[MISC_1]]` | 🟡 Maskiert & an Cloud erlaubt |
+
+#### 🛡️ Schutz gegen False-Positives (Stopwords & Heuristiken)
+Um zu verhindern, dass normale deutsche Alltagswörter wie *„Hallo“*, *„Bitte“*, *„Danke“*, *„Montag“*, *„Morgen“* oder *„Ende“* fälschlicherweise von spaCy als Personen oder Orte maskiert werden, besitzt der Filter eine integrierte Stoppwort-Bibliothek (`NER_STOPWORDS`) und ignoriert Wörter unter 3 Zeichen (`ner_min_token_len=3`).
+
+---
+
+### 4.2 Der 4-Phasen Lebenszyklus (Reversibilität & Streaming)
+
+```
+1. INLET (User tippt)       2. ROUTER (P=10)           3. INFERENZ                 4. OUTLET / STREAM
+"Herr Schmidt aus München"  Prüft PII-Counters         Modell sieht nur:           Ersetzt [[PER_1]]
+         │                           │                 "[[PER_1]] aus [[LOC_1]]"         │
+         ▼                           ▼                           │                       ▼
+   [[PER_1]] & [[LOC_1]]    -> Routet lokal oder Cloud          │              "Herr Schmidt aus München"
+   Mapping in metadata      (Kritisch = Local only!)             │              Im Browser sichtbar!
+```
+
+1. **Inlet (Maskierung vor dem Senden):**
+   * Der Filter scannt die Benutzereingabe, erzeugt fortlaufende Platzhalter (`[[PER_1]]`, `[[IBAN_1]]`) und speichert das geheime Zuordnungs-Wörterbuch in `body["metadata"]["pii_map"]`.
+2. **Gateway-Entscheidung (Model Router):**
+   * Der Router liest `metadata["pii_counters"]`. Bei kritischen Funden (`IBAN`, `CREDIT_CARD`) wird die Cloud hardwareseitig gesperrt – der Request bleibt auf der lokalen Workstation.
+3. **Outlet (Vollständige Re-Hydrierung):**
+   * Sobald das Modell antwortet, durchläuft die Antwort das `outlet`. Alle Platzhalter werden millimetergenau durch die Originaldaten ersetzt.
+4. **Live-Streaming Hook (`stream`):**
+   * Beim Token-Streaming (SSE) kommen Tokens stückweise an. Ein Platzhalter wie `[[IBAN_1]]` könnte über zwei Chunks zerschnitten sein (Chunk 1: `Konto: [[IB`, Chunk 2: `AN_1]] verbucht`).
+   * Der Filter besitzt einen **adaptiven Substring-Buffer**: Er puffert unvollständige Tokens kurz zwischen und expandiert den Klartext flüssig in dem Moment, in dem das schließende `]]` eintrifft. Für den Benutzer gibt es kein sichtbares Flackern oder Aufblitzen von Platzhaltern.
+
+---
+
+### 4.3 Reasoning-Schutz (`deanonymize_reasoning`)
+
+Modelle wie **DeepSeek-R1** oder **Gemma 4** generieren vor dem eigentlichen Text ausführliche Denkprozesse (`reasoning_content` bzw. `<think>`). 
+* Ist `deanonymize_reasoning: true` (Standard), werden die Platzhalter auch im einklappbaren Denkblock wieder mit den echten Namen befüllt.
+* Dadurch bleibt der Gedankengang für den Benutzer vollständig nachvollziehbar und transparent.
+
+---
+
+### 4.4 Konfiguration & Anpassung (Valves)
+
+In Open WebUI unter **Workspace ➔ Functions ➔ PII Redaction Filter (Reversible) ➔ Valves (⚙️)** können Administratoren das Verhalten feingranular steuern:
+
+| Parameter (Valve) | Standard | Beschreibung |
+| :--- | :--- | :--- |
+| `enable_regex` | `true` | Aktiviert die strukturierte Erkennung (IBAN, E-Mail, Telefon, IP). |
+| `enable_ner` | `true` | Aktiviert spaCy NER für Personen, Orte und Organisationen. |
+| `deanonymize_output` | `true` | Stellt Originaldaten im Outlet wieder her (auf `false` setzen für Anonymisierungs-Demos). |
+| `deanonymize_reasoning`| `true` | Füllt auch den Modell-Denkprozess (`<think>`) wieder mit echten Daten. |
+| `token_format` | `[[{label}_{n}]]` | Format der Platzhalter-Tokens. |
+| `extra_patterns` | `""` | Benutzerdefinierte Regex-Muster pro Zeile (`NAME\|PATTERN`), z. B. `MITARBEITER\|M\d{6}`. |
+| `ner_min_token_len` | `3` | Mindestlänge für Entity-Bestandteile zur Vermeidung von False Positives. |
+
+> [!TIP]
+> **User-Valves:** Jeder Benutzer kann in seinen Profileinstellungen die PII-Redaktion für seinen eigenen Account temporär ein- oder ausschalten (`UserValves.enabled`).
+
+---
+
+### 4.5 Transparenz & Audit-Log (Das Info-Icon ℹ️)
+
+Nach jeder Antwort legt der PII-Filter unter `metadata["pii_audit"]` ein revisionssicheres Protokoll ab. Klickt der Benutzer in Open WebUI auf das **Info-Icon (ℹ️)** einer Nachricht, sieht er:
+* Gesamtzahl der geschwärzten Entitäten.
+* Detail-Liste: Welches Token wurde für welchen Originalwert eingesetzt.
+* Zeitstempel und Status (*„Vollständig deanonymisiert ✓“*).
 
 ---
 
