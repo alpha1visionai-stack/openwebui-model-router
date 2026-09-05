@@ -134,6 +134,82 @@ Wir haben unsere Architektur exakt gegen die drei Kernpfeiler des **Perplexity H
 
 ---
 
+## 🔬 3.1 Entscheidungs-Hierarchie: Woran erkennt das System das beste Modell?
+
+Eine zentrale Frage beim täglichen Einsatz lautet:  
+> *„Woher weiß das Gateway eigentlich, mit welchem Modell mein Prompt am besten ausgeführt werden soll?“*
+
+Das Skript [`model_router.py`](file:///D:/Development_D/modell%20auswahl/model_router.py) trifft seine Entscheidung in Sekundenbruchteilen lokal und deterministisch über einen **strukturierten 5-Stufen-Entscheidungsbaum**. Es scannt die Eingabe nach **Prioritäts-Tags**, **Datenschutzstufe**, **Aufgabentyp (Intent)** und **Komplexität**.
+
+---
+
+### Stufe 0: Vorrang-Prüfungen (Manuelle Modellauswahl & Tags)
+Bevor automatische Klassifikatoren greifen, prüft das Gateway, ob der Benutzer die Wahl bereits bewusst getroffen hat:
+1. **Interne Modellauswahl (Option 4):** Hast du oben im WebUI-Menü ein internes Workstation-Modell (`LMStudio...`) ausgewählt?  
+   ➔ **Kein automatisches Umschalten!** Das gewählte lokale Modell wird 1:1 beibehalten (`RESPECT_MANUAL_LOCAL_SELECTION = true`).
+2. **Bypass-Tags (`#direct`, `#keep`, `#lock`):**  
+   ➔ Umgeht jegliche Intent-Umleitung für diesen Prompt und führt exakt das im Menü selektierte Modell aus.
+3. **Spezifische Modell-Tags (`#r1`, `#code`, `#write`, `#heretic`, `#opus`, `#sonnet`, `#gpt`, `#flash`):**  
+   ➔ Forciert sofort das entsprechende Spezialmodell.
+
+---
+
+### Stufe 1: Das Privacy Gate (Datenschutz als oberste Instanz)
+Der vorgeschaltete [`pii_filter.py`](file:///D:/Development_D/modell%20auswahl/pii_filter.py) liefert Metadaten über sensible Daten im Prompt:
+* **Kritische PII vorhanden (IBAN, Kreditkarte, SSN, Passwörter in URLs):**  
+  ➔ **Sofortiger Hardware-Lockdown auf die lokale Workstation.** Selbst wenn die Anfrage hochkomplex ist oder du ein Cloud-Modell gewählt hast: Die Daten dürfen niemals das lokale Netzwerk verlassen!
+* **Unkritische / maskierte PII (Namen, Orte, E-Mails) oder keine PII:**  
+  ➔ Cloud-Verarbeitung ist gestattet, da externe APIs nur neutrale Tokens wie `[[NAME_PER_1]]` sehen.
+
+---
+
+### Stufe 2: Intent-Erkennung (Worum geht es inhaltlich?)
+In der Funktion `_detect_intent()` analysiert das Skript den bereinigten Text per Regex und semantischer Heuristik auf 4 Fachdomänen:
+
+1. **💻 Coding & Skripte (`is_coding`):**
+   * **Syntax-Muster:** Markdown-Codeblöcke (```` ``` ````), Programmierbefehle (`def `, `class `, `function `, `import `, `SELECT`, `UPDATE`, `dockerfile` etc.) oder ab 3 Codezeilen.
+   * **Aktions-Heuristik:** *(schreibe\|erstelle\|baue) ... (python\|typescript\|bash\|sql\|skript\|funktion\|algorithmus)* sowie Begriffe wie *„refactor“*, *„debug“*, *„bugfix“*, *„api endpoint“*, *„unittest“*, *„pull request“*.
+2. **🧠 Deep Reasoning & mathematische Logik (`reasoning`):**
+   * **Signalwörter:** *„beweise“*, *„mathematisch“*, *„schritt für schritt herleiten“*, *„chain of thought“*, *„formale logik“*, *„deduktiv“*, *„widerspruchsbeweis“*, *„algorithmus analyse“*.
+3. **🔓 Unzensiert & Tabuthemen (`uncensored`):**
+   * **Signalwörter:** *„unzensiert“*, *„heretic“*, *„ohne filter“*, *„tabu“*, *„keine zensur“*, *„kontrovers“*, *„ohne moralapostel“*, *„tabulose darstellung“*.
+4. **✍️ Writing, Lektorat & Stil-Veredelung (`writing`):**
+   * **Signalwörter:** *„stilistisch“*, *„aufsatz“*, *„erörterung“*, *„lektorat“*, *„menschlich formulieren“*, *„anti-ki“*, *„umschreiben“*, *„sprachrhythmus“*, *„bildungsdeutsch“*, *„korrekturlesen“*.
+5. **Standard-Chat / Routine:**
+   * Wenn kein spezifisches Fachmuster anschlägt (Alltagsfragen, Notizen, Dialoge).
+
+---
+
+### Stufe 3: Komplexitäts-Analyse (Wie schwer/umfangreich ist der Prompt?)
+Zwei Grenzwerte in den Valves bestimmen, ob lokale 12B/14B-Modelle genügen oder Cloud-High-End (Claude 4.5) hinzugezogen wird:
+* **Wortanzahl (`word_count`):** Ab **120 Wörtern** (`COMPLEXITY_WORD_THRESHOLD`) gilt ein Prompt als komplex.
+* **Code-Umfang & Architektur:** Ab **25 Zeilen Code** (`CODE_COMPLEXITY_LINE_THRESHOLD`) oder bei Signalbegriffen wie *„Architektur“*, *„Microservice“*, *„Design Pattern“*, *„Fullstack“* oder *„Optimierung“*.
+
+---
+
+### Stufe 4: Die Zuordnungs-Matrix
+
+| Erkannter Intent | Komplexität | PII-Status | Gewähltes Zielmodell | Ausführungsort & Rationale |
+| :--- | :--- | :--- | :--- | :--- |
+| **Kritisches PII** | Beliebig | 🔒 **IBAN etc.** | `LMStudio.qwen2.5-coder-14b` oder `deepseek-r1` | **Lokale Workstation (0 Credits):** LAN-Isolierung erzwungen. |
+| **Coding** | Standard (< 25 Zeilen) | Maskiert / Keine | `LMStudio.qwen2.5-coder-14b-instruct` | **Lokale Workstation (0 Credits):** Schnell, deterministisch. |
+| **Coding** | Komplex (> 25 Zeilen / Architektur) | Maskiert / Keine | `openrouter.anthropic/claude-sonnet-4.5` | **Cloud High-End:** Höchste Präzision bei Enterprise-Architektur. |
+| **Deep Reasoning** | Logik / Beweise | Maskiert / Keine | `LMStudio.deepseek-r1-distill-qwen-14b` | **Lokale Workstation (0 Credits):** R1-Denkketten im `<think>`-Block. |
+| **Unzensiert** | Tabuthemen / Historie | Beliebig | `LMStudio.qwen3.8-9b-distill-uncensored-heretic-i1` | **Lokale Workstation (0 Credits):** Volle redaktionelle Freiheit. |
+| **Writing / Chat** | Standard (< 120 Wörter) | Beliebig | `LMStudio.google/gemma-4-12b-qat` | **Lokale Workstation (0 Credits):** Natürlicher menschlicher Sprachrhythmus. |
+| **Writing** | Sehr lang (> 120 Wörter) | Keine PII | `openrouter.anthropic/claude-sonnet-4.5` | **Cloud High-End:** Großer Kontext und vielschichtige Synthese. |
+
+---
+
+### Stufe 5: Automatische Sampling-Optimierung
+Nach Auswahl des Zielmodells injiziert das Gateway die mathematisch idealen Hyperparameter:
+* **Coding:** Temperatur **`0.20`** / Top-P **`0.85`** (maximale Syntax-Treue, kein Halluzinieren von Variablennamen).
+* **Reasoning:** Temperatur **`0.60`** / Top-P **`0.95`** (notwendiger Denkspielraum für Lösungswege im `<think>`-Bereich).
+* **Writing:** Temperatur **`0.55`** / Top-P **`0.90`** (natürliche Sprachmelodie ohne monotone Klischees).
+* **Unzensiert:** Temperatur **`0.70`** / Top-P **`0.90`** (Gedankliche Weite ohne vorzeitige Filterblockaden).
+
+---
+
 ## 🛡️ 4. Die PII-Datenschutz-Komponente im Detail (`pii_filter.py`)
 
 Das System setzt auf einen hochentwickelten, zweilagigen und **vollständig reversiblen** Anonymisierungs-Filter, der als vorgeschalteter Wächter (Priority 0) in Open WebUI agiert. Er stellt sicher, dass weder echte Identitäten noch kritische Finanzdaten jemals ungeschützt an externe Cloud-APIs übertragen werden.
