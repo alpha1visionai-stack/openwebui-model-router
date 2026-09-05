@@ -209,6 +209,26 @@
             </a>
             
 
+            <a href="#5-1-nur-interne-modelle-nutzen-automatische-modellauswahl-umgehen-manual-override-airgap" class="toc-link block px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-surface-800/60 rounded-lg transition-all border-l-2 border-transparent hover:border-indigo-400 truncate" title="🎯 5.1 Nur interne Modelle nutzen & automatische Modellauswahl umgehen (Manual Override & Airgap)">
+                🎯 5.1 Nur interne Modelle nutzen & automatische Modellauswahl umgehen (Manual Override & Airgap)
+            </a>
+            
+
+            <a href="#grundprinzip-pii-datenschutz-und-model-router-sind-unabh-ngig-voneinander" class="toc-link block pl-5 pr-2 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all truncate" title="🔑 Grundprinzip: PII-Datenschutz und Model Router sind unabhängig voneinander!">
+                🔑 Grundprinzip: PII-Datenschutz und Model Router sind unabhängig voneinander!
+            </a>
+            
+
+            <a href="#die-4-wege-in-der-bersicht" class="toc-link block pl-5 pr-2 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all truncate" title="Die 4 Wege in der Übersicht:">
+                Die 4 Wege in der Übersicht:
+            </a>
+            
+
+            <a href="#detaillierte-schritt-f-r-schritt-anleitung" class="toc-link block pl-5 pr-2 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all truncate" title="Detaillierte Schritt-für-Schritt-Anleitung:">
+                Detaillierte Schritt-für-Schritt-Anleitung:
+            </a>
+            
+
             <a href="#6-transparenz-audit-modell-pii-verlauf-im-info-icon" class="toc-link block px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-surface-800/60 rounded-lg transition-all border-l-2 border-transparent hover:border-indigo-400 truncate" title="🔍 6. Transparenz & Audit: Modell & PII-Verlauf im Info-Icon (ℹ️)">
                 🔍 6. Transparenz & Audit: Modell & PII-Verlauf im Info-Icon (ℹ️)
             </a>
@@ -733,6 +753,110 @@
                 
 <hr class="my-8 border-slate-800/80">
 
+            <div id="5-1-nur-interne-modelle-nutzen-automatische-modellauswahl-umgehen-manual-override-airgap" class="pt-8 pb-3 mt-6 border-t border-slate-800/60 first:border-0 scroll-mt-24">
+                <h2 class="text-xl sm:text-2xl font-bold font-display text-white flex items-center justify-between gap-3 break-words">
+                    <span>🎯 5.1 Nur interne Modelle nutzen & automatische Modellauswahl umgehen (Manual Override & Airgap)</span>
+                    <a href="#5-1-nur-interne-modelle-nutzen-automatische-modellauswahl-umgehen-manual-override-airgap" class="text-slate-600 hover:text-indigo-400 text-sm transition-colors flex-shrink-0" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h2>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5 break-words">Eine der wichtigsten Fragen in der Praxis lautet:</p>
+
+                <div class="my-5 p-4 rounded-2xl border border-indigo-500/30 bg-indigo-950/20 text-xs leading-relaxed min-w-0 max-w-full break-words">
+                    <div class="flex items-center gap-2 text-indigo-300 font-semibold font-mono uppercase tracking-wider mb-1.5">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>HINWEIS</span>
+                    </div>
+                    <div class="text-slate-300"><em class="text-slate-300 italic">„Was ist, wenn ich nur ein bestimmtes internes Modell (z. B. Gemma 4 oder Qwen Coder) nutzen möchte, aber die automatische Modellauswahl des Routers soll dabei nicht eingreifen?“</em></div>
+                </div>
+                
+
+            <div id="grundprinzip-pii-datenschutz-und-model-router-sind-unabh-ngig-voneinander" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-base sm:text-lg font-bold font-display text-indigo-300 flex items-center justify-between gap-2 break-words">
+                    <span>🔑 Grundprinzip: PII-Datenschutz und Model Router sind unabhängig voneinander!</span>
+                    <a href="#grundprinzip-pii-datenschutz-und-model-router-sind-unabh-ngig-voneinander" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors flex-shrink-0" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5 break-words">In Open WebUI arbeiten zwei eigenständige Filter-Funktionen mit getrennten Prioritäten:</p>
+<ol class="list-decimal list-inside space-y-2 my-3 text-xs sm:text-sm text-slate-300 pl-2 break-words">
+<li class="leading-relaxed"><strong class="text-white font-semibold"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">pii_filter_reversible</code> (Priorität 0):</strong> Scannt den Prompt, schwärzt sensible Entitäten (IBAN, Namen, E-Mails, Adressen) mit Platzhaltern (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">[[NAME_PER_1]]</code>), restauriert sie nach der Antwort im Outlet und stellt das interaktive Protokoll bereit.</li>
+<li class="leading-relaxed"><strong class="text-white font-semibold"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">hybrid_model_router</code> (Priorität 10):</strong> Liest die Metadaten des PII-Filters, analysiert den Intent (Code, Logik, Text) und überschreibt <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">body['model']</code> mit dem optimalen Modell.</li>
+</ol>
+
+                <div class="my-5 p-4 rounded-2xl border border-cyan-500/30 bg-cyan-950/20 text-xs leading-relaxed min-w-0 max-w-full break-words">
+                    <div class="flex items-center gap-2 text-cyan-300 font-semibold font-mono uppercase tracking-wider mb-1.5">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span>WICHTIG</span>
+                    </div>
+                    <div class="text-slate-300"><strong class="text-white font-semibold">Voller Datenschutz auch ohne Router:</strong><br>Du kannst den Model Router jederzeit für deinen Account oder das Gesamtsystem <strong class="text-white font-semibold">deaktivieren oder umgehen</strong> – der PII-Datenschutzfilter bleibt dabei <strong class="text-white font-semibold">zu 100 % aktiv</strong>! Alle sensiblen Daten werden weiterhin zuverlässig geschwärzt und in der Antwort wiederhergestellt.</div>
+                </div>
+                
+<hr class="my-8 border-slate-800/80">
+
+            <div id="die-4-wege-in-der-bersicht" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-base sm:text-lg font-bold font-display text-indigo-300 flex items-center justify-between gap-2 break-words">
+                    <span>Die 4 Wege in der Übersicht:</span>
+                    <a href="#die-4-wege-in-der-bersicht" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors flex-shrink-0" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+
+                <div class="my-6 overflow-x-auto rounded-2xl border border-slate-800 shadow-lg bg-surface-950/60 max-w-full">
+                    <table class="w-full divide-y divide-slate-800 font-sans text-left min-w-max md:min-w-full">
+                        <thead><tr><th class="px-3.5 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800 whitespace-nowrap">Weg</th><th class="px-3.5 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800 whitespace-nowrap">Ziel</th><th class="px-3.5 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800 whitespace-nowrap">Wo konfigurieren?</th><th class="px-3.5 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800 whitespace-nowrap">Verhalten des Systems</th></tr></thead>
+                        <tbody><tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Weg 1: 100 % Manuelle Wahl</strong></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Du wählst oben im Dropdown frei ein Modell, der Router greift überhaupt nicht ein.</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Profil ➔ Settings ➔ Functions ➔ Valves:</strong> <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">enabled = false</code> (oder Admin global)</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Router ist inaktiv. Open WebUI nutzt exakt dein gewähltes Modell. PII-Filter läuft normal weiter.</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Weg 2: Reiner Airgap-Modus</strong></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Nur lokale Modelle (0 Cloud-Credits), aber automatische Aufteilung nach Code/Logik/Text.</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Im Prompt <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">#local</code> schreiben oder in den User-Valves <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">prefer_local = true</code> setzen</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Bleibt immer auf der Workstation. Routet zwischen Gemma, Qwen Coder und DeepSeek-R1.</td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Weg 3: Gezieltes Modell-Pinning</strong></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Für einen einzelnen Prompt gezielt ein bestimmtes lokales Modell erzwingen.</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Tag <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">#write</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">#code</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">#r1</code> oder <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">#heretic</code> im Prompt</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Erzwingt das jeweilige lokale Modell, überschreibt andere Automatismen.</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Weg 4: Festes Standard-Modell</strong></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Alle Rollen des Routers sollen immer auf ein einziges lokales Allround-Modell zeigen.</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Admin-Valves:</strong> <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">MODEL_LOCAL_WRITING</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">_CODING</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">_REASONING</code> auf dieselbe ID setzen</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Jeder lokale Routing-Pfad führt immer zu deinem favorisierten Modell.</td></tr>
+</tbody>
+                    </table>
+                </div>
+                
+<hr class="my-8 border-slate-800/80">
+
+            <div id="detaillierte-schritt-f-r-schritt-anleitung" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-base sm:text-lg font-bold font-display text-indigo-300 flex items-center justify-between gap-2 break-words">
+                    <span>Detaillierte Schritt-für-Schritt-Anleitung:</span>
+                    <a href="#detaillierte-schritt-f-r-schritt-anleitung" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors flex-shrink-0" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<h4 class="text-sm font-semibold font-display text-slate-200 mt-4 mb-2 break-words">Weg 1: Automatische Modellauswahl komplett ausschalten (Reine manuelle Kontrolle)</h4>
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5 break-words">Wenn du im Dropdown-Menü oben einfach dein gewünschtes internes Modell (z. B. <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">LMStudio.google/gemma-4-12b-qat</code>) wählen willst und kein Automatismus dazwischenfunken soll:</p>
+<ul class="space-y-2 my-3 text-xs sm:text-sm text-slate-300 break-words">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Nur für deinen eigenen Benutzer-Account:</strong></span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0">Klicke in Open WebUI ganz unten links auf deinen <strong class="text-white font-semibold">Benutzernamen / Profilbild ➔ Einstellungen (⚙️)</strong>.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0">Klicke auf <strong class="text-white font-semibold">Funktionen (Functions)</strong>.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0">Klicke beim <strong class="text-white font-semibold">Hybrid Model Router</strong> auf das Zahnrad / Regler-Symbol (<strong class="text-white font-semibold">Valves</strong>).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0">Schalte den Parameter <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">enabled</code> auf <strong class="text-white font-semibold">Aus (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">false</code>)</strong> und speichere.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Ergebnis:</strong> Der Router ist für deinen Account vollständig deaktiviert. Du wählst im Modell-Dropdown oben ein beliebiges Modell aus – Open WebUI sendet deinen Prompt 1:1 genau dorthin. Der <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">pii_filter_reversible</code> schützt deine Daten im Hintergrund weiterhin vollständig.</span></li>
+</ul>
+<ul class="space-y-2 my-3 text-xs sm:text-sm text-slate-300 break-words">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Global für alle Benutzer des Servers (System-Administrator):</strong></span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0">Öffne das <strong class="text-white font-semibold">Admin-Panel ➔ Funktionen (Functions)</strong>.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0">Suche den Eintrag <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">Hybrid Model Router</code> (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">hybrid_model_router</code>).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0">Schalte den Hauptschalter von <strong class="text-white font-semibold">Aktiv auf Inaktiv</strong>.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Ergebnis:</strong> Kein Benutzer wird mehr automatisch umgeleitet. Alle Anwender nutzen die manuelle Modellauswahl von Open WebUI. Der PII-Filter bleibt global aktiv.</span></li>
+</ul>
+<h4 class="text-sm font-semibold font-display text-slate-200 mt-4 mb-2 break-words">Weg 2: 100 % Intern bleiben, aber automatische Modell-Spezialisierung nutzen (Airgap)</h4>
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5 break-words">Wenn du sagst: <em class="text-slate-300 italic">„Ich möchte strikt 0 Cloud-Credits verbrauchen und keine Daten ins Internet senden, aber wenn ich Code frage, soll Qwen Coder antworten, und wenn ich Mathe frage, DeepSeek-R1“</em>:</p>
+<ul class="space-y-2 my-3 text-xs sm:text-sm text-slate-300 break-words">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Ad-hoc im Chat:</strong> Schreibe einfach <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">#local</code> in deine Nachricht (z. B. <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">#local Schreibe eine Funktion für...</code>).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Dauerhaft als Profil-Einstellung:</strong> Gehe in deine <strong class="text-white font-semibold">Profileinstellungen ➔ Funktionen ➔ Hybrid Model Router (Valves)</strong> und setze <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">prefer_local</code> auf <strong class="text-white font-semibold"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">true</code></strong>.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Ergebnis:</strong> Selbst bei hochkomplexen Texten oder Code-Aufgaben wird niemals die Cloud (OpenRouter) kontaktiert. Der Router bleibt strikt auf der lokalen LM Studio Workstation.</span></li>
+</ul>
+<h4 class="text-sm font-semibold font-display text-slate-200 mt-4 mb-2 break-words">Weg 3: Gezieltes Modell-Pinning per Prompt-Tag</h4>
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5 break-words">Wenn der Router grundsätzlich aktiv bleiben soll, du aber bei einem speziellen Prompt ein ganz bestimmtes internes Modell ansteuern willst:</p>
+<ul class="space-y-2 my-3 text-xs sm:text-sm text-slate-300 break-words">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Gemma 4 (Anti-KI / Schreiben):</strong> Nutze <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">#write</code> oder <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">#human</code></span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Qwen 2.5 Coder (Code & SQL):</strong> Nutze <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">#code</code> oder <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">/coder</code></span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">DeepSeek-R1 (Logik & Mathe):</strong> Nutze <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">#r1</code> oder <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">/r1</code></span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Heretic 9B (Unzensiert):</strong> Nutze <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">#heretic</code> oder <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">#uncensored</code></span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Ergebnis:</strong> Das Tag wird vor dem Versenden automatisch aus dem Text entfernt, und der Prompt wird ohne Intent-Analyse direkt an das forzierte Modell übergeben.</span></li>
+</ul>
+<hr class="my-8 border-slate-800/80">
+
             <div id="6-transparenz-audit-modell-pii-verlauf-im-info-icon" class="pt-8 pb-3 mt-6 border-t border-slate-800/60 first:border-0 scroll-mt-24">
                 <h2 class="text-xl sm:text-2xl font-bold font-display text-white flex items-center justify-between gap-3 break-words">
                     <span>🔍 6. Transparenz & Audit: Modell & PII-Verlauf im Info-Icon (ℹ️)</span>
@@ -757,12 +881,12 @@
                             <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
                             <span class="text-slate-300 font-semibold">JSON</span>
                         </div>
-                        <button onclick="copyToClipboard('code-block-130')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
+                        <button onclick="copyToClipboard('code-block-179')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
                             <i class="fa-regular fa-copy"></i>
                             <span>Kopieren</span>
                         </button>
                     </div>
-                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed max-w-full whitespace-pre"><code id="code-block-130">{
+                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed max-w-full whitespace-pre"><code id="code-block-179">{
   &quot;router_decision&quot;: {
     &quot;original_model&quot;: &quot;openrouter.@preset/gpt-oss-europe&quot;,
     &quot;routed_to&quot;: &quot;LMStudio.qwen2.5-coder-14b-instruct&quot;,
@@ -807,12 +931,12 @@
                             <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
                             <span class="text-slate-300 font-semibold">JSON</span>
                         </div>
-                        <button onclick="copyToClipboard('code-block-133')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
+                        <button onclick="copyToClipboard('code-block-182')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
                             <i class="fa-regular fa-copy"></i>
                             <span>Kopieren</span>
                         </button>
                     </div>
-                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed max-w-full whitespace-pre"><code id="code-block-133">{
+                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed max-w-full whitespace-pre"><code id="code-block-182">{
   &quot;pii_audit&quot;: {
     &quot;anzahl_behandelt&quot;: 2,
     &quot;status&quot;: &quot;Vollständig deanonymisiert (Originaldaten wiederhergestellt)&quot;,
@@ -930,12 +1054,12 @@
                             <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
                             <span class="text-slate-300 font-semibold">TEXT</span>
                         </div>
-                        <button onclick="copyToClipboard('code-block-169')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
+                        <button onclick="copyToClipboard('code-block-218')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
                             <i class="fa-regular fa-copy"></i>
                             <span>Kopieren</span>
                         </button>
                     </div>
-                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed max-w-full whitespace-pre"><code id="code-block-169">Hallo! Für unseren Mandanten Dr. Maximilian von Berg (Leopoldstraße 42, 80802 München, E-Mail: m.berg@alpen-consulting.de, Tel: +49 89 12345678) muss eine automatisierte Rechnungsprüfung implementiert werden.
+                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed max-w-full whitespace-pre"><code id="code-block-218">Hallo! Für unseren Mandanten Dr. Maximilian von Berg (Leopoldstraße 42, 80802 München, E-Mail: m.berg@alpen-consulting.de, Tel: +49 89 12345678) muss eine automatisierte Rechnungsprüfung implementiert werden.
 
 Seine hinterlegte Auszahlungs-IBAN lautet: DE89 3704 0044 0532 0130 00.
 
@@ -968,12 +1092,12 @@ Schreibe mir ein sauberes Python-Skript (unter Verwendung von Pydantic v2), das:
                             <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
                             <span class="text-slate-300 font-semibold">TEXT</span>
                         </div>
-                        <button onclick="copyToClipboard('code-block-179')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
+                        <button onclick="copyToClipboard('code-block-228')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
                             <i class="fa-regular fa-copy"></i>
                             <span>Kopieren</span>
                         </button>
                     </div>
-                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed max-w-full whitespace-pre"><code id="code-block-179">Beweise formell durch vollständige Induktion, dass für alle natürlichen Zahlen n &gt;= 1 gilt:
+                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed max-w-full whitespace-pre"><code id="code-block-228">Beweise formell durch vollständige Induktion, dass für alle natürlichen Zahlen n &gt;= 1 gilt:
 1 + 2 + 3 + ... + n = n * (n + 1) / 2.
 Zeige jeden logischen Teilschritt explizit auf und begründe den Induktionsschritt mathematisch exakt.</code></pre>
                 </div>
@@ -1002,12 +1126,12 @@ Zeige jeden logischen Teilschritt explizit auf und begründe den Induktionsschri
                             <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
                             <span class="text-slate-300 font-semibold">TEXT</span>
                         </div>
-                        <button onclick="copyToClipboard('code-block-190')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
+                        <button onclick="copyToClipboard('code-block-239')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
                             <i class="fa-regular fa-copy"></i>
                             <span>Kopieren</span>
                         </button>
                     </div>
-                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed max-w-full whitespace-pre"><code id="code-block-190">Sehr geehrte Frau Dr. Julia Sommerfeld, vielen Dank für das freundliche Telefonat heute Vormittag.
+                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed max-w-full whitespace-pre"><code id="code-block-239">Sehr geehrte Frau Dr. Julia Sommerfeld, vielen Dank für das freundliche Telefonat heute Vormittag.
 
 Aufgabe:
 Formuliere mir aus dieser kurzen Notiz eine professionelle, warme und präzise Follow-up-E-Mail auf Deutsch. Der Tonfall soll menschlich, verbindlich und frei von typischen KI-Floskeln (wie &#x27;Ich hoffe, diese E-Mail erreicht Sie wohlbehalten&#x27;) sein. Betone, dass wir das besprochene Angebot bis kommenden Donnerstag finalisieren.</code></pre>
@@ -1036,12 +1160,12 @@ Formuliere mir aus dieser kurzen Notiz eine professionelle, warme und präzise F
                             <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
                             <span class="text-slate-300 font-semibold">TEXT</span>
                         </div>
-                        <button onclick="copyToClipboard('code-block-200')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
+                        <button onclick="copyToClipboard('code-block-249')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
                             <i class="fa-regular fa-copy"></i>
                             <span>Kopieren</span>
                         </button>
                     </div>
-                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed max-w-full whitespace-pre"><code id="code-block-200">#sonnet
+                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed max-w-full whitespace-pre"><code id="code-block-249">#sonnet
 Entwirf eine hochverfügbare Event-Driven Microservice-Architektur für eine E-Commerce-Plattform mit folgenden Anforderungen:
 1. Event-Bus mit Apache Kafka für Bestellungen, Bestandsänderungen und Rechnungsstellung.
 2. Outbox-Pattern zur Gewährleistung von Konsistenz zwischen PostgreSQL und Kafka ohne Two-Phase-Commits.
@@ -1073,12 +1197,12 @@ Erstelle ein übersichtliches Text-Architekturdiagramm und beschreibe die Fehler
                             <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
                             <span class="text-slate-300 font-semibold">TEXT</span>
                         </div>
-                        <button onclick="copyToClipboard('code-block-211')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
+                        <button onclick="copyToClipboard('code-block-260')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
                             <i class="fa-regular fa-copy"></i>
                             <span>Kopieren</span>
                         </button>
                     </div>
-                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed max-w-full whitespace-pre"><code id="code-block-211">#opus
+                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed max-w-full whitespace-pre"><code id="code-block-260">#opus
 Hier ist die Abrechnung für Herrn Michael Weber mit IBAN DE44 5001 0517 5409 3211 00.
 Erstelle mir eine formatierte Zusammenfassung der Auszahlungssumme von 1.450,00 EUR und formatiere eine Überweisungszeile für das ERP-System.</code></pre>
                 </div>

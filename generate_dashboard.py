@@ -164,7 +164,7 @@ html_parts.append("""
                         Dokumentation
                     </div>
                     <h3 class="text-sm sm:text-base font-bold font-display text-white">Vollständiges Benutzer-Handbuch (User Guide)</h3>
-                    <p class="text-xs text-slate-300 mt-0.5">Alle 9 Kapitel: Blueprint-Reflexion, Modell-Profile, PII-Erkennung, alle Chat-Tags, 5 Test-Prompts und Admin-Valves.</p>
+                    <p class="text-xs text-slate-300 mt-0.5">Alle 10 Kapitel: Blueprint-Reflexion, Modell-Profile, PII-Erkennung, manuelle Modellwahl & Airgap-Modus, alle Chat-Tags, 5 Test-Prompts und Admin-Valves.</p>
                 </div>
             </div>
             <a href="guide.html" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white font-semibold text-xs shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 whitespace-nowrap transition-all">
