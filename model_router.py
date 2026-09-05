@@ -198,6 +198,16 @@ class Valves(BaseModel):
     )
 
 
+    # --- Manuelle Auswahl & Pinning (Option 4) ---
+    RESPECT_MANUAL_LOCAL_SELECTION: bool = Field(
+        default=True,
+        description="Wenn True: Wenn der Benutzer im WebUI explizit ein internes Modell (z. B. LMStudio...) gewählt hat, wird dieses 1:1 beibehalten und nicht umgeroutet.",
+    )
+    LOCAL_MODEL_PREFIXES: list[str] = Field(
+        default_factory=lambda: ["LMStudio.", "local.", "ollama.", "text-master", "heretic-uncensored"],
+        description="Präfixe oder Bezeichnungen von Modellen, die als interne/lokale Modelle gelten.",
+    )
+
     # --- UI & Transparenz ---
     SHOW_ROUTING_BANNER: bool = Field(
         default=True,
@@ -217,6 +227,10 @@ class UserValves(BaseModel):
     prefer_local: bool = Field(
         default=False,
         description="Nutzer-Präferenz: Wenn möglich immer lokale Modelle bevorzugen.",
+    )
+    respect_manual_local: bool = Field(
+        default=True,
+        description="Interne Modellauswahl respektieren: Wenn du oben ein internes Modell wählst, wird es direkt verwendet.",
     )
     preferred_cloud_model: str = Field(
         default="",
@@ -260,6 +274,7 @@ class Filter:
         forced_location = None
 
         patterns = [
+            (r"#direct\b|/direct\b|#keep\b|/keep\b|#lock\b|/lock\b|#raw\b", "direct", "direct"),
             (r"#r1\b|/r1\b|#reasoning\b", "reasoning", "local"),
             (r"#code\b|/coder\b|#coder\b", "coding", None),
             (r"#write\b|#text\b|#human\b", "writing", "local"),
@@ -280,6 +295,27 @@ class Filter:
                 break
 
         return t, target_profile, forced_location
+
+    def _profile_for_model(self, model_id: str, default_intent: str) -> str:
+        """Ermittelt das am besten passende Sampling-Profil (Temperature, Top-P) für ein beliebiges Modell."""
+        m = (model_id or "").lower()
+        if "coder" in m or "coding" in m or m == self.valves.MODEL_LOCAL_CODING.lower():
+            return "coding"
+        elif "r1" in m or "reason" in m or m == self.valves.MODEL_LOCAL_REASONING.lower():
+            return "reasoning"
+        elif "heretic" in m or "uncensor" in m or m == self.valves.MODEL_LOCAL_UNCENSORED.lower():
+            return "uncensored"
+        elif "gemma" in m or m == self.valves.MODEL_LOCAL_WRITING.lower():
+            return "writing"
+        elif "opus" in m:
+            return "cloud_opus"
+        elif "sonnet" in m or "claude" in m:
+            return "cloud_heavy"
+        elif "gpt" in m or "openai" in m:
+            return "cloud_gpt"
+        elif "flash" in m or "gemini" in m:
+            return "cloud_fast"
+        return default_intent if default_intent in PROFILES else "writing"
 
     def _detect_intent(self, text: str) -> tuple[str, bool]:
         """
@@ -362,10 +398,27 @@ class Filter:
             if isinstance(uv, UserValves) and not uv.enabled:
                 return body
             prefer_local_user = bool(getattr(uv, "prefer_local", False))
+            respect_manual_local = bool(getattr(uv, "respect_manual_local", self.valves.RESPECT_MANUAL_LOCAL_SELECTION))
             user_cloud_pref = str(getattr(uv, "preferred_cloud_model", "")).strip()
         else:
             prefer_local_user = False
+            respect_manual_local = self.valves.RESPECT_MANUAL_LOCAL_SELECTION
             user_cloud_pref = ""
+
+        # Gewähltes Originalmodell aus dem Request ermitteln
+        original_model = body.get("model", "")
+        is_selected_local = bool(
+            original_model and (
+                any(original_model.startswith(p) for p in self.valves.LOCAL_MODEL_PREFIXES)
+                or "LMStudio" in original_model
+                or original_model in (
+                    self.valves.MODEL_LOCAL_CODING,
+                    self.valves.MODEL_LOCAL_REASONING,
+                    self.valves.MODEL_LOCAL_WRITING,
+                    self.valves.MODEL_LOCAL_UNCENSORED,
+                )
+            )
+        )
 
         # Effektiv konfigurierte Cloud-Zielmodelle pro Fall
         effective_cloud_heavy = user_cloud_pref or self.valves.MODEL_CLOUD_HEAVY
@@ -473,6 +526,21 @@ class Filter:
                     selected_model = self.valves.MODEL_LOCAL_CODING if intent == "coding" else self.valves.MODEL_LOCAL_REASONING
                     applied_profile = "coding" if intent == "coding" else "reasoning"
                     routing_reason = f"Cloud angefordert, aber wegen {privacy_reason} auf Workstation umgeleitet"
+            elif manual_profile == "direct":
+                if force_local_privacy and not is_selected_local:
+                    selected_model = self.valves.MODEL_LOCAL_CODING if intent == "coding" else self.valves.MODEL_LOCAL_WRITING
+                    applied_profile = "coding" if intent == "coding" else "writing"
+                    routing_reason = f"#direct gewählt, aber wegen {privacy_reason} sicherheitshalber auf Workstation umgeleitet"
+                else:
+                    selected_model = original_model or self.valves.MODEL_LOCAL_WRITING
+                    applied_profile = self._profile_for_model(selected_model, intent)
+                    routing_reason = f"Manueller Override: #direct Tag -> Gewähltes Modell '{selected_model}' 1:1 beibehalten"
+
+        # A2: Respektiere explizit gewählte interne Modelle (Option 4)
+        elif respect_manual_local and is_selected_local:
+            selected_model = original_model
+            applied_profile = self._profile_for_model(selected_model, intent)
+            routing_reason = f"Interne Modellauswahl respektiert: '{selected_model}' (Lokale Workstation)"
 
         # B: Automatisches Routing
         if not selected_model:

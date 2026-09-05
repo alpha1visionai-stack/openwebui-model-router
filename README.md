@@ -96,6 +96,7 @@ Das integrierte Privacy Gate implementiert die 4 Säulen des Blueprint-Klassifik
 
 Du kannst das automatische Routing jederzeit durch kurze Präfixe im Prompt gezielt übersteuern (das Tag wird vor dem Senden automatisch entfernt):
 
+* `#direct`, `#keep`, `#lock`: **Direkt-Durchstellung.** Behält exakt das im Menü gewählte Modell 1:1 bei (Bypass).
 * `#r1` oder `/r1`: Forciert DeepSeek-R1 (Temp `0.60`, Top-P `0.95`).
 * `#code` oder `/coder`: Forciert den lokalen Coder.
 * `#write` oder `#human`: Forciert Gemma 4 (Human Master Text-Stil).
@@ -109,21 +110,25 @@ Du kannst das automatische Routing jederzeit durch kurze Präfixe im Prompt gezi
 
 ---
 
-## 🎯 Nur interne Modelle nutzen (Router deaktivieren oder umgehen)
+## 🎯 Nur interne Modelle nutzen & Modellauswahl steuern
 
-Möchtest du nur interne Modelle (z. B. Gemma 4 oder Qwen Coder) nutzen und die automatische Modellauswahl des Routers abschalten oder umgehen?
+Möchtest du nur interne Modelle (z. B. Gemma 4 oder Qwen Coder) nutzen und die automatische Modellauswahl steuern oder umgehen?
 
 > 🔒 **PII-Datenschutz bleibt 100 % aktiv:**  
 > Der PII-Filter (`pii_filter_reversible`, Priorität 0) und der Model Router (`hybrid_model_router`, Priorität 10) sind **vollständig unabhängig**. Wenn du den Router abschaltest oder umgehst, werden IBANs, Namen und E-Mails im Prompt weiterhin geschwärzt und in der Antwort restauriert!
 
-* **Option 1: Router komplett ausschalten (100 % manuelle Kontrolle):**
-  - *Pro Nutzer:* Profileinstellungen ➔ *Functions ➔ Hybrid Model Router ➔ Valves:* `enabled = false`.
-  - *Global:* Admin-Panel ➔ *Functions ➔ Hybrid Model Router:* Hauptschalter auf **Aus**.
-  - Du wählst oben im Dropdown frei dein internes Modell; Open WebUI sendet den Prompt 1:1 dorthin.
+* **Option 4: Automatische Beibehaltung intern gewählter Modelle (Standardmäßig aktiv!):**
+  - Wählst du im Open WebUI Menü oben explizit ein internes Modell (z. B. `LMStudio.google/gemma-4-12b-qat`), erkennt der Router deine Wahl und behält dieses Modell automatisch bei (kein Umbiegen auf Qwen Coder mehr!).
+  - Gesteuert über `RESPECT_MANUAL_LOCAL_SELECTION: true`.
+* **Tag `#direct` oder `#keep`:**
+  - Schicke `#direct` im Prompt mit, um das aktuell im Menü gewählte Modell sofort 1:1 ohne Umleitung auszuführen.
 * **Option 2: Reiner Airgap-Modus (100 % lokal mit Aufteilung):**
   - Tag `#local` im Prompt oder in den User-Valves `prefer_local = true`. Bleibt immer lokal auf der Workstation (0 Cloud-Credits).
 * **Option 3: Gezieltes Modell-Pinning:**
   - Nutze `#write` (Gemma 4), `#code` (Qwen Coder), `#r1` (DeepSeek-R1) oder `#heretic` (Heretic 9B) direkt im Prompt.
+* **Option 1: Router komplett ausschalten (100 % manuelle Kontrolle):**
+  - *Pro Nutzer:* Profileinstellungen ➔ *Functions ➔ Hybrid Model Router ➔ Valves:* `enabled = false`.
+  - *Global:* Admin-Panel ➔ *Functions ➔ Hybrid Model Router:* Hauptschalter auf **Aus**.
 
 ---
 

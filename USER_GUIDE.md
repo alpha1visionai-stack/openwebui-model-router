@@ -222,7 +222,8 @@ Nach jeder Antwort legt der PII-Filter unter `metadata["pii_audit"]` ein revisio
 
 Du musst das Routing nicht der Automatik überlassen. Wenn du ein bestimmtes Modell erzwingen willst, schreibe einfach eines der folgenden Tags an eine beliebige Stelle in deinen Prompt (das Tag wird vor dem Senden an das Modell **automatisch gelöscht**):
 
-### Kurzbefehle für lokale Modelle:
+### Kurzbefehle für lokale Modelle & Direkt-Durchstellung:
+* `#direct`, `#keep`, `#lock` oder `/direct`: **Direkt-Durchstellung.** Behält exakt das oben im Dropdown-Menü ausgewählte Modell 1:1 bei (umgeht das automatische Routing vollständig).
 * `#r1` oder `/r1`: Erzwingt **DeepSeek-R1** (Temp `0.60`, Top-P `0.95`).
 * `#code` oder `/coder`: Erzwingt **Qwen 2.5 Coder** (Temp `0.20`, Top-P `0.85`).
 * `#write` oder `#human`: Erzwingt **Gemma 4** (Temp `0.55`, Top-P `0.90`).
@@ -237,12 +238,12 @@ Du musst das Routing nicht der Automatik überlassen. Wenn du ein bestimmtes Mod
 * `#cloud`: Bevorzugt Cloud-Verarbeitung (sofern datenschutzkonform).
 
 > **Beispiel:**  
-> `#r1 Löse dieses Optimierungsproblem: f(x) = x^3 - 5x + 2`  
-> &rarr; Der Router entfernt `#r1`, wählt DeepSeek-R1 auf der Workstation und setzt Temperatur `0.60`.
+> `#direct Schreibe mir ein kurzes Gedicht über Datenintegrität.`  
+> &rarr; Der Router entfernt `#direct` und führt exakt das im Menü gewählte Modell aus.
 
 ---
 
-## 🎯 5.1 Nur interne Modelle nutzen & automatische Modellauswahl umgehen (Manual Override & Airgap)
+## 🎯 5.1 Nur interne Modelle nutzen & automatische Modellauswahl umgehen (Option 4 & Airgap)
 
 Eine der wichtigsten Fragen in der Praxis lautet:  
 > *„Was ist, wenn ich nur ein bestimmtes internes Modell (z. B. Gemma 4 oder Qwen Coder) nutzen möchte, aber die automatische Modellauswahl des Routers soll dabei nicht eingreifen?“*
@@ -259,48 +260,44 @@ In Open WebUI arbeiten zwei eigenständige Filter-Funktionen mit getrennten Prio
 
 ---
 
-### Die 4 Wege in der Übersicht:
+### Die Optionen in der Übersicht:
 
-| Weg | Ziel | Wo konfigurieren? | Verhalten des Systems |
+| Option | Ziel | Wo konfigurieren? | Verhalten des Systems |
 | :--- | :--- | :--- | :--- |
-| **Weg 1: 100 % Manuelle Wahl** | Du wählst oben im Dropdown frei ein Modell, der Router greift überhaupt nicht ein. | **Profil ➔ Settings ➔ Functions ➔ Valves:** `enabled = false` (oder Admin global) | Router ist inaktiv. Open WebUI nutzt exakt dein gewähltes Modell. PII-Filter läuft normal weiter. |
-| **Weg 2: Reiner Airgap-Modus** | Nur lokale Modelle (0 Cloud-Credits), aber automatische Aufteilung nach Code/Logik/Text. | Im Prompt `#local` schreiben oder in den User-Valves `prefer_local = true` setzen | Bleibt immer auf der Workstation. Routet zwischen Gemma, Qwen Coder und DeepSeek-R1. |
-| **Weg 3: Gezieltes Modell-Pinning** | Für einen einzelnen Prompt gezielt ein bestimmtes lokales Modell erzwingen. | Tag `#write`, `#code`, `#r1` oder `#heretic` im Prompt | Erzwingt das jeweilige lokale Modell, überschreibt andere Automatismen. |
-| **Weg 4: Festes Standard-Modell** | Alle Rollen des Routers sollen immer auf ein einziges lokales Allround-Modell zeigen. | **Admin-Valves:** `MODEL_LOCAL_WRITING`, `_CODING`, `_REASONING` auf dieselbe ID setzen | Jeder lokale Routing-Pfad führt immer zu deinem favorisierten Modell. |
+| **Option 4: Auto-Respekt (Neu & Standard)** | Wählst du im Menü ein internes Modell (`LMStudio...`), bleibt es automatisch 1:1 aktiv. | **Standardmäßig aktiv** (`RESPECT_MANUAL_LOCAL_SELECTION = true`) | Kein unerwünschter Modellwechsel bei internen Modellen. Cloud-Modelle werden weiterhin intelligent geroutet. |
+| **Tag `#direct` / `#keep`** | Einzelnen Prompt 1:1 an das gewählte Modell senden (Bypass). | Im Prompt `#direct` oder `#keep` schreiben | Umgeht jegliche Intent-Umleitung für diesen Prompt sofort. |
+| **Reiner Airgap-Modus** | Nur lokale Modelle (0 Cloud-Credits), aber automatische Aufteilung nach Code/Logik/Text. | Im Prompt `#local` schreiben oder in den User-Valves `prefer_local = true` setzen | Bleibt immer auf der Workstation. Routet zwischen Gemma, Qwen Coder und DeepSeek-R1. |
+| **100 % Manuelle Wahl (Aus)** | Du wählst oben im Dropdown frei ein Modell, der Router greift überhaupt nicht ein. | **Profil ➔ Settings ➔ Functions ➔ Valves:** `enabled = false` (oder Admin global) | Router ist komplett inaktiv. PII-Filter läuft normal weiter. |
+| **Gezieltes Modell-Pinning** | Für einen einzelnen Prompt gezielt ein bestimmtes lokales Modell erzwingen. | Tag `#write`, `#code`, `#r1` oder `#heretic` im Prompt | Erzwingt das jeweilige lokale Modell, überschreibt andere Automatismen. |
 
 ---
 
 ### Detaillierte Schritt-für-Schritt-Anleitung:
 
-#### Weg 1: Automatische Modellauswahl komplett ausschalten (Reine manuelle Kontrolle)
-Wenn du im Dropdown-Menü oben einfach dein gewünschtes internes Modell (z. B. `LMStudio.google/gemma-4-12b-qat`) wählen willst und kein Automatismus dazwischenfunken soll:
+#### Option 4: Komfort-Modus – Automatische Beibehaltung intern gewählter Modelle (Standard)
+Das System ist nun so konfiguriert, dass es deine bewusste Modellauswahl respektiert:
+* Wenn du oben im Dropdown-Menü ein **Standard-/Cloud-Modell** (wie `Cortecs.gemini-3.7-flash`) ausgewählt hast, fungiert dieses als Einstiegskanal – der Router analysiert deinen Prompt und leitet ihn optimal an die Workstation oder Cloud weiter.
+* Wenn du oben im Dropdown-Menü jedoch **explizit ein internes Modell** (z. B. `LMStudio.google/gemma-4-12b-qat`) auswählst, erkennt der Router: *„Der Benutzer hat dieses lokale Modell bewusst gewählt“*.
+* **Verhalten:** Selbst wenn du eine Programmieraufgabe stellst, wird das Modell **nicht** mehr auf Qwen Coder umgebogen, sondern antwortet direkt mit Gemma 4!
+* **Konfiguration:** Gesteuert über die Admin-Valve `RESPECT_MANUAL_LOCAL_SELECTION` (Standard: `true`) und die Benutzer-Valve `respect_manual_local` (Standard: `true`).
 
-* **Nur für deinen eigenen Benutzer-Account:**
-  1. Klicke in Open WebUI ganz unten links auf deinen **Benutzernamen / Profilbild ➔ Einstellungen (⚙️)**.
-  2. Klicke auf **Funktionen (Functions)**.
-  3. Klicke beim **Hybrid Model Router** auf das Zahnrad / Regler-Symbol (**Valves**).
-  4. Schalte den Parameter `enabled` auf **Aus (`false`)** und speichere.
-  * **Ergebnis:** Der Router ist für deinen Account vollständig deaktiviert. Du wählst im Modell-Dropdown oben ein beliebiges Modell aus – Open WebUI sendet deinen Prompt 1:1 genau dorthin. Der `pii_filter_reversible` schützt deine Daten im Hintergrund weiterhin vollständig.
+#### Das `#direct` / `#keep` Tag: Universeller Router-Bypass
+Wenn du für eine einzelne Abfrage sicherstellen möchtest, dass exakt das im Menü selektierte Modell antwortet (egal ob lokal oder Cloud):
+* Schreibe `#direct`, `#keep`, `#lock` oder `/direct` an den Anfang oder in den Text deines Prompts.
+* Der Router entfernt das Tag und schickt die Anfrage direkt an das ausgewählte Modell.
+* *Ausnahme zum Schutz des Nutzers:* Befindet sich im Prompt unmaskierte kritische PII (z. B. eine echte IBAN) und du hast ein Cloud-Modell gewählt, schützt dich das Privacy Gate weiterhin und forciert die lokale Workstation.
 
-* **Global für alle Benutzer des Servers (System-Administrator):**
-  1. Öffne das **Admin-Panel ➔ Funktionen (Functions)**.
-  2. Suche den Eintrag `Hybrid Model Router` (`hybrid_model_router`).
-  3. Schalte den Hauptschalter von **Aktiv auf Inaktiv**.
-  * **Ergebnis:** Kein Benutzer wird mehr automatisch umgeleitet. Alle Anwender nutzen die manuelle Modellauswahl von Open WebUI. Der PII-Filter bleibt global aktiv.
-
-#### Weg 2: 100 % Intern bleiben, aber automatische Modell-Spezialisierung nutzen (Airgap)
+#### Reiner Airgap-Modus (100 % lokal mit Aufteilung)
 Wenn du sagst: *„Ich möchte strikt 0 Cloud-Credits verbrauchen und keine Daten ins Internet senden, aber wenn ich Code frage, soll Qwen Coder antworten, und wenn ich Mathe frage, DeepSeek-R1“*:
 * **Ad-hoc im Chat:** Schreibe einfach `#local` in deine Nachricht (z. B. `#local Schreibe eine Funktion für...`).
 * **Dauerhaft als Profil-Einstellung:** Gehe in deine **Profileinstellungen ➔ Funktionen ➔ Hybrid Model Router (Valves)** und setze `prefer_local` auf **`true`**.
 * **Ergebnis:** Selbst bei hochkomplexen Texten oder Code-Aufgaben wird niemals die Cloud (OpenRouter) kontaktiert. Der Router bleibt strikt auf der lokalen LM Studio Workstation.
 
-#### Weg 3: Gezieltes Modell-Pinning per Prompt-Tag
-Wenn der Router grundsätzlich aktiv bleiben soll, du aber bei einem speziellen Prompt ein ganz bestimmtes internes Modell ansteuern willst:
-* **Gemma 4 (Anti-KI / Schreiben):** Nutze `#write` oder `#human`
-* **Qwen 2.5 Coder (Code & SQL):** Nutze `#code` oder `/coder`
-* **DeepSeek-R1 (Logik & Mathe):** Nutze `#r1` oder `/r1`
-* **Heretic 9B (Unzensiert):** Nutze `#heretic` oder `#uncensored`
-* **Ergebnis:** Das Tag wird vor dem Versenden automatisch aus dem Text entfernt, und der Prompt wird ohne Intent-Analyse direkt an das forzierte Modell übergeben.
+#### Vollständige Deaktivierung des Routers (100 % manuelle Kontrolle)
+Wenn du den Model Router gar nicht nutzen möchtest:
+* **Benutzer:** Profileinstellungen ➔ **Funktionen ➔ Hybrid Model Router (Valves)** ➔ `enabled = false`.
+* **Admin:** Admin-Panel ➔ **Funktionen ➔ Hybrid Model Router** ➔ Schalter auf **Aus**.
+* *Ergebnis:* Freie manuelle Modellwahl. Der PII-Datenschutzfilter läuft davon unberührt weiter.
 
 ---
 

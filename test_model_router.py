@@ -207,7 +207,76 @@ class TestModelRouter(unittest.TestCase):
         }
         res = self.router.inlet(body, __user__=user)
         self.assertEqual(res["model"], "openrouter.~x-ai/grok-latest")
-        self.assertIn("openrouter.~x-ai/grok-latest", res["metadata"]["router_decision"]["reason"])
+    def test_respect_manual_local_model_selection(self):
+        """Wenn der Nutzer ein internes Modell wählt (z.B. Gemma 4), soll ein Coding-Task NICHT auf Qwen Coder umgeleitet werden."""
+        body = {
+            "model": "LMStudio.google/gemma-4-12b-qat",
+            "messages": [
+                {"role": "user", "content": "Schreibe ein Python-Skript für Datenbereinigung mit pandas."}
+            ],
+            "metadata": {}
+        }
+        res = self.router.inlet(body)
+        self.assertEqual(res["model"], "LMStudio.google/gemma-4-12b-qat")
+        self.assertIn("Interne Modellauswahl respektiert", res["metadata"]["router_decision"]["reason"])
+
+    def test_manual_tag_overrides_respect_manual_local(self):
+        """Wenn der Nutzer Gemma 4 gewählt hat, aber explizit #r1 oder #code tippt, hat das Tag Vorrang."""
+        body = {
+            "model": "LMStudio.google/gemma-4-12b-qat",
+            "messages": [
+                {"role": "user", "content": "#r1 Löse dieses mathematische Gleichungssystem."}
+            ],
+            "metadata": {}
+        }
+        res = self.router.inlet(body)
+        self.assertEqual(res["model"], "LMStudio.deepseek-r1-distill-qwen-14b")
+        self.assertIn("Manueller Override: #r1", res["metadata"]["router_decision"]["reason"])
+        self.assertEqual(res["messages"][0]["content"], "Löse dieses mathematische Gleichungssystem.")
+
+    def test_direct_tag_keeps_cloud_model(self):
+        """Das Tag #direct oder #keep erzwingt 1:1 das gewählte Modell (auch Cloud), wenn keine kritische PII vorliegt."""
+        body = {
+            "model": "Cortecs.gemini-3.7-flash",
+            "messages": [
+                {"role": "user", "content": "#direct Schreibe eine Zusammenfassung dieses Textes."}
+            ],
+            "metadata": {}
+        }
+        res = self.router.inlet(body)
+        self.assertEqual(res["model"], "Cortecs.gemini-3.7-flash")
+        self.assertIn("Manueller Override: #direct Tag", res["metadata"]["router_decision"]["reason"])
+        self.assertEqual(res["messages"][0]["content"], "Schreibe eine Zusammenfassung dieses Textes.")
+
+    def test_direct_tag_blocked_by_critical_pii_for_cloud(self):
+        """Wenn #direct für ein Cloud-Modell angefordert wird, aber eine IBAN vorhanden ist, sperrt das Privacy Gate die Cloud."""
+        body = {
+            "model": "openrouter.anthropic/claude-sonnet-4.5",
+            "messages": [
+                {"role": "user", "content": "#direct Überweise das Honorar an [[IBAN_1]]."}
+            ],
+            "metadata": {
+                "pii_counters": {"IBAN": 1}
+            }
+        }
+        res = self.router.inlet(body)
+        self.assertNotEqual(res["model"], "openrouter.anthropic/claude-sonnet-4.5")
+        self.assertIn("Workstation", res["metadata"]["router_decision"]["reason"])
+        self.assertTrue(res["metadata"]["router_decision"]["critical_pii_blocked"])
+
+    def test_respect_manual_local_disabled_routes_normally(self):
+        """Wenn respect_manual_local deaktiviert ist, soll auch bei gewählter Gemma 4 ein Coding-Task zu Qwen Coder gehen."""
+        uv = UserValves(enabled=True, respect_manual_local=False)
+        user = {"valves": uv}
+        body = {
+            "model": "LMStudio.google/gemma-4-12b-qat",
+            "messages": [
+                {"role": "user", "content": "Schreibe ein Python-Skript für Datenbereinigung mit pandas."}
+            ],
+            "metadata": {}
+        }
+        res = self.router.inlet(body, __user__=user)
+        self.assertEqual(res["model"], "LMStudio.qwen2.5-coder-14b-instruct")
 
 
 if __name__ == "__main__":
