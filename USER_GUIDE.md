@@ -291,3 +291,26 @@ Hier ist die Abrechnung für Herrn Michael Weber mit IBAN DE44 5001 0517 5409 32
 Erstelle mir eine formatierte Zusammenfassung der Auszahlungssumme von 1.450,00 EUR und formatiere eine Überweisungszeile für das ERP-System.
 ```
 
+---
+
+## ⚡ 9. Technische Details, Latenz & Troubleshooting (Good to Know)
+
+Damit du das Laufzeitverhalten der Pipeline im Alltag optimal verstehst und einschätzen kannst:
+
+### 1. Nahtlose Modell-Synchronisation im Browser (`selected_model_id`)
+* **Hintergrund:** Wenn du im Chat ein Cloud-Modell (z. B. `Cortecs.gemini-3.7-flash`) ausgewählt hast, der Router deine Anfrage aber wegen einer IBAN auf die lokale Workstation (`LMStudio.qwen2.5-coder-14b-instruct`) umleitet, tauscht das Gateway das Modell serverseitig zur Laufzeit aus.
+* **Synchronisation:** Der Router injiziert das Feld `selected_model_id` in die Metadaten. Open WebUI sendet dieses als allererstes Server-Sent-Event (`data: {"selected_model_id": ...}`) an den Browser. Dadurch weiß dein Web-Frontend sofort, dass die eingehenden Tokens zu dem neuen Modell gehören, und rendert die Antwort ohne Verzögerung in die richtige Chat-Sprechblase.
+
+### 2. Cold-Starts & VRAM-Ladezeiten auf der Workstation
+* **Wie LM Studio arbeitet:** Auf der lokalen Workstation stehen mehrere 9B- bis 14B-Modelle bereit (Qwen Coder, DeepSeek-R1, Gemma 4, Heretic). LM Studio lädt Modelle bei Bedarf dynamisch in den VRAM der Grafikkarte (*Just-in-Time Loading*).
+* **Erst-Aufruf:** Wenn du ein Modell anfragst, das gerade nicht im GPU-Speicher liegt, benötigt das Laden des Modells von der SSD in den Grafikspeicher ca. **10–15 Sekunden**.
+* **Folge-Aufrufe:** Sobald das Modell im Speicher liegt, antwortet es ohne Ladezeit sofort.
+
+### 3. Der interne Denkprozess (`reasoning_content` / CoT)
+* **Gedankengang vor Text:** Modelle wie DeepSeek-R1 oder Gemma 4 erzeugen vor der eigentlichen Ausgabe einen internen Denkprozess (`reasoning_content` bzw. `<think>`). 
+* **Wichtig:** Während dieser Phase generiert das lokale Modell 400–800 Denk-Tokens (dauert ca. 15–25 Sekunden auf der GPU). Open WebUI zeigt dies als einklappbaren Denkblock (*"Denken..."* bzw. *Thought*) an. Das ist **kein Hänger oder Verbindungsabbruch**, sondern die normale Ausführungszeit der lokalen Inferenz.
+
+### 4. Verbindung nicht vorzeitig abbrechen
+* **Tipp:** Wenn du eine komplexe Anfrage oder sensible Daten abschickst, lass dem Tab ca. **20–30 Sekunden Zeit**. Ein vorzeitiges Neuladen der Seite (*F5 / Refresh*) trennt den WebSocket-Kanal zum Minisforum-Server, bricht die laufende GPU-Berechnung in LM Studio ab und hinterlässt eine unvollständige Nachricht.
+
+

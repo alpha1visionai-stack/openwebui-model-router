@@ -464,6 +464,28 @@
             </div>
         </section>
 
+        <!-- Tips & Performance Card -->
+        <section class="glass-card p-6 rounded-3xl border border-slate-800/80 space-y-3">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                <i class="fa-solid fa-lightbulb text-amber-400"></i>
+                Performance & Inferenz-Tipps für den Alltag
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-slate-400">
+                <div class="p-3 bg-surface-950 rounded-xl border border-slate-800/60">
+                    <span class="font-semibold text-white">🔄 Modell-Synchronisation:</span><br>
+                    Das Gateway meldet Umschaltungen sofort via <code>selected_model_id</code> an den Browser, sodass Tokens synchron in die richtige Chat-Sprechblase fließen.
+                </div>
+                <div class="p-3 bg-surface-950 rounded-xl border border-slate-800/60">
+                    <span class="font-semibold text-white">⏱️ VRAM Cold-Starts:</span><br>
+                    Beim ersten Aufruf eines ungeladenen Modells benötigt LM Studio ca. 10–15 Sek. für den VRAM-Transfer von der SSD. Danach antwortet es ohne Verzögerung.
+                </div>
+                <div class="p-3 bg-surface-950 rounded-xl border border-slate-800/60">
+                    <span class="font-semibold text-white">🧠 Chain-of-Thought:</span><br>
+                    Modelle wie R1 oder Gemma 4 generieren 400–800 interne Denk-Tokens (<code>reasoning_content</code>), bevor der sichtbare Text beginnt. Bitte dem Tab 20–30 Sek. Zeit lassen!
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <!-- Footer -->

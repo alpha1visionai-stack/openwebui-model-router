@@ -144,3 +144,14 @@ python -m unittest test_model_router.py
 Vollständige Test-Prompts für alle fünf Hauptszenarien (Datenschutz-Lockdown, Deep Reasoning mit R1, Text-Veredelung, Cloud High-End und Privacy Gate Override-Test) findest du ausführlich dokumentiert in:
 👉 **[`USER_GUIDE.md#8-praxis-beispiele--test-prompts-prompt-showcase`](USER_GUIDE.md)**
 
+---
+
+## ⚡ Streaming & Frontend-Synchronisation
+
+Beim dynamischen Modell-Routing zur Laufzeit (z. B. von einem Cloud-Standardmodell zu einem lokalen Workstation-Modell bei sensiblen Daten) injiziert das Gateway `selected_model_id` in die Request-Metadaten:
+```python
+body["metadata"]["selected_model_id"] = selected_model
+```
+Dies stellt sicher, dass Open WebUI den SSE-Stream sofort mit `data: {"selected_model_id": ...}` initialisiert. Die Benutzeroberfläche ordnet den Stream somit nahtlos der richtigen Sprechblase zu und visualisiert Denk-Tokens (`reasoning_content`) ohne Verzögerung.
+
+
