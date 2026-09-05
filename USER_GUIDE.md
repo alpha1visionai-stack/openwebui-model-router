@@ -80,7 +80,12 @@ Dein KI-System kombiniert zwei Sicherheits- und Performance-Ebenen zu einer voll
 | :--- | :--- | :--- | :--- | :--- |
 | **🚀 Cloud High-End** | `openrouter.anthropic/claude-sonnet-4.5` | `0.40` | `0.90` | Sehr lange Prompts (> 120 Wörter), Microservice-Architekturen, komplexe Refactorings ohne PII. |
 | **🏛️ Cloud Flagship** | `openrouter.anthropic/claude-opus-4.6` | `0.50` | `0.90` | Wird bei manuellem Tag `#opus` für tiefste philosophische/strategische Analysen aufgerufen. |
-| **⚡ Cloud High-Speed** | `openrouter.google/gemini-3-flash-preview` | `0.60` | `0.90` | Schnelle allgemeine Cloud-Recherchen bei manuellem Tag `#flash`. |
+| **⚡ Cloud High-Speed** | `openrouter.google/gemini-3-flash-preview` | `0.60` | `0.90` | Schnelle allgemeine Cloud-Recherchen bei manuellem Tag `#flash` oder `#gemini`. |
+| **🌐 OpenAI Flagship** | `openrouter.openai/gpt-5.2` | `0.30` | `0.90` | Analytische Aufgaben, Data Science & OpenAI-spezifische Prompts bei `#gpt` oder `#openai`. |
+
+> [!NOTE]
+> **🛡️ Intelligenter Auto-Fallback Schutz:**
+> Veraltete oder von OpenRouter deaktivierte Modell-IDs (wie das nicht existierende `google/gemini-3-pro-preview` oder deaktivierte Presets wie `@preset/deepseek-v4`) werden vom Gateway **vollautomatisch abgefangen und auf stabile, operative Alternativen umgeleitet**. Es kommt dadurch zu keinerlei 404- oder 400-Abbrüchen im Chat.
 
 ---
 
@@ -180,9 +185,10 @@ Du musst das Routing nicht der Automatik überlassen. Wenn du ein bestimmtes Mod
 * `#local`: Forciert generelle Ausführung auf der lokalen Workstation.
 
 ### Kurzbefehle für Cloud-Modelle:
-* `#sonnet` oder `#claude`: Wählt **Claude Sonnet 4.5** (Cloud).
-* `#opus`: Wählt **Claude Opus 4.6** (Cloud Flagship).
-* `#flash`: Wählt **Gemini 3 Flash** (schnell).
+* `#sonnet` oder `#claude`: Wählt **Claude Sonnet 4.5** (Cloud High-End).
+* `#opus`: Wählt **Claude Opus 4.6** (Cloud Flagship für tiefste Synthesen).
+* `#gpt` oder `#openai`: Wählt **OpenAI GPT-5.2** (Cloud High-End für Analytik & Data-Science).
+* `#flash` oder `#gemini`: Wählt **Gemini 3 Flash** (schnelle Routine in der Cloud).
 * `#cloud`: Bevorzugt Cloud-Verarbeitung (sofern datenschutzkonform).
 
 > **Beispiel:**  

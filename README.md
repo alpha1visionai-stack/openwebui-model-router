@@ -73,6 +73,7 @@ Routet Anfragen dynamisch zwischen:
 | **🚀 Cloud High-End** | `openrouter.anthropic/claude-sonnet-4.5` | `0.40` | `0.90` | Hochkomplexe Fullstack-Architekturen, Bug-Hunting & Systementwürfe. |
 | **🏛️ Cloud Flagship** | `openrouter.anthropic/claude-opus-4.6` | `0.50` | `0.90` | Strategische Grundsatzanalysen & Mammut-Dokumente. |
 | **⚡ Cloud High-Speed** | `openrouter.google/gemini-3-flash-preview` | `0.60` | `0.90` | Schnelle allgemeine Cloud-Abfragen mit minimaler Latenz. |
+| **🌐 OpenAI Flagship** | `openrouter.openai/gpt-5.2` | `0.30` | `0.90` | OpenAI GPT-5.2 für analytische Aufgaben, Data-Science & GPT-Prompts. |
 
 ---
 
@@ -95,6 +96,8 @@ Du kannst das automatische Routing jederzeit durch kurze Präfixe im Prompt gezi
 * `#heretic` oder `#uncensored`: Forciert Heretic 9B (unzensiert).
 * `#opus`: Forciert Claude Opus 4.6 (sofern keine kritischen PII vorliegen).
 * `#sonnet` oder `#claude`: Forciert Claude Sonnet 4.5.
+* `#gpt` oder `#openai`: Forciert OpenAI GPT-5.2.
+* `#flash` oder `#gemini`: Forciert Gemini 3 Flash.
 * `#local`: Forciert lokale Ausführung auf der Workstation.
 * `#cloud`: Bevorzugt Cloud-Ausführung (sofern datenschutzkonform).
 

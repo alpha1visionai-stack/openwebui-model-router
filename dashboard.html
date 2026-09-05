@@ -54,49 +54,47 @@
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0b0f19; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-        @media print {
-            nav, .no-print, button { display: none !important; }
-            body { background: #fff !important; color: #000 !important; }
-            .glass-card { border: 1px solid #ccc !important; background: #fff !important; color: #000 !important; }
-        }
     </style>
 </head>
-<body class="min-h-screen antialiased selection:bg-indigo-500/30 selection:text-indigo-200 pb-16">
+<body class="min-h-screen selection:bg-indigo-500 selection:text-white pb-20">
 
     <!-- Top Navigation -->
-    <nav class="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-surface-950/80 backdrop-blur-xl">
+    <nav class="border-b border-slate-800/80 bg-surface-900/90 sticky top-0 z-50 backdrop-blur-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-emerald-400 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-500/20">
-                    <i class="fa-solid fa-shield-halved"></i>
+                    <i class="fa-solid fa-microchip"></i>
                 </div>
                 <div>
                     <span class="font-display font-bold text-lg text-white tracking-tight flex items-center gap-2">
                         Hybrid Model Router &bull; Privacy Gate
                         <span class="text-[10px] uppercase font-bold tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">Live Active</span>
                     </span>
-                    <p class="text-xs text-slate-400 hidden sm:block">Perplexity Computer Hybrid Architecture &bull; Minisforum (:8080) + LM Studio Workstation (:1234)</p>
+                    <p class="text-xs text-slate-400 hidden sm:block">Perplexity Computer Hybrid Architecture &bull; Minisforum + Workstation + OpenRouter</p>
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 sm:gap-3 text-xs font-mono">
-                <button onclick="openModal('pii')" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all flex items-center gap-1.5 font-sans font-semibold">
-                    <i class="fa-solid fa-shield-cat text-emerald-400"></i>
-                    <span>PII-Filter Code</span>
-                </button>
-                <button onclick="openModal('router')" class="px-3 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 transition-all flex items-center gap-1.5 font-sans font-semibold">
-                    <i class="fa-solid fa-code text-indigo-400"></i>
-                    <span>Router Code</span>
-                </button>
-                <button onclick="window.print()" class="px-2.5 py-1.5 rounded-lg bg-surface-800 hover:bg-slate-700 text-slate-400 border border-slate-700 transition-all flex items-center gap-1">
+            <div class="flex items-center gap-2 sm:gap-4 text-xs font-mono">
+                <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-800 border border-slate-800">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="text-slate-300">Minisforum:</span>
+                    <span class="text-emerald-400 font-semibold">:8080</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-800 border border-slate-800">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                    <span class="text-slate-300 hidden sm:inline">Workstation:</span>
+                    <span class="text-cyan-400 font-semibold">:1234</span>
+                </div>
+                <button onclick="window.print()" class="px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 border border-indigo-500/30 transition-all flex items-center gap-1.5">
                     <i class="fa-solid fa-print"></i>
+                    <span class="hidden sm:inline">Drucken / PDF</span>
                 </button>
             </div>
         </div>
     </nav>
 
     <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-12">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-10">
 
         <!-- Hero Section -->
         <div class="relative overflow-hidden rounded-3xl bg-gradient-to-b from-surface-850 to-surface-900 border border-slate-800 p-6 sm:p-10">
@@ -146,7 +144,7 @@
             </div>
         </div>
 
-        <!-- 1. Der 4-Stufen Datenfluss (Architektur) -->
+        <!-- 4-Phase Architecture Pipeline -->
         <section class="space-y-4">
             <h2 class="text-2xl font-bold font-display text-white">1. Der 4-Stufen Datenfluss (Architektur)</h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -200,9 +198,9 @@
                         <span>PHASE 4 (OUTLET)</span>
                         <i class="fa-solid fa-wand-magic-sparkles text-purple-500"></i>
                     </div>
-                    <h3 class="font-display font-bold text-white text-base">Re-Hydrierung & Stream</h3>
+                    <h3 class="font-display font-bold text-white text-base">Re-Hydrierung</h3>
                     <p class="text-xs text-slate-400 mt-1 leading-relaxed">
-                        Das PII-Outlet ersetzt alle Tokens wieder durch die Originaldaten. Auch im SSE-Stream füllt ein Puffer geteilte Tokens nahtlos auf.
+                        Das PII-Outlet ersetzt alle Tokens wieder durch die Originaldaten. Unter <code>pii_audit</code> wird ein lückenloses Audit-Log abgelegt.
                     </p>
                     <div class="mt-4 text-[11px] font-mono text-slate-400 bg-surface-950 p-2.5 rounded-xl border border-slate-800">
                         Output: "Guten Tag Herr Schmidt!"<br>
@@ -212,183 +210,20 @@
             </div>
         </section>
 
-        <!-- 2. PII Privacy Gate Deep-Dive -->
-        <section class="glass-card p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-2xl font-bold font-display text-white flex items-center gap-2">
-                        <i class="fa-solid fa-shield-virus text-emerald-400"></i>
-                        2. Das PII Privacy Gate im Detail (<code class="text-emerald-300 font-mono text-lg">pii_filter.py</code>)
-                    </h2>
-                    <p class="text-slate-400 text-sm">Zweistufiger, vollständig reversibler Datenschutz-Wächter mit spaCy NER, Regex-Engine und Live-Stream Token-Buffer.</p>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                    <a href="pii_filter.py" download class="px-3 py-1.5 text-xs font-mono rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all flex items-center gap-1.5">
-                        <i class="fa-solid fa-download"></i> pii_filter.py
-                    </a>
-                    <a href="model_router.py" download class="px-3 py-1.5 text-xs font-mono rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 transition-all flex items-center gap-1.5">
-                        <i class="fa-solid fa-download"></i> model_router.py
-                    </a>
-                    <button onclick="openModal('pii')" class="px-3 py-1.5 text-xs font-mono rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all flex items-center gap-1.5">
-                        <i class="fa-solid fa-eye"></i> Code anzeigen
-                    </button>
-                </div>
-            </div>
-
-            <!-- 4 Säulen des PII-Filters -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="p-4 rounded-2xl bg-surface-950/80 border border-slate-800/80 space-y-2">
-                    <div class="flex items-center justify-between text-xs">
-                        <span class="font-bold text-rose-400 uppercase tracking-wider font-mono">1. Hard Lockdown</span>
-                        <i class="fa-solid fa-ban text-rose-500"></i>
-                    </div>
-                    <h4 class="font-bold text-white text-sm">Kritische Finanzdaten</h4>
-                    <p class="text-xs text-slate-400 leading-relaxed">
-                        Erkennt IBANs, Kreditkartennummern (13–19 stellig) und Passwörter in URLs. 
-                        <strong>Verhindert jeden Cloud-Call</strong> und leitet zwingend auf die lokale Workstation.
-                    </p>
-                    <div class="pt-2 flex flex-wrap gap-1">
-                        <span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-300 text-[10px] font-mono border border-rose-500/20">[[IBAN_1]]</span>
-                        <span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-300 text-[10px] font-mono border border-rose-500/20">[[CREDIT_CARD_1]]</span>
-                        <span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-300 text-[10px] font-mono border border-rose-500/20">[[URL_WITH_AUTH]]</span>
-                    </div>
-                </div>
-
-                <div class="p-4 rounded-2xl bg-surface-950/80 border border-slate-800/80 space-y-2">
-                    <div class="flex items-center justify-between text-xs">
-                        <span class="font-bold text-amber-400 uppercase tracking-wider font-mono">2. Strukturierte PII</span>
-                        <i class="fa-solid fa-at text-amber-500"></i>
-                    </div>
-                    <h4 class="font-bold text-white text-sm">Kontakt & Netzwerk</h4>
-                    <p class="text-xs text-slate-400 leading-relaxed">
-                        Regex-Erkennung für E-Mails, Mobil- und Festnetznummern (deutsche und internationale Formate) sowie IPv4-Netzwerkadressen.
-                    </p>
-                    <div class="pt-2 flex flex-wrap gap-1">
-                        <span class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 text-[10px] font-mono border border-amber-500/20">[[EMAIL_1]]</span>
-                        <span class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 text-[10px] font-mono border border-amber-500/20">[[PHONE_DE_1]]</span>
-                        <span class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 text-[10px] font-mono border border-amber-500/20">[[IPV4_1]]</span>
-                    </div>
-                </div>
-
-                <div class="p-4 rounded-2xl bg-surface-950/80 border border-slate-800/80 space-y-2">
-                    <div class="flex items-center justify-between text-xs">
-                        <span class="font-bold text-indigo-400 uppercase tracking-wider font-mono">3. spaCy NER Engine</span>
-                        <i class="fa-solid fa-brain text-indigo-500"></i>
-                    </div>
-                    <h4 class="font-bold text-white text-sm">Namen, Orte & Firmen</h4>
-                    <p class="text-xs text-slate-400 leading-relaxed">
-                        Sprachmodell <code>de_core_news_sm</code> identifiziert Personen, Städte, Länder und Organisationen mit Stopword-Filterung gegen False Positives.
-                    </p>
-                    <div class="pt-2 flex flex-wrap gap-1">
-                        <span class="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 text-[10px] font-mono border border-indigo-500/20">[[PER_1]]</span>
-                        <span class="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 text-[10px] font-mono border border-indigo-500/20">[[LOC_1]]</span>
-                        <span class="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 text-[10px] font-mono border border-indigo-500/20">[[ORG_1]]</span>
-                    </div>
-                </div>
-
-                <div class="p-4 rounded-2xl bg-surface-950/80 border border-slate-800/80 space-y-2">
-                    <div class="flex items-center justify-between text-xs">
-                        <span class="font-bold text-emerald-400 uppercase tracking-wider font-mono">4. Live-Stream Buffer</span>
-                        <i class="fa-solid fa-water text-emerald-500"></i>
-                    </div>
-                    <h4 class="font-bold text-white text-sm">Streaming & Reasoning</h4>
-                    <p class="text-xs text-slate-400 leading-relaxed">
-                        Puffert Token-Bruchstücke im SSE-Stream ab, expandiert Klartext nahtlos und rehydriert bei Bedarf auch den internen Denkprozess (<code>&lt;think&gt;</code>).
-                    </p>
-                    <div class="pt-2 flex flex-wrap gap-1">
-                        <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 text-[10px] font-mono border border-emerald-500/20">stream(event)</span>
-                        <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 text-[10px] font-mono border border-emerald-500/20">deanonymize_reasoning</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Valves Konfiguration & Audit Details -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-2">
-                <div class="p-4 rounded-2xl bg-surface-950 border border-slate-800/80 space-y-3">
-                    <div class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
-                        <span>⚙️ Konfigurierbare Valves (Open WebUI Einstellungen)</span>
-                        <span class="text-emerald-400 text-[11px]">Workspace &rarr; Functions</span>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs font-mono">
-                            <thead class="text-slate-500 border-b border-slate-800">
-                                <tr>
-                                    <th class="pb-1.5">Valve / Parameter</th>
-                                    <th class="pb-1.5">Default</th>
-                                    <th class="pb-1.5">Zweck</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-800/50 text-slate-300">
-                                <tr>
-                                    <td class="py-1.5 text-emerald-400">enable_regex</td>
-                                    <td>true</td>
-                                    <td class="text-slate-400">IBAN, Mail, Phone, IPv4 aktiv</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-1.5 text-indigo-400">enable_ner</td>
-                                    <td>true</td>
-                                    <td class="text-slate-400">spaCy Modell de_core_news_sm</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-1.5 text-purple-400">deanonymize_output</td>
-                                    <td>true</td>
-                                    <td class="text-slate-400">Originaldaten im Outlet füllen</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-1.5 text-cyan-400">deanonymize_reasoning</td>
-                                    <td>true</td>
-                                    <td class="text-slate-400">Denkblock (Thought) lesbar machen</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-1.5 text-slate-300">extra_patterns</td>
-                                    <td>""</td>
-                                    <td class="text-slate-400">Eigene Regex (z.B. MITARBEITER|M\d{6})</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="p-4 rounded-2xl bg-surface-950 border border-slate-800/80 space-y-3">
-                    <div class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
-                        <span>📋 Revisionssicheres Audit-Log (Info-Icon ℹ️)</span>
-                        <span class="text-indigo-400 text-[11px]">metadata.pii_audit</span>
-                    </div>
-                    <p class="text-xs text-slate-400 leading-relaxed">
-                        Zu jeder Nachricht wird in den Chat-Metadaten exakt hinterlegt, welche Daten transformiert wurden. Ein Klick auf das ℹ️-Symbol der Nachricht zeigt Transparenz:
-                    </p>
-                    <div class="p-3 bg-surface-900 rounded-xl border border-slate-800 font-mono text-[11px] text-slate-300 space-y-1">
-                        <div><span class="text-slate-500">Status:</span> <strong class="text-emerald-400">Vollständig deanonymisiert ✓</strong></div>
-                        <div><span class="text-slate-500">Mapping-Cache:</span> <code>body["metadata"]["pii_map"]</code></div>
-                        <div><span class="text-slate-500">Sicherheitsprüfung:</span> Lokale GPU bei kritischen Feldern</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 3. Interaktiver Prompt- & Routing-Simulator -->
+        <!-- Live Interactive Simulator / Sandbox -->
         <section class="glass-card p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h2 class="text-2xl font-bold font-display text-white flex items-center gap-2">
                         <i class="fa-solid fa-vial-circle-check text-indigo-400"></i>
-                        3. Interaktiver Prompt- & Routing-Simulator
+                        2. Interaktiver Prompt- & Routing-Simulator
                     </h2>
-                    <p class="text-slate-400 text-sm">Teste live, wie das zweistufige System deine Eingabe anonymisiert, wohin es geroutet wird und wie die Antwort aussieht.</p>
+                    <p class="text-slate-400 text-sm">Probiere aus, wie das Gateway auf deine Eingaben reagiert und wohin es geroutet wird.</p>
                 </div>
                 <!-- Preset Buttons -->
                 <div class="flex flex-wrap gap-2">
                     <button onclick="setSample('iban')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
                         🏦 IBAN / Finanzen
-                    </button>
-                    <button onclick="setSample('employee')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
-                        👤 Mitarbeiter-Daten
-                    </button>
-                    <button onclick="setSample('contract')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
-                        🏢 Vertrag & Ort
-                    </button>
-                    <button onclick="setSample('itlog')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
-                        🖥️ IT-Log (IP & Auth)
                     </button>
                     <button onclick="setSample('math')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
                         🧠 Mathe / Beweis (#r1)
@@ -398,6 +233,12 @@
                     </button>
                     <button onclick="setSample('cloud_arch')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
                         ☁️ Cloud Architektur
+                    </button>
+                    <button onclick="setSample('openai')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
+                        🌐 OpenAI (#gpt)
+                    </button>
+                    <button onclick="setSample('flash')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
+                        ⚡ Flash (#flash)
                     </button>
                     <button onclick="setSample('heretic')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
                         🔓 Unzensiert
@@ -409,26 +250,23 @@
             <div class="space-y-2">
                 <label class="text-xs font-mono text-slate-400 uppercase tracking-wider flex items-center justify-between">
                     <span>Eingabe-Prompt testen:</span>
-                    <span id="char-counter" class="text-slate-500 font-mono">0 Wörter</span>
+                    <span id="char-counter" class="text-slate-500">0 Wörter</span>
                 </label>
                 <div class="relative">
-                    <textarea id="prompt-input" rows="3" oninput="simulateRouting()" class="w-full bg-surface-950 border border-slate-800 rounded-2xl p-4 text-sm text-white focus:outline-none focus:border-indigo-500 font-sans transition-all placeholder:text-slate-600" placeholder="Schreibe einen beliebigen Prompt (z.B. mit IBAN, Code, Namen oder #tags)...">Erstelle eine Abrechnungsfunktion für Anna Schmidt mit IBAN DE89 3704 0044 0532 0130 00 und E-Mail anna.schmidt@firma.de.</textarea>
+                    <textarea id="prompt-input" rows="3" oninput="simulateRouting()" class="w-full bg-surface-950 border border-slate-800 rounded-2xl p-4 text-sm text-white focus:outline-none focus:border-indigo-500 font-sans transition-all placeholder:text-slate-600" placeholder="Schreibe einen beliebigen Prompt (z.B. mit IBAN, Code, Namen oder #tags)...">Erstelle eine Abrechnungsfunktion für Anna Schmidt mit IBAN DE89 3704 0044 0532 0130 00.</textarea>
                 </div>
             </div>
 
             <!-- Simulation Result Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                <!-- Box 1: PII Detection & LLM Input View -->
+                <!-- Box 1: PII Detection -->
                 <div class="p-5 rounded-2xl bg-surface-950/80 border border-slate-800/80 space-y-3">
                     <div class="text-xs font-mono uppercase text-slate-400 flex items-center justify-between">
-                        <span>1. PII-Filter (Inlet)</span>
+                        <span>1. PII-Erkennung</span>
                         <span id="sim-pii-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Kritisch</span>
                     </div>
-                    <div>
-                        <span class="text-[11px] text-slate-400 font-semibold block mb-1">Was das externe LLM sieht (Geschwärzt):</span>
-                        <div id="sim-masked-preview" class="p-3 bg-surface-900 rounded-xl border border-slate-800/80 text-xs font-mono text-emerald-300 leading-relaxed break-words">
-                            <!-- Populated by JS -->
-                        </div>
+                    <div id="sim-pii-list" class="space-y-1.5 text-xs">
+                        <!-- Populated by JS -->
                     </div>
                     <div id="sim-pii-gate" class="text-[11px] text-emerald-400 pt-2 border-t border-slate-800/60 font-mono">
                         <!-- Populated by JS -->
@@ -438,35 +276,29 @@
                 <!-- Box 2: Model Target -->
                 <div class="p-5 rounded-2xl bg-surface-950/80 border border-slate-800/80 space-y-3">
                     <div class="text-xs font-mono uppercase text-slate-400 flex items-center justify-between">
-                        <span>2. Routing-Gateway</span>
+                        <span>2. Routing-Ziel</span>
                         <span id="sim-target-node" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Workstation</span>
                     </div>
                     <div>
                         <div id="sim-model-name" class="text-base font-bold font-display text-white">Qwen 2.5 Coder 14B</div>
-                        <div id="sim-model-id" class="text-xs font-mono text-cyan-400 mt-0.5 truncate">LMStudio.qwen2.5-coder-14b-instruct</div>
+                        <div id="sim-model-id" class="text-xs font-mono text-cyan-400 mt-0.5">LMStudio.qwen2.5-coder-14b-instruct</div>
                     </div>
                     <div class="pt-2 border-t border-slate-800/60 flex items-center justify-between text-xs font-mono">
                         <span class="text-slate-400">Temp: <strong id="sim-temp" class="text-white">0.20</strong></span>
                         <span class="text-slate-400">Top-P: <strong id="sim-topp" class="text-white">0.85</strong></span>
                         <span class="text-slate-400">Credits: <strong id="sim-credits" class="text-emerald-400">0</strong></span>
                     </div>
-                    <p id="sim-reason" class="text-xs text-slate-400 leading-relaxed pt-1">
-                        Datenschutz-Sperre: Kritische PII erkannt.
-                    </p>
                 </div>
 
-                <!-- Box 3: Restored Output (Outlet) -->
+                <!-- Box 3: Reason & Decision -->
                 <div class="p-5 rounded-2xl bg-surface-950/80 border border-slate-800/80 space-y-3">
                     <div class="text-xs font-mono uppercase text-slate-400 flex items-center justify-between">
-                        <span>3. PII-Outlet (Re-Hydriert)</span>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">100% Wiederhergestellt</span>
+                        <span>3. Begründung</span>
+                        <span class="text-slate-500"><i class="fa-solid fa-circle-info"></i></span>
                     </div>
-                    <div>
-                        <span class="text-[11px] text-slate-400 font-semibold block mb-1">Was der Benutzer zurückerhält:</span>
-                        <div id="sim-restored-preview" class="p-3 bg-surface-900 rounded-xl border border-slate-800/80 text-xs font-sans text-slate-200 leading-relaxed break-words">
-                            <!-- Populated by JS -->
-                        </div>
-                    </div>
+                    <p id="sim-reason" class="text-xs text-slate-300 leading-relaxed">
+                        Datenschutz-Sperre: Kritische PII (IBAN) erkannt. Cloud-Call blockiert, Ausführung zwingend auf lokaler Workstation.
+                    </p>
                     <div class="pt-2 border-t border-slate-800/60 text-[11px] text-slate-400 font-mono">
                         Audit-Key: <code class="text-indigo-400">router_decision</code> &bull; <code class="text-purple-400">pii_audit</code>
                     </div>
@@ -485,9 +317,9 @@
             </details>
         </section>
 
-        <!-- 4. Vollständiger Modell-Katalog -->
+        <!-- Model Catalog Grid -->
         <section class="space-y-4">
-            <h2 class="text-2xl font-bold font-display text-white">4. Vollständiger Modell-Katalog</h2>
+            <h2 class="text-2xl font-bold font-display text-white">3. Vollständiger Modell-Katalog</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- DeepSeek-R1 -->
                 <div class="glass-card glass-card-hover p-5 rounded-2xl flex flex-col justify-between transition-all">
@@ -571,9 +403,9 @@
             </div>
 
             <!-- Cloud Tier Row -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
                 <div class="glass-card glass-card-hover p-5 rounded-2xl border-l-4 border-l-indigo-500">
-                    <span class="px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 font-mono font-semibold text-xs border border-indigo-500/20">Cloud Tier</span>
+                    <span class="px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 font-mono font-semibold text-xs border border-indigo-500/20">Cloud High-End</span>
                     <h3 class="font-display font-bold text-white text-lg mt-2">🚀 Claude Sonnet 4.5</h3>
                     <p class="text-xs font-mono text-slate-400 truncate">openrouter.anthropic/claude-sonnet-4.5</p>
                     <p class="text-xs text-slate-300 mt-2">Große Refactorings, Microservices und Prompts &gt; 120 Wörter.</p>
@@ -584,20 +416,26 @@
                     <p class="text-xs font-mono text-slate-400 truncate">openrouter.anthropic/claude-opus-4.6</p>
                     <p class="text-xs text-slate-300 mt-2">Tiefste philosophische Synthesen, Mammut-Texte und Strategie.</p>
                 </div>
+                <div class="glass-card glass-card-hover p-5 rounded-2xl border-l-4 border-l-emerald-500">
+                    <span class="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-mono font-semibold text-xs border border-emerald-500/20">OpenAI Flagship</span>
+                    <h3 class="font-display font-bold text-white text-lg mt-2">🌐 OpenAI GPT-5.2</h3>
+                    <p class="text-xs font-mono text-slate-400 truncate">openrouter.openai/gpt-5.2</p>
+                    <p class="text-xs text-slate-300 mt-2">Data Science, Wahrscheinlichkeiten & GPT-Workflows (#gpt).</p>
+                </div>
                 <div class="glass-card glass-card-hover p-5 rounded-2xl border-l-4 border-l-blue-500">
                     <span class="px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 font-mono font-semibold text-xs border border-blue-500/20">Cloud High-Speed</span>
                     <h3 class="font-display font-bold text-white text-lg mt-2">⚡ Gemini 3 Flash</h3>
                     <p class="text-xs font-mono text-slate-400 truncate">openrouter.google/gemini-3-flash-preview</p>
-                    <p class="text-xs text-slate-300 mt-2">Ultrakurze Latenzen, allgemeine Websynthesen und Quick Checks.</p>
+                    <p class="text-xs text-slate-300 mt-2">Ultrakurze Latenzen, Websynthesen und Quick Checks (#flash).</p>
                 </div>
             </div>
         </section>
 
-        <!-- 5. Kurzbefehle & Tags für deinen Chat -->
+        <!-- Command Cheatsheet -->
         <section class="glass-card p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-4">
             <h2 class="text-2xl font-bold font-display text-white flex items-center gap-2">
                 <i class="fa-solid fa-keyboard text-emerald-400"></i>
-                5. Kurzbefehle & Tags für deinen Chat
+                4. Kurzbefehle & Tags für deinen Chat
             </h2>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
                 <div class="p-3.5 rounded-xl bg-surface-950 border border-slate-800/80 flex items-center justify-between">
@@ -617,11 +455,19 @@
                     <button onclick="navigator.clipboard.writeText('#heretic ')" class="text-slate-500 hover:text-white"><i class="fa-regular fa-copy"></i></button>
                 </div>
                 <div class="p-3.5 rounded-xl bg-surface-950 border border-slate-800/80 flex items-center justify-between">
-                    <div><code class="text-purple-400 font-mono font-bold text-sm">#opus</code><div class="text-[11px] text-slate-400 mt-0.5">Claude Opus 4.6</div></div>
+                    <div><code class="text-purple-400 font-mono font-bold text-sm">#opus</code><div class="text-[11px] text-slate-400 mt-0.5">Claude Opus</div></div>
                     <button onclick="navigator.clipboard.writeText('#opus ')" class="text-slate-500 hover:text-white"><i class="fa-regular fa-copy"></i></button>
                 </div>
                 <div class="p-3.5 rounded-xl bg-surface-950 border border-slate-800/80 flex items-center justify-between">
-                    <div><code class="text-sky-400 font-mono font-bold text-sm">#flash</code><div class="text-[11px] text-slate-400 mt-0.5">Gemini 3 Flash</div></div>
+                    <div><code class="text-blue-400 font-mono font-bold text-sm">#sonnet</code><div class="text-[11px] text-slate-400 mt-0.5">Claude Sonnet</div></div>
+                    <button onclick="navigator.clipboard.writeText('#sonnet ')" class="text-slate-500 hover:text-white"><i class="fa-regular fa-copy"></i></button>
+                </div>
+                <div class="p-3.5 rounded-xl bg-surface-950 border border-slate-800/80 flex items-center justify-between">
+                    <div><code class="text-emerald-400 font-mono font-bold text-sm">#gpt</code><div class="text-[11px] text-slate-400 mt-0.5">OpenAI GPT-5.2</div></div>
+                    <button onclick="navigator.clipboard.writeText('#gpt ')" class="text-slate-500 hover:text-white"><i class="fa-regular fa-copy"></i></button>
+                </div>
+                <div class="p-3.5 rounded-xl bg-surface-950 border border-slate-800/80 flex items-center justify-between">
+                    <div><code class="text-cyan-300 font-mono font-bold text-sm">#flash</code><div class="text-[11px] text-slate-400 mt-0.5">Gemini 3 Flash</div></div>
                     <button onclick="navigator.clipboard.writeText('#flash ')" class="text-slate-500 hover:text-white"><i class="fa-regular fa-copy"></i></button>
                 </div>
                 <div class="p-3.5 rounded-xl bg-surface-950 border border-slate-800/80 flex items-center justify-between">
@@ -635,136 +481,22 @@
             </div>
         </section>
 
-        <!-- 6. Tips & Performance Card -->
-        <section class="glass-card p-6 rounded-3xl border border-slate-800/80 space-y-3">
-            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                <i class="fa-solid fa-lightbulb text-amber-400"></i>
-                6. Performance & Inferenz-Tipps für den Alltag
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-slate-400">
-                <div class="p-3 bg-surface-950 rounded-xl border border-slate-800/60">
-                    <span class="font-semibold text-white">🔄 Modell-Synchronisation:</span><br>
-                    Das Gateway meldet Umschaltungen sofort via <code>selected_model_id</code> an den Browser, sodass Tokens synchron in die richtige Chat-Sprechblase fließen.
-                </div>
-                <div class="p-3 bg-surface-950 rounded-xl border border-slate-800/60">
-                    <span class="font-semibold text-white">⏱️ VRAM Cold-Starts:</span><br>
-                    Beim ersten Aufruf eines ungeladenen Modells benötigt LM Studio ca. 10–15 Sek. für den VRAM-Transfer von der SSD. Danach antwortet es ohne Verzögerung.
-                </div>
-                <div class="p-3 bg-surface-950 rounded-xl border border-slate-800/60">
-                    <span class="font-semibold text-white">🧠 Chain-of-Thought:</span><br>
-                    Modelle wie R1 oder Gemma 4 generieren 400–800 interne Denk-Tokens (<code>reasoning_content</code>), bevor der sichtbare Text beginnt. Bitte dem Tab 20–30 Sek. Zeit lassen!
-                </div>
-            </div>
-        </section>
-
     </main>
 
-    <!-- Modal für Code-Inspektor -->
-    <div id="code-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-surface-900 border border-slate-800 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
-            <!-- Modal Header -->
-            <div class="p-5 border-b border-slate-800 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="flex gap-2">
-                        <button id="modal-tab-pii" onclick="switchModalTab('pii')" class="px-3 py-1.5 rounded-xl font-mono text-xs font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                            🛡️ pii_filter.py
-                        </button>
-                        <button id="modal-tab-router" onclick="switchModalTab('router')" class="px-3 py-1.5 rounded-xl font-mono text-xs font-bold transition-all text-slate-400 hover:text-white">
-                            🔀 model_router.py
-                        </button>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="copyModalCode()" class="px-3 py-1.5 rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 text-xs font-mono border border-slate-700 transition-all flex items-center gap-1.5">
-                        <i class="fa-regular fa-copy"></i>
-                        <span id="copy-btn-text">Code kopieren</span>
-                    </button>
-                    <a id="modal-download-link" href="pii_filter.py" download class="px-3 py-1.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 text-xs font-mono border border-indigo-500/30 transition-all flex items-center gap-1.5">
-                        <i class="fa-solid fa-download"></i> .py Download
-                    </a>
-                    <button onclick="closeModal()" class="w-8 h-8 rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-            </div>
-            <!-- Modal Body -->
-            <div class="p-4 flex-1 overflow-auto">
-                <pre id="modal-code-display" class="font-mono text-xs text-slate-300 leading-relaxed bg-surface-950 p-4 rounded-2xl border border-slate-800/80 overflow-x-auto select-all"></pre>
-            </div>
-        </div>
-    </div>
-
     <!-- Footer -->
-    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 text-center text-xs text-slate-500 space-y-2 border-t border-slate-900 pt-8">
-        <p>Open WebUI &bull; Intelligent Hybrid Model Router & Privacy Gate &bull; Minisforum + LM Studio Workstation</p>
-        <p>Entwickelt nach dem Vorbild von Perplexity Computer Hybrid Architecture.</p>
+    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 border-t border-slate-900 text-center text-xs text-slate-500 space-y-2">
+        <p>Hybrid Model Router &bull; Open WebUI v0.5+ &bull; Minisforum UM690 &bull; Workstation Keller</p>
     </footer>
 
-    <!-- Interactive Scripts -->
+    <!-- Interactive Script -->
     <script>
-        const PII_CODE = "\"\"\"\ntitle: PII Redaction Filter (Two-Layer, Reversible)\nauthor: walte\nauthor_url: https://github.com/walte\nversion: 0.1.0\nrequired_open_webui_version: 0.5.0\nrequirements: spacy==3.8.14\nlicense: MIT\n\nZweilagiger PII-Filter f\u00fcr Open WebUI.\n\nPhase 1 (inlet):  User-Input -> PII-Erkennung (Regex + spaCy NER) -> geschw\u00e4rzter\n                  Text + Mapping in body['metadata']['pii_map'] -> an LLM.\n\nPhase 2 (outlet): LLM-Output -> Mapping aus Metadata -> Platzhalter durch\n                  Originale ersetzen -> Antwort zur\u00fcck an UI.\n\nDas Mapping wird in `body['metadata']['pii_map']` persistiert. Open WebUI gibt\ndiese Metadata beim Outlet-Aufruf zur\u00fcck, sodass beide Phasen im selben Request-\nLebenszyklus auf dasselbe Mapping zugreifen.\n\nInstallation\n------------\n1. spaCy + deutsches Modell im Open-WebUI-Container installieren\n   (im Docker-Setup via Dockerfile oder manuell):\n       pip install spacy==3.8.14\n       python -m spacy download de_core_news_sm\n\n2. Diesen Code in Open WebUI unter\n   \"Workspace -> Functions -> +\" als neuen Filter einf\u00fcgen.\n\n3. Filter aktivieren:\n       - global unter \"Admin Panel -> Settings -> Interface\"\n       - oder pro Modell unter \"Workspace -> Models -> Edit -> Filters\"\n\"\"\"\n\nfrom __future__ import annotations\n\nimport json\nimport logging\nimport re\nimport secrets\nfrom collections import defaultdict\nfrom typing import Any, Callable, Optional\n\nfrom pydantic import BaseModel, Field\n\n# spaCy ist ein optionaler, aber stark empfohlener Baustein. Wir laden das\n# Modell erst beim ersten inlet-Aufruf, damit ein fehlendes Modell die\n# Open-WebUI-Instanz nicht beim Start blockiert.\n_NLP = None\n_NLP_LOAD_ERROR: Optional[Exception] = None\n\nlog = logging.getLogger(__name__)\n\n\n# ---------------------------------------------------------------------------\n# Konfiguration (Valves)\n# ---------------------------------------------------------------------------\n\n\nclass Valves(BaseModel):\n    \"\"\"Operator-Konfiguration f\u00fcr den PII-Filter.\"\"\"\n\n    priority: int = Field(\n        default=0,\n        description=\"Filter-Reihenfolge. Niedrigere Werte laufen fr\u00fcher. \"\n        \"Dieser Filter sollte fr\u00fch laufen (z.B. priority=0).\",\n    )\n\n    # --- Schalter ---\n    enable_regex: bool = Field(\n        default=True,\n        description=\"Strukturierte PII (Telefon, E-Mail, IBAN, ...) per Regex schw\u00e4rzen.\",\n    )\n    enable_ner: bool = Field(\n        default=True,\n        description=\"Unstrukturierte PII (Personen, Orte, Organisationen, L\u00e4nder) \"\n        \"per spaCy NER schw\u00e4rzen.\",\n    )\n    deanonymize_output: bool = Field(\n        default=True,\n        description=\"Im outlet die Platzhalter wieder durch Originale ersetzen.\",\n    )\n    deanonymize_reasoning: bool = Field(\n        default=True,\n        description=\"Den Denkprozess (Reasoning) des Modells ebenfalls wieder mit den Originaldaten bef\u00fcllen. Wenn deaktiviert, bleiben Platzhalter im Denkprozess sichtbar.\",\n    )\n\n    # --- spaCy ---\n    ner_model: str = Field(\n        default=\"de_core_news_sm\",\n        description=\"spaCy-Modellname. F\u00fcr Deutsch: de_core_news_sm / de_core_news_md. \"\n        \"F\u00fcr Englisch: en_core_web_sm.\",\n    )\n    ner_labels: list[str] = Field(\n        default_factory=lambda: [\"PER\", \"PERSON\", \"LOC\", \"GPE\", \"ORG\", \"MISC\"],\n        description=\"spaCy-Labels, die geschw\u00e4rzt werden sollen. \"\n        \"de_core_news_sm liefert: PER, LOC, ORG, MISC. \"\n        \"en_core_web_sm liefert: PERSON, GPE, LOC, ORG.\",\n    )\n    ner_min_score: float = Field(\n        default=0.0,\n        description=\"Minimaler Score (0-1), ab dem eine NER-Entity \u00fcbernommen wird. \"\n        \"de_core_news_sm liefert keinen Score pro Entity -> Wert ignorieren.\",\n    )\n    ner_min_token_len: int = Field(\n        default=3,\n        description=\"Minimale Zeichenl\u00e4nge eines NER-Entity-Bestandteils, \"\n        \"damit W\u00f6rter wie 'Bitte', 'Mein' nicht als Person/Ort erkannt werden. \"\n        \"Bei 0 deaktiviert.\",\n    )\n\n    # --- Regex-Sets ---\n    extra_patterns: str = Field(\n        default=\"\",\n        description=\"Optionale zus\u00e4tzliche Regex-Patterns (eine pro Zeile, \"\n        \"Format: NAME|PATTERN, z.B. MITARBEITERID|M\\\\d{6}).\",\n    )\n\n    # --- Token-Format ---\n    token_format: str = Field(\n        default=\"[[{label}_{n}]]\",\n        description=\"Format-String f\u00fcr Platzhalter. {label} und {n} sind Platzhalter.\",\n    )\n    keep_first_letter: bool = Field(\n        default=False,\n        description=\"Optional: Ersten Buchstaben im geschw\u00e4rzten Token erhalten \"\n        \"(f\u00fcr leichtes Debugging). Standard: aus.\",\n    )\n\n\nclass UserValves(BaseModel):\n    \"\"\"User-spezifische Overrides (pro Benutzer:in via UI setzbar).\"\"\"\n\n    enabled: bool = Field(\n        default=True,\n        description=\"PII-Redaktion f\u00fcr diese:n Nutzer:in aktivieren.\",\n    )\n    deanonymize_for_me: bool = Field(\n        default=True,\n        description=\"Antwort wieder mit Originalen f\u00fcllen. F\u00fcr Trainer/Demos \"\n        \"kann das deaktiviert werden, um nur geschw\u00e4rzte Outputs zu sehen.\",\n    )\n\n\n# ---------------------------------------------------------------------------\n# Regex-Pattern-Bibliothek\n# ---------------------------------------------------------------------------\n\n\n# Bewusst konservativ: keine False-Positives auf Hausnummern, Postleitzahlen\n# ohne Kontext, Daten ohne Jahr, usw. Anpassbar \u00fcber Valves.extra_patterns.\nDEFAULT_REGEX_PATTERNS: dict[str, str] = {\n    \"EMAIL\": r\"\\b[A-Za-z0-9._%+\\-]+@[A-Za-z0-9.\\-]+\\.[A-Za-z]{2,}\\b\",\n    \"PHONE_DE\": (\n        # Internationale Vorwahl + nationale Varianten (Festnetz + Mobil)\n        r\"(?:\\+49|0049|0)[\\s\\-]?\\(?\\d{2,5}\\)?[\\s\\-]?\\d{3,5}[\\s\\-]?\\d{3,5}\"\n    ),\n    \"PHONE_INTL\": r\"\\+\\d{1,3}[\\s\\-]?\\(?\\d{1,4}\\)?[\\s\\-]?\\d{2,4}[\\s\\-]?\\d{2,4}[\\s\\-]?\\d{0,4}\",\n    \"IBAN\": r\"\\b[A-Z]{2}\\d{2}[\\s]?(?:[A-Z0-9]{4}[\\s]?){2,7}[A-Z0-9]{1,4}\\b\",\n    \"CREDIT_CARD\": r\"\\b(?:\\d[ \\-]?){13,19}\\b\",\n    \"IPV4\": r\"\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b\",\n    \"URL_WITH_AUTH\": r\"https?://[^\\s]+:[^\\s]+@[^\\s]+\",  # URLs mit eingebetteten Credentials\n    \"SSN_US\": r\"\\b\\d{3}-\\d{2}-\\d{4}\\b\",\n    \"PASSPORT_DE\": r\"\\b[A-ZCFGHIJKLMNOPQRSTUVWXYZ0-9]{9}\\b(?=.*Reisepass|Passport)\",  # Kontext-abh\u00e4ngig, schwach\n    \"TAX_ID_DE\": r\"\\b\\d{2}\\s?\\d{3}\\s?\\d{3}\\s?\\d{3}\\b\",  # sehr schwach, daher unten deaktiviert\n}\n\n\n# Labels, die wir per Default NICHT maskieren, weil False-Positive-Risiko zu hoch.\nDISABLED_BY_DEFAULT: set[str] = {\"TAX_ID_DE\", \"PASSPORT_DE\"}\n\n\n# Funktions- und F\u00fcllw\u00f6rter, die spaCy regelm\u00e4\u00dfig f\u00e4lschlich als Person/Ort\n# markiert. Wer eine sehr strikte Redaktion braucht, kann diese Liste via\n# Valves-Override erg\u00e4nzen.\nNER_STOPWORDS: set[str] = {\n    \"bitte\", \"danke\", \"gru\u00df\", \"hallo\", \"liebe\", \"lieber\",\n    \"tag\", \"monat\", \"jahr\", \"tagen\", \"monaten\", \"jahren\",\n    \"montag\", \"dienstag\", \"mittwoch\", \"donnerstag\", \"freitag\", \"samstag\", \"sonntag\",\n    \"januar\", \"februar\", \"m\u00e4rz\", \"april\", \"mai\", \"juni\", \"juli\",\n    \"august\", \"september\", \"oktober\", \"november\", \"dezember\",\n    \"morgen\", \"mittag\", \"abend\", \"nacht\",\n    \"oben\", \"unten\", \"links\", \"rechts\",\n    \"ende\", \"anfang\", \"start\", \"stopp\",\n    \"sehr\", \"geehrte\", \"geehrter\", \"geehrtes\",\n    \"tel\", \"fax\", \"fon\", \"phone\", \"mail\", \"email\", \"mobil\", \"handy\", \"web\", \"info\",\n}\n\n\ndef _compile_patterns(valves: Valves) -> list[tuple[str, re.Pattern]]:\n    \"\"\"Gibt eine Liste (Label, kompilierte Regex) zur\u00fcck.\"\"\"\n\n    patterns: dict[str, str] = {**DEFAULT_REGEX_PATTERNS}\n    for k in DISABLED_BY_DEFAULT:\n        patterns.pop(k, None)\n\n    # Benutzerdefiniert: \"NAME|PATTERN\" pro Zeile\n    if valves.extra_patterns.strip():\n        for line in valves.extra_patterns.splitlines():\n            line = line.strip()\n            if not line or \"|\" not in line:\n                continue\n            name, pat = line.split(\"|\", 1)\n            patterns[name.strip().upper()] = pat.strip()\n\n    compiled: list[tuple[str, re.Pattern]] = []\n    for label, pat in patterns.items():\n        try:\n            compiled.append((label, re.compile(pat)))\n        except re.error as exc:\n            log.warning(f\"[PII] Ung\u00fcltiges Pattern f\u00fcr {label}: {exc}\")\n\n    # Reihenfolge ist wichtig: spezifischere Patterns zuerst, damit z.B. eine\n    # IBAN nicht teilweise von PHONE_DE aufgefressen wird. Wir priorisieren\n    # per Label, danach nach Pattern-L\u00e4nge (innerhalb gleicher Priorit\u00e4t).\n    priority = {\n        \"IBAN\": 0,\n        \"CREDIT_CARD\": 1,\n        \"EMAIL\": 2,\n        \"SSN_US\": 3,\n        \"URL_WITH_AUTH\": 4,\n        \"PHONE_DE\": 5,\n        \"PHONE_INTL\": 6,\n        \"IPV4\": 7,\n    }\n    compiled.sort(key=lambda lp: (priority.get(lp[0], 50), -len(lp[1].pattern)))\n    return compiled\n\n\n# ---------------------------------------------------------------------------\n# spaCy-Wrapper\n# ---------------------------------------------------------------------------\n\n\ndef _get_nlp(valves: Valves):\n    \"\"\"Lazy-load spaCy-Modell mit automatischem Download falls noch nicht vorhanden.\"\"\"\n\n    global _NLP, _NLP_LOAD_ERROR\n\n    if not valves.enable_ner:\n        return None\n\n    if _NLP is not None:\n        return _NLP\n\n    try:\n        import spacy\n\n        try:\n            _NLP = spacy.load(valves.ner_model)\n        except Exception:\n            log.info(f\"[PII] spaCy-Modell '{valves.ner_model}' nicht lokal gefunden, lade herunter...\")\n            try:\n                import spacy.cli\n\n                spacy.cli.download(valves.ner_model)\n            except Exception as dl_err:\n                log.info(f\"[PII] spacy.cli.download fehlgeschlagen ({dl_err}), versuche direkten pip install...\")\n                import subprocess\n                import sys\n\n                model_name = valves.ner_model\n                wheel_url = f\"https://github.com/explosion/spacy-models/releases/download/{model_name}-3.8.0/{model_name}-3.8.0-py3-none-any.whl\"\n                subprocess.check_call([sys.executable, \"-m\", \"pip\", \"install\", wheel_url])\n\n            _NLP = spacy.load(valves.ner_model)\n\n        _NLP_LOAD_ERROR = None\n        log.info(f\"[PII] spaCy-Modell geladen: {valves.ner_model}\")\n    except Exception as exc:  # noqa: BLE001\n        _NLP_LOAD_ERROR = exc\n        log.warning(\n            f\"[PII] spaCy-Modell '{valves.ner_model}' konnte nicht geladen \"\n            f\"werden ({exc}). NER wird \u00fcbersprungen.\"\n        )\n        return None\n\n    return _NLP\n\n\n# ---------------------------------------------------------------------------\n# Mapping-Logik\n# ---------------------------------------------------------------------------\n\n\ndef _next_token(valves: Valves, counters: dict[str, int], label: str) -> str:\n    \"\"\"Erzeugt das n\u00e4chste Platzhalter-Token f\u00fcr ein Label.\"\"\"\n\n    counters[label] = counters.get(label, 0) + 1\n    return valves.token_format.format(label=label, n=counters[label])\n\n\ndef _mask_value(valves: Valves, label: str, value: str) -> str:\n    \"\"\"Optional: ersten Buchstaben behalten, Rest schw\u00e4rzen.\"\"\"\n\n    if not valves.keep_first_letter or not value:\n        return \"\"\n    # nur sinnvoll bei sichtbaren Strings\n    first = value[0]\n    return f\"{first}***\"\n\n\n# ---------------------------------------------------------------------------\n# Kern: Redaction\n# ---------------------------------------------------------------------------\n\n\ndef _redact_text(\n    text: str,\n    valves: Valves,\n    mapping: dict[str, str],\n    counters: dict[str, int],\n) -> str:\n    \"\"\"Schw\u00e4rzt `text`. Erweitert `mapping` (token -> original) und `counters`.\"\"\"\n\n    if not text:\n        return text\n\n    # 1) Regex-Schicht\n    if valves.enable_regex:\n        for label, pat in _compile_patterns(valves):\n            def _sub(match: re.Match, _label: str = label) -> str:\n                original = match.group(0)\n                # Falls der gleiche Original-Wert bereits ersetzt wurde,\n                # dasselbe Token wiederverwenden (Konsistenz im selben Text).\n                for tok, orig in mapping.items():\n                    if orig == original:\n                        return tok\n                tok = _next_token(valves, counters, _label)\n                mapping[tok] = original\n                return tok\n\n            text = pat.sub(_sub, text)\n\n    # 2) NER-Schicht\n    if valves.enable_ner:\n        nlp = _get_nlp(valves)\n        if nlp is not None:\n            doc = nlp(text)\n\n            # Bereits durch Regex belegte Bereiche einsammeln. NER darf\n            # nicht in einen Token-String hineinschreiben (\"max\" als Teil\n            # von \"[[EMAIL_1]]@example.com\" o.\u00e4.).\n            occupied_spans: list[tuple[int, int]] = []\n            for m in re.finditer(r\"\\[\\[[A-Z0-9_]+_\\d+\\]\\]\", text):\n                occupied_spans.append((m.start(), m.end()))\n\n            def _overlaps(start: int, end: int) -> bool:\n                return any(not (end <= s or start >= e) for s, e in occupied_spans)\n\n            entities = sorted(\n                (\n                    ent\n                    for ent in doc.ents\n                    if ent.label_ in set(valves.ner_labels)\n                    and not _overlaps(ent.start_char, ent.end_char)\n                ),\n                key=lambda e: e.start_char,\n                reverse=True,\n            )\n\n            # Erst alle Spans auf dem aktuellen Text berechnen, dann\n            # rechts-nach-links ersetzen, damit sich die Offsets nicht\n            # durch bereits eingesetzte Tokens verschieben.\n            replacements: list[tuple[int, int, str, str]] = []\n            for ent in entities:\n                # spaCy gruppiert gelegentlich mehrere Titel-W\u00f6rter zu einer\n                # Entity (\"Anna Peter\", \"Dr. Max Mustermann\"). Damit jedes\n                # Vorkommen sein eigenes Token bekommt (und Wiederholungen\n                # konsistent bleiben), splitten wir die Entity in Whitespace-\n                # getrennte Bestandteile und mappen jeden einzeln.\n                parts = [p for p in ent.text.split() if p]\n                if not parts:\n                    continue\n                spans: list[tuple[int, int]] = []\n                cursor = ent.start_char\n                ok = True\n                for part in parts:\n                    idx = text.find(part, cursor)\n                    if idx == -1:\n                        ok = False\n                        break\n                    spans.append((idx, idx + len(part)))\n                    cursor = idx + len(part)\n                if not ok:\n                    spans = [(ent.start_char, ent.end_char)]\n                    parts = [ent.text]\n                # Sehr kurze Bestandteile (\"Bitte\", \"Mein\") sind meist\n                # Falsch-Positive und erzeugen wirre Tokens wie\n                # \"[[NAME_PER_1]] schick ...\". Per Default aussortieren.\n                if valves.ner_min_token_len > 0:\n                    filtered_spans_parts = [\n                        (s, p)\n                        for s, p in zip(spans, parts)\n                        if len(p) >= valves.ner_min_token_len\n                        and p.lower() not in NER_STOPWORDS\n                    ]\n                    if not filtered_spans_parts:\n                        continue\n                    spans = [s for s, _ in filtered_spans_parts]\n                    parts = [p for _, p in filtered_spans_parts]\n                for (start, end), part in zip(spans, parts):\n                    existing = next((t for t, o in mapping.items() if o == part), None)\n                    if existing:\n                        token = existing\n                    else:\n                        token = _next_token(valves, counters, f\"NAME_{ent.label_}\")\n                        mapping[token] = part\n                    replacements.append((start, end, token, part))\n\n            # rechts-nach-links einsetzen\n            replacements.sort(key=lambda r: r[0], reverse=True)\n            for start, end, token, _part in replacements:\n                text = text[:start] + token + text[end:]\n\n    return text\n\n\ndef _deanonymize_text(text: str, mapping: dict[str, str]) -> str:\n    \"\"\"Ersetzt Platzhalter zur\u00fcck durch die Originale.\"\"\"\n\n    if not text or not mapping:\n        return text\n\n    # L\u00e4ngste Tokens zuerst, damit [[NAME_PER_10]] vor [[NAME_PER_1]] greift.\n    for token in sorted(mapping.keys(), key=len, reverse=True):\n        text = text.replace(token, mapping[token])\n    return text\n\n\ndef _deanonymize_recursive(data: Any, mapping: dict[str, str], deanonymize_reasoning: bool = True) -> Any:\n    if isinstance(data, str):\n        return _deanonymize_text(data, mapping)\n    elif isinstance(data, dict):\n        if not deanonymize_reasoning and data.get(\"type\") == \"reasoning\":\n            return data\n        return {k: _deanonymize_recursive(v, mapping, deanonymize_reasoning) for k, v in data.items()}\n    elif isinstance(data, list):\n        return [_deanonymize_recursive(x, mapping, deanonymize_reasoning) for x in data]\n    return data\n\n\n# ---------------------------------------------------------------------------\n# Mapping-Persistenz im Request\n# ---------------------------------------------------------------------------\n\n\n# Wir speichern das Mapping in body['metadata']['pii_map']. Open WebUI gibt\n# beim outlet dieselbe body-Struktur zur\u00fcck, daher kommen wir so ohne externen\n# State aus. Bei Stream-Antworten wird zus\u00e4tzlich im Event-Payload ersetzt.\n\nPII_MAP_KEY = \"pii_map\"\nPII_COUNTERS_KEY = \"pii_counters\"\n\n\ndef _ensure_metadata(body: dict) -> dict:\n    md = body.get(\"metadata\")\n    if not isinstance(md, dict):\n        md = {}\n        body[\"metadata\"] = md\n    return md\n\n\ndef _load_mapping(\n    body: dict,\n    metadata: Optional[dict] = None,\n    __body__: Optional[dict] = None\n) -> tuple[dict[str, str], dict[str, int]]:\n    mapping = None\n    counters = None\n\n    if isinstance(metadata, dict):\n        mapping = metadata.get(PII_MAP_KEY)\n        counters = metadata.get(PII_COUNTERS_KEY)\n\n    if not isinstance(mapping, dict) and isinstance(body, dict):\n        # Fallback f\u00fcr Unit-Tests (__metadata_body__ im Event)\n        mb = body.get(\"__metadata_body__\")\n        if isinstance(mb, dict):\n            md = mb.get(\"metadata\")\n            if isinstance(md, dict):\n                mapping = md.get(PII_MAP_KEY)\n                counters = md.get(PII_COUNTERS_KEY)\n\n    if not isinstance(mapping, dict) and isinstance(body, dict):\n        md = body.get(\"metadata\")\n        if isinstance(md, dict):\n            mapping = md.get(PII_MAP_KEY)\n            counters = md.get(PII_COUNTERS_KEY)\n\n    if not isinstance(mapping, dict) and isinstance(__body__, dict):\n        md = __body__.get(\"metadata\")\n        if isinstance(md, dict):\n            mapping = md.get(PII_MAP_KEY)\n            counters = md.get(PII_COUNTERS_KEY)\n\n    if not isinstance(mapping, dict):\n        mapping = {}\n    if not isinstance(counters, dict):\n        counters = {}\n    return mapping, counters\n\n\ndef _store_mapping(body: dict, mapping: dict[str, str], counters: dict[str, int]) -> None:\n    md = _ensure_metadata(body)\n    md[PII_MAP_KEY] = mapping\n    md[PII_COUNTERS_KEY] = counters\n\n\n# ---------------------------------------------------------------------------\n# Open-WebUI Hooks\n# ---------------------------------------------------------------------------\n\n\ndef _iter_user_texts(body: dict) -> list[tuple[int, str]]:\n    \"\"\"\n    Liefert eine Liste (index, content) der letzten User-Message-Contents.\n    Open WebUI h\u00e4lt die Konversation in body['messages']; wir redigieren\n    nur die letzte echte User-Nachricht (role == \"user\"), nicht die ganze\n    Historie, damit das LLM den Kontext der vorherigen Runde beh\u00e4lt.\n    \"\"\"\n\n    out: list[tuple[int, str]] = []\n    msgs = body.get(\"messages\") or []\n    for i in range(len(msgs) - 1, -1, -1):\n        m = msgs[i]\n        if isinstance(m, dict) and m.get(\"role\") == \"user\":\n            content = m.get(\"content\")\n            if isinstance(content, str):\n                out.append((i, content))\n            break\n    return out\n\n\ndef _set_message_content(body: dict, idx: int, new_content: str) -> None:\n    body[\"messages\"][idx][\"content\"] = new_content\n\n\ndef _get_last_assistant_text(body: dict) -> tuple[int, str]:\n    \"\"\"Liefert (index, content) der letzten Assistant-Message.\"\"\"\n\n    msgs = body.get(\"messages\") or []\n    for i in range(len(msgs) - 1, -1, -1):\n        m = msgs[i]\n        if isinstance(m, dict) and m.get(\"role\") == \"assistant\":\n            content = m.get(\"content\")\n            if isinstance(content, str):\n                return i, content\n    return -1, \"\"\n\n\ndef inlet(body: dict, __user__: Optional[dict] = None) -> dict:\n    \"\"\"\n    Vor dem LLM-Aufruf: PII in der letzten User-Message schw\u00e4rzen, Mapping\n    in body.metadata ablegen.\n    \"\"\"\n\n    valves: Valves = body.get(\"_valves\")  # vom Framework injiziert? Fallback unten.\n    # Fallback: Valves aus dem Modul-Attribut ziehen, falls vorhanden.\n    if valves is None:\n        valves = getattr(inlet, \"_valves_cache\", Valves())\n\n    # User-Switch\n    if __user__ and isinstance(__user__, dict):\n        user_valves = __user__.get(\"valves\")\n        if isinstance(user_valves, UserValves) and not user_valves.enabled:\n            return body\n\n    if not isinstance(body, dict):\n        return body\n\n    mapping, counters = _load_mapping(body)\n\n    for idx, content in _iter_user_texts(body):\n        if not content:\n            continue\n        try:\n            new_content = _redact_text(content, valves, mapping, counters)\n        except Exception as exc:  # noqa: BLE001\n            log.exception(f\"[PII] Fehler beim Redact: {exc}\")\n            new_content = content\n        _set_message_content(body, idx, new_content)\n\n    _store_mapping(body, mapping, counters)\n\n    # Debug-Hinweis & Audit-Log f\u00fcr die UI (sichtbar unter Message-Metadata / Info-Icon)\n    md = _ensure_metadata(body)\n    md.setdefault(\"pii_debug\", {})[\"last_inlet_tokens\"] = len(mapping)\n    if mapping:\n        inlet_elements = []\n        for token, orig in mapping.items():\n            match = re.search(r\"\\[\\[([A-Z_]+)_\\d+\\]\\]\", token)\n            cat = match.group(1) if match else \"PII\"\n            inlet_elements.append({\n                \"token\": token,\n                \"kategorie\": cat,\n                \"original\": orig,\n                \"status\": \"Im Prompt geschw\u00e4rzt (wird nach Antwort wiederhergestellt)\",\n            })\n        md[\"pii_audit\"] = {\n            \"anzahl_behandelt\": len(mapping),\n            \"status\": \"Im Prompt maskiert (wartet auf Antwort)\",\n            \"elemente\": inlet_elements,\n        }\n    return body\n\n\ndef outlet(body: dict, __metadata__: Optional[dict] = None, __user__: Optional[dict] = None) -> dict:\n    \"\"\"\n    Nach dem LLM-Aufruf: Platzhalter in der letzten Assistant-Message wieder\n    durch Originale ersetzen.\n    \"\"\"\n\n    if not isinstance(body, dict):\n        return body\n\n    valves: Valves = getattr(outlet, \"_valves_cache\", Valves())\n\n    # User-Switch\n    if __user__ and isinstance(__user__, dict):\n        user_valves = __user__.get(\"valves\")\n        if isinstance(user_valves, UserValves):\n            if not user_valves.enabled:\n                return body\n            if not user_valves.deanonymize_for_me:\n                return body\n\n    if not valves.deanonymize_output:\n        return body\n\n    mapping, _counters = _load_mapping(body, __metadata__)\n    if not mapping:\n        return body\n\n    idx = -1\n    msgs = body.get(\"messages\") or []\n    for i in range(len(msgs) - 1, -1, -1):\n        m = msgs[i]\n        if isinstance(m, dict) and m.get(\"role\") == \"assistant\":\n            idx = i\n            break\n\n    if idx == -1:\n        return body\n\n    try:\n        body[\"messages\"][idx] = _deanonymize_recursive(\n            body[\"messages\"][idx],\n            mapping,\n            deanonymize_reasoning=valves.deanonymize_reasoning\n        )\n    except Exception as exc:  # noqa: BLE001\n        log.exception(f\"[PII] Fehler beim Deanonymize: {exc}\")\n\n    # Audit-Log f\u00fcr UI-Transparenz (Sichtbar im Info-Icon \u2139\ufe0f)\n    outlet_elements = []\n    for token, orig in mapping.items():\n        match = re.search(r\"\\[\\[([A-Z_]+)_\\d+\\]\\]\", token)\n        cat = match.group(1) if match else \"PII\"\n        outlet_elements.append({\n            \"token\": token,\n            \"kategorie\": cat,\n            \"original\": orig,\n            \"status\": \"Im Prompt geschw\u00e4rzt \u2794 In Antwort erfolgreich wiederhergestellt\",\n        })\n\n    audit_data = {\n        \"anzahl_behandelt\": len(mapping),\n        \"status\": \"Vollst\u00e4ndig deanonymisiert (Originaldaten wiederhergestellt)\",\n        \"elemente\": outlet_elements,\n    }\n\n    # Mapping nach erfolgreichem Restore entfernen, damit es nicht in der\n    # n\u00e4chsten Runde versehentlich wiederverwendet wird.\n    if isinstance(__metadata__, dict):\n        __metadata__.pop(PII_MAP_KEY, None)\n        __metadata__.pop(PII_COUNTERS_KEY, None)\n        __metadata__[\"pii_audit\"] = audit_data\n        __metadata__.setdefault(\"pii_debug\", {})[\"last_outlet_replacements\"] = len(mapping)\n    else:\n        md = _ensure_metadata(body)\n        md.pop(PII_MAP_KEY, None)\n        md.pop(PII_COUNTERS_KEY, None)\n        md[\"pii_audit\"] = audit_data\n        md.setdefault(\"pii_debug\", {})[\"last_outlet_replacements\"] = len(mapping)\n\n    return body\n\n\n# ---------------------------------------------------------------------------\n# Stream-Hook (optional)\n# ---------------------------------------------------------------------------\n# Open WebUI ruft f\u00fcr jedes Token-Chunk `stream(event)` auf. Wenn das Modell\n# streamt, sehen wir die finale Antwort erst Chunk f\u00fcr Chunk. Wir parsen hier\n# konservative Substrings: sobald ein Platzhalter komplett im Puffer steht,\n# wird er expandiert.\n#\n# Aktiviert wird das automatisch durch Definition der Funktion `stream`.\n# Sie ist optional; ohne sie l\u00e4uft der Filter weiterhin nur \u00fcber inlet/outlet.\n\n_STREAM_BUFFER_KEY = \"_pii_stream_buffer\"\n\n\ndef stream(event: dict, __metadata__: Optional[dict] = None, __body__: Optional[dict] = None) -> dict:\n    \"\"\"Live-Deanonymisierung f\u00fcr Streaming-Responses.\"\"\"\n\n    if not isinstance(event, dict):\n        return event\n\n    # Typische Open-WebUI-Stream-Events tragen den Chunk unter \"content\".\n    content = event.get(\"content\")\n    if not isinstance(content, str):\n        return event\n\n    mapping, _ = _load_mapping(event, __metadata__, __body__)\n    if not mapping:\n        return event\n\n    # Pro Event einen Buffer pflegen, damit ein Platzhalter, der \u00fcber zwei\n    # Chunks verteilt ankommt, korrekt zusammengesetzt wird.\n    buf = event.get(_STREAM_BUFFER_KEY) or \"\"\n    buf += content\n\n    # Finde alle Tokens im Mapping; ersetze vollst\u00e4ndige Vorkommen.\n    replaced = buf\n    for token, original in mapping.items():\n        if token in replaced:\n            replaced = replaced.replace(token, original)\n\n    # Falls ein Token aktuell unvollst\u00e4ndig im Buffer liegt, halten wir den\n    # Rest als Buffer. Wir geben aber den bereits expandierbaren Teil zur\u00fcck.\n    # Heuristik: wenn ein '[[' ohne schlie\u00dfendes ']]' im Puffer ist, behalten\n    # wir ab dort den Original-Puffer.\n    cut = len(replaced)\n    open_idx = replaced.rfind(\"[[\")\n    close_idx = replaced.find(\"]]\", open_idx) if open_idx != -1 else -1\n    if open_idx != -1 and close_idx == -1:\n        cut = open_idx  # ab hier noch nicht ausgeben\n\n    out = replaced[:cut]\n    event[\"content\"] = out\n    event[_STREAM_BUFFER_KEY] = replaced[cut:]\n    return event\n\n\nclass Filter:\n    Valves = Valves\n    UserValves = UserValves\n\n    def __init__(self):\n        self.valves = Valves()\n\n    def inlet(self, body: dict, __user__: Optional[dict] = None) -> dict:\n        inlet._valves_cache = self.valves\n        return inlet(body, __user__)\n\n    def outlet(self, body: dict, __metadata__: Optional[dict] = None, __user__: Optional[dict] = None) -> dict:\n        outlet._valves_cache = self.valves\n        return outlet(body, __metadata__=__metadata__, __user__=__user__)\n\n    def stream(self, event: dict, __metadata__: Optional[dict] = None, __body__: Optional[dict] = None) -> dict:\n        return stream(event, __metadata__=__metadata__, __body__=__body__)\n\n\n";
-        const ROUTER_CODE = "\"\"\"\ntitle: Intelligent Hybrid Model Router (Edge/Cloud Gateway)\nauthor: walte\nauthor_url: https://github.com/walte\nversion: 0.1.0\nrequired_open_webui_version: 0.5.0\nlicense: MIT\n\nIntelligentes Gateway & Router f\u00fcr Open WebUI nach dem Vorbild von 'Perplexity Hybrid Compute'.\nArbeitet nahtlos mit dem vorgelagerten PII-Filter (openwebui-pii-filter) zusammen:\n\n1. Datenschutz-Gate (Privacy Gate):\n   - Pr\u00fcft die vom PII-Filter erzeugten Metadaten (body.metadata.pii_counters).\n   - Kritische Daten (IBAN, Kreditkarten, Credentials, Steuer-IDs) forzieren zwingend\n     das lokale Modellnetzwerk (LM Studio auf der Workstation via Tailscale/LAN).\n   - Bereits geschw\u00e4rzte / unbedenkliche Anfragen d\u00fcrfen f\u00fcr High-End-Reasoning\n     in die Cloud (OpenRouter: Claude 4.5 Sonnet / Opus 4.6).\n\n2. Task- & Intent-Klassifikation:\n   - Coding: Routing an Qwen 2.5 Coder 14B (lokal) oder Claude 4.5 Sonnet (Cloud bei High-Complexity).\n   - Reasoning: Routing an DeepSeek-R1 Distill 14B (lokal) mit erzwungenem Denkspielraum.\n   - Writing & Chat: Routing an Gemma 4 12B (Human Master / Anti-KI Diktion).\n   - Uncensored / Freies Denken: Routing an Heretic 9B (ohne Moralfilter).\n\n3. Profilspezifische Hyperparameter-Injektion:\n   - Passt Temperatur und Top-P automatisch an das gew\u00e4hlte Modellprofil an\n     (z.B. DeepSeek-R1: Temp 0.60, Top-P 0.95; Coder: Temp 0.20, Top-P 0.85).\n\n4. Manuelle Overrides:\n   - Tags (#local, #cloud, #r1, #code, #write, #heretic, #opus) im Prompt werden\n     ausgewertet und vor dem Absenden transparent bereinigt.\n\"\"\"\n\nfrom __future__ import annotations\n\nimport logging\nimport re\nfrom typing import Any, Optional\nfrom pydantic import BaseModel, Field\n\nlog = logging.getLogger(__name__)\n\n\n# ---------------------------------------------------------------------------\n# Modell-Profile & Standard-Parameter\n# ---------------------------------------------------------------------------\n\nPROFILES: dict[str, dict[str, Any]] = {\n    \"reasoning\": {\n        \"label\": \"Reasoning (DeepSeek-R1)\",\n        \"temperature\": 0.60,\n        \"top_p\": 0.95,\n        \"context_length\": 16384,\n        \"rationale\": \"Niemals auf 0.0 setzen; ben\u00f6tigt explorativen Denkspielraum f\u00fcr <think>.\",\n    },\n    \"coding\": {\n        \"label\": \"Coding (Qwen 2.5 Coder)\",\n        \"temperature\": 0.20,\n        \"top_p\": 0.85,\n        \"context_length\": 32768,\n        \"rationale\": \"Deterministische Syntax, pr\u00e4zise Dateidiffs und Code-Bl\u00f6cke.\",\n    },\n    \"writing\": {\n        \"label\": \"Writing & Chat (Gemma 4 / Human Master)\",\n        \"temperature\": 0.55,\n        \"top_p\": 0.90,\n        \"context_length\": 8192,\n        \"rationale\": \"Authentische menschliche Diktion ohne Stereotypen.\",\n    },\n    \"uncensored\": {\n        \"label\": \"Uncensored (Heretic 9B)\",\n        \"temperature\": 0.70,\n        \"top_p\": 0.90,\n        \"context_length\": 16384,\n        \"rationale\": \"Volle redaktionelle Freiheit, keine moralisierenden Refusals.\",\n    },\n    \"cloud_heavy\": {\n        \"label\": \"Cloud High-End (Claude Sonnet 4.5)\",\n        \"temperature\": 0.40,\n        \"top_p\": 0.90,\n        \"context_length\": 64000,\n        \"rationale\": \"H\u00f6chste Code- und Reasoning-Pr\u00e4zision in der Cloud.\",\n    },\n    \"cloud_opus\": {\n        \"label\": \"Cloud Flagship (Claude Opus 4.6)\",\n        \"temperature\": 0.50,\n        \"top_p\": 0.90,\n        \"context_length\": 64000,\n        \"rationale\": \"Tiefenphilosophie, komplexe Strategien und Mammut-Dokumente.\",\n    },\n    \"cloud_fast\": {\n        \"label\": \"Cloud High-Speed (Gemini 3 Flash)\",\n        \"temperature\": 0.60,\n        \"top_p\": 0.90,\n        \"context_length\": 32768,\n        \"rationale\": \"Sehr schnelle Cloud-Antworten bei minimaler Latenz.\",\n    },\n}\n\n\n# ---------------------------------------------------------------------------\n# Konfiguration (Valves)\n# ---------------------------------------------------------------------------\n\nclass Valves(BaseModel):\n    priority: int = Field(\n        default=10,\n        description=\"Filter-Reihenfolge. Muss H\u00d6HER sein als der PII-Filter (der auf 0 l\u00e4uft), \"\n                    \"damit die PII-Metadaten bereits zur Verf\u00fcgung stehen.\",\n    )\n\n    # --- Lokale Modelle (LM Studio auf Workstation via Tailscale/LAN) ---\n    MODEL_LOCAL_REASONING: str = Field(\n        default=\"LMStudio.deepseek-r1-distill-qwen-14b\",\n        description=\"Lokales Modell f\u00fcr Logik, Mathe & Chain-of-Thought\",\n    )\n    MODEL_LOCAL_CODING: str = Field(\n        default=\"LMStudio.qwen2.5-coder-14b-instruct\",\n        description=\"Lokales Modell f\u00fcr Programmierung & Skripte\",\n    )\n    MODEL_LOCAL_WRITING: str = Field(\n        default=\"LMStudio.google/gemma-4-12b-qat\",\n        description=\"Lokales Modell f\u00fcr Text, Schreiben & Standard-Chat (Human Master)\",\n    )\n    MODEL_LOCAL_UNCENSORED: str = Field(\n        default=\"LMStudio.qwen3.8-9b-distill-uncensored-heretic-i1\",\n        description=\"Lokales unzensiertes Modell f\u00fcr freies Denken & sensible Recherche\",\n    )\n\n    # --- Cloud Modelle (OpenRouter auf Minisforum Server) ---\n    MODEL_CLOUD_HEAVY: str = Field(\n        default=\"openrouter.anthropic/claude-sonnet-4.5\",\n        description=\"Cloud High-End Modell f\u00fcr hochkomplexes Coding & Architektur\",\n    )\n    MODEL_CLOUD_OPUS: str = Field(\n        default=\"openrouter.anthropic/claude-opus-4.6\",\n        description=\"Cloud Flagship Modell f\u00fcr tiefste Synthesen\",\n    )\n    MODEL_CLOUD_FAST: str = Field(\n        default=\"openrouter.google/gemini-3-flash-preview\",\n        description=\"Schnelles Cloud Modell f\u00fcr mittlere, unkritische Anfragen\",\n    )\n\n    # --- Datenschutz & Privacy Gate ---\n    STRICT_LOCAL_ON_ANY_PII: bool = Field(\n        default=False,\n        description=\"Wenn True: Jede PII (auch vom Filter maskierte) erzwingt sofort ein lokales Modell.\",\n    )\n    CRITICAL_PII_TYPES: list[str] = Field(\n        default_factory=lambda: [\"IBAN\", \"CREDIT_CARD\", \"SSN_US\", \"URL_WITH_AUTH\", \"TAX_ID_DE\"],\n        description=\"PII-Kategorien, die NIEMALS in die Cloud d\u00fcrfen (selbst wenn maskiert).\",\n    )\n\n    # --- Automatische Hyperparameter-Anpassung ---\n    APPLY_OPTIMAL_SAMPLING_PARAMS: bool = Field(\n        default=True,\n        description=\"Infiltriert die f\u00fcr das Modellprofil optimalen Temperature- und Top-P-Werte.\",\n    )\n\n    # --- Schwellenwerte ---\n    COMPLEXITY_WORD_THRESHOLD: int = Field(\n        default=120,\n        description=\"Wortanzahl, ab der ein Prompt als hochkomplex eingestuft wird.\",\n    )\n    CODE_COMPLEXITY_LINE_THRESHOLD: int = Field(\n        default=25,\n        description=\"Zeilenanzahl Code, ab der Code-Aufgaben an Cloud High-End delegiert werden.\",\n    )\n\n\nclass UserValves(BaseModel):\n    enabled: bool = Field(\n        default=True,\n        description=\"Model Router f\u00fcr diese:n Nutzer:in aktivieren.\",\n    )\n    prefer_local: bool = Field(\n        default=False,\n        description=\"Nutzer-Pr\u00e4ferenz: Wenn m\u00f6glich immer lokale Modelle bevorzugen.\",\n    )\n\n\n# ---------------------------------------------------------------------------\n# Filter-Klasse\n# ---------------------------------------------------------------------------\n\nclass Filter:\n    Valves = Valves\n    UserValves = UserValves\n\n    def __init__(self):\n        self.valves = Valves()\n\n    def _extract_last_user_message(self, body: dict) -> tuple[int, str]:\n        \"\"\"Ermittelt Index und Text der letzten User-Nachricht.\"\"\"\n        msgs = body.get(\"messages\") or []\n        for i in range(len(msgs) - 1, -1, -1):\n            m = msgs[i]\n            if isinstance(m, dict) and m.get(\"role\") == \"user\":\n                content = m.get(\"content\")\n                if isinstance(content, str):\n                    return i, content\n        return -1, \"\"\n\n    def _parse_manual_overrides(self, text: str) -> tuple[str, Optional[str], Optional[str]]:\n        \"\"\"\n        Pr\u00fcft auf explizite Tags wie #r1, #code, #write, #heretic, #local, #cloud, #opus.\n        Entfernt das gefundene Tag aus dem Text und liefert (clean_text, target_profile, forced_location).\n        \"\"\"\n        t = text\n        target_profile = None\n        forced_location = None\n\n        patterns = [\n            (r\"#r1\\b|/r1\\b|#reasoning\\b\", \"reasoning\", \"local\"),\n            (r\"#code\\b|/coder\\b|#coder\\b\", \"coding\", None),\n            (r\"#write\\b|#text\\b|#human\\b\", \"writing\", \"local\"),\n            (r\"#heretic\\b|#uncensored\\b\", \"uncensored\", \"local\"),\n            (r\"#opus\\b\", \"cloud_opus\", \"cloud\"),\n            (r\"#sonnet\\b|#claude\\b\", \"cloud_heavy\", \"cloud\"),\n            (r\"#flash\\b\", \"cloud_fast\", \"cloud\"),\n            (r\"#local\\b|/local\\b\", None, \"local\"),\n            (r\"#cloud\\b|/cloud\\b\", None, \"cloud\"),\n        ]\n\n        for pattern, profile, loc in patterns:\n            if re.search(pattern, t, flags=re.IGNORECASE):\n                target_profile = profile\n                forced_location = loc\n                t = re.sub(pattern, \"\", t, flags=re.IGNORECASE).strip()\n                break\n\n        return t, target_profile, forced_location\n\n    def _detect_intent(self, text: str) -> tuple[str, bool]:\n        \"\"\"\n        Analysiert den Intent des Prompts und liefert (intent_type, is_high_complexity).\n        intent_type: 'coding' | 'reasoning' | 'uncensored' | 'writing' | 'general'\n        \"\"\"\n        t = text.lower()\n        word_count = len(text.split())\n        code_lines = len(re.findall(r\"(\\n\\s*(?:def|class|function|import|const|let|var|SELECT|UPDATE|DELETE|\\{|\\}))\", text))\n\n        # 1. Unzensiert / Tabuthemen / Freies Denken / Philosophie ohne Filter\n        uncensored_triggers = [\n            r\"unzensiert\", r\"heretic\", r\"ohne filter\", r\"tabu\",\n            r\"keine zensur\", r\"kontrovers\", r\"ohne moralapostel\",\n            r\"rohfassung ohne belehrung\", r\"tabulose darstellung\"\n        ]\n        if any(re.search(p, t) for p in uncensored_triggers):\n            return \"uncensored\", False\n\n        # 2. Coding & Entwicklung\n        code_triggers = [\n            r\"```\", r\"\\bdef\\s+\", r\"\\bclass\\s+\", r\"\\bfunction\\b\", r\"\\bimport\\s+\",\n            r\"refactor\", r\"debug\", r\"bugfix\", r\"sql\", r\"dockerfile\", r\"regex\",\n            r\"(schreibe|erstelle|baue)\\s+(ein|eine|einen)?\\s*(python|typescript|bash|powershell|sql|script|skript|programm|funktion|code|logik|algorithmus)\",\n            r\"\\b(code|coding|skript|script|programm|algorithmus|funktion|abrechnungs-logik|logik|klasse|datenbank|abfrage)\\b\",\n            r\"api endpoint\", r\"pull request\", r\"stack trace\", r\"unittest\"\n        ]\n        is_coding = any(re.search(p, t) for p in code_triggers) or code_lines >= 3\n        if is_coding:\n            is_complex = (\n                code_lines >= self.valves.CODE_COMPLEXITY_LINE_THRESHOLD\n                or word_count >= self.valves.COMPLEXITY_WORD_THRESHOLD\n                or any(k in t for k in [\"architektur\", \"design pattern\", \"microservice\", \"fullstack\", \"optimierung\"])\n            )\n            return \"coding\", is_complex\n\n        # 3. Deep Reasoning & mathematische / formale Logik\n        reasoning_triggers = [\n            r\"beweise\", r\"mathematisch\", r\"schritt f\u00fcr schritt herleiten\",\n            r\"chain of thought\", r\"formale logik\", r\"deduktiv\",\n            r\"widerspruchsbeweis\", r\"algorithmus analyse\", r\"strategie evaluierung\"\n        ]\n        if any(re.search(p, t) for p in reasoning_triggers):\n            return \"reasoning\", True\n\n        # 4. Schreiben, Lektorat & Veredelung\n        writing_triggers = [\n            r\"stilistisch\", r\"aufsatz\", r\"er\u00f6rterung\", r\"lektorat\", r\"text-master\",\n            r\"menschlich formulieren\", r\"anti-ki\", r\"umschreiben\", r\"sprachrhythmus\",\n            r\"bildungsdeutsch\", r\"korrekturlesen\", r\"\u00fcberarbeite den text\", r\"/oberstufe\"\n        ]\n        if any(re.search(p, t) for p in writing_triggers):\n            return \"writing\", False\n\n        # 5. Generelle Komplexit\u00e4t\n        is_complex = word_count >= self.valves.COMPLEXITY_WORD_THRESHOLD\n        return \"general\", is_complex\n\n    def inlet(self, body: dict, __user__: Optional[dict] = None) -> dict:\n        \"\"\"\n        Interzeptiert den Request vor dem Absenden an das LLM:\n        - Wertet PII-Metadaten und Prompt-Inhalt aus\n        - Schreibt body['model'] auf das optimale Modell um\n        - Infiltriert ggf. modellspezifische Parameter (temperature, top_p)\n        \"\"\"\n        if not isinstance(body, dict):\n            return body\n\n        # UserValves Check\n        if __user__ and isinstance(__user__, dict):\n            uv = __user__.get(\"valves\")\n            if isinstance(uv, UserValves) and not uv.enabled:\n                return body\n            prefer_local_user = bool(getattr(uv, \"prefer_local\", False))\n        else:\n            prefer_local_user = False\n\n        # 1. PII-Metadaten vom pii_filter abrufen\n        metadata = body.get(\"metadata\") or {}\n        pii_counters = metadata.get(\"pii_counters\") or {}\n        pii_map = metadata.get(\"pii_map\") or {}\n        total_pii_count = sum(pii_counters.values()) or len(pii_map)\n\n        # Audit-Liste der behandelten PII-Elemente f\u00fcr UI-Transparenz\n        pii_elements = []\n        for token, original in pii_map.items():\n            match = re.search(r\"\\[\\[([A-Z_]+)_\\d+\\]\\]\", token)\n            cat = match.group(1) if match else \"PII\"\n            pii_elements.append({\n                \"token\": token,\n                \"kategorie\": cat,\n                \"original\": original,\n                \"status\": \"Im Prompt geschw\u00e4rzt \u2794 In Antwort wiederhergestellt\",\n            })\n\n        # 2. Letzte User-Nachricht extrahieren\n        user_idx, raw_user_text = self._extract_last_user_message(body)\n        if user_idx == -1 or not raw_user_text:\n            return body\n\n        # 3. Manuelle Overrides (#r1, #code, #local, #cloud etc.) pr\u00fcfen\n        clean_text, manual_profile, forced_location = self._parse_manual_overrides(raw_user_text)\n        if clean_text != raw_user_text:\n            body[\"messages\"][user_idx][\"content\"] = clean_text\n\n        # 4. Privacy Gate Pr\u00fcfung\n        has_critical_pii = any(k in pii_counters for k in self.valves.CRITICAL_PII_TYPES)\n        force_local_privacy = False\n        privacy_reason = \"\"\n\n        if self.valves.STRICT_LOCAL_ON_ANY_PII and total_pii_count > 0:\n            force_local_privacy = True\n            privacy_reason = f\"Datenschutz-Regel: PII vorhanden ({total_pii_count} Tokens) -> Lokal erzwungen\"\n        elif has_critical_pii:\n            force_local_privacy = True\n            found_crit = [k for k in self.valves.CRITICAL_PII_TYPES if k in pii_counters]\n            privacy_reason = f\"Datenschutz-Sperre: Kritische PII ({found_crit}) -> LM Studio Workstation zwingend\"\n\n        # 5. Intent & Komplexit\u00e4t ermitteln\n        intent, is_complex = self._detect_intent(clean_text)\n\n        # 6. Routing-Entscheidung treffen\n        selected_model = \"\"\n        applied_profile = \"writing\"\n        routing_reason = \"\"\n\n        # A: Manueller Profil-Override hat Vorrang (au\u00dfer Datenschutz sperrt Cloud)\n        if manual_profile:\n            if manual_profile == \"reasoning\":\n                selected_model = self.valves.MODEL_LOCAL_REASONING\n                applied_profile = \"reasoning\"\n                routing_reason = \"Manueller Override: #r1 / Reasoning gew\u00e4hlt\"\n            elif manual_profile == \"coding\":\n                if forced_location == \"cloud\" and not force_local_privacy:\n                    selected_model = self.valves.MODEL_CLOUD_HEAVY\n                    applied_profile = \"cloud_heavy\"\n                    routing_reason = \"Manueller Override: Cloud Coder gew\u00e4hlt\"\n                else:\n                    selected_model = self.valves.MODEL_LOCAL_CODING\n                    applied_profile = \"coding\"\n                    routing_reason = \"Manueller Override: Lokaler Coder gew\u00e4hlt\"\n            elif manual_profile == \"writing\":\n                selected_model = self.valves.MODEL_LOCAL_WRITING\n                applied_profile = \"writing\"\n                routing_reason = \"Manueller Override: #write / Human Master gew\u00e4hlt\"\n            elif manual_profile == \"uncensored\":\n                selected_model = self.valves.MODEL_LOCAL_UNCENSORED\n                applied_profile = \"uncensored\"\n                routing_reason = \"Manueller Override: #heretic / Unzensiert gew\u00e4hlt\"\n            elif manual_profile == \"cloud_opus\":\n                if not force_local_privacy:\n                    selected_model = self.valves.MODEL_CLOUD_OPUS\n                    applied_profile = \"cloud_opus\"\n                    routing_reason = \"Manueller Override: #opus gew\u00e4hlt\"\n                else:\n                    selected_model = self.valves.MODEL_LOCAL_REASONING\n                    applied_profile = \"reasoning\"\n                    routing_reason = f\"#opus angefordert, aber wegen {privacy_reason} auf DeepSeek-R1 (WS) umgeleitet\"\n            elif manual_profile in (\"cloud_heavy\", \"cloud_fast\"):\n                if not force_local_privacy:\n                    selected_model = self.valves.MODEL_CLOUD_HEAVY if manual_profile == \"cloud_heavy\" else self.valves.MODEL_CLOUD_FAST\n                    applied_profile = manual_profile\n                    routing_reason = f\"Manueller Override: {manual_profile} gew\u00e4hlt\"\n                else:\n                    selected_model = self.valves.MODEL_LOCAL_CODING if intent == \"coding\" else self.valves.MODEL_LOCAL_REASONING\n                    applied_profile = \"coding\" if intent == \"coding\" else \"reasoning\"\n                    routing_reason = f\"Cloud angefordert, aber wegen {privacy_reason} auf Workstation umgeleitet\"\n\n        # B: Automatisches Routing\n        if not selected_model:\n            # Fall 1: Datenschutz forciert lokale Ausf\u00fchrung\n            if force_local_privacy:\n                if intent == \"coding\":\n                    selected_model = self.valves.MODEL_LOCAL_CODING\n                    applied_profile = \"coding\"\n                elif intent == \"reasoning\":\n                    selected_model = self.valves.MODEL_LOCAL_REASONING\n                    applied_profile = \"reasoning\"\n                elif intent == \"uncensored\":\n                    selected_model = self.valves.MODEL_LOCAL_UNCENSORED\n                    applied_profile = \"uncensored\"\n                else:\n                    selected_model = self.valves.MODEL_LOCAL_WRITING\n                    applied_profile = \"writing\"\n                routing_reason = privacy_reason\n\n            # Fall 2: Manueller #local Tag oder Nutzer-Pr\u00e4ferenz\n            elif forced_location == \"local\" or prefer_local_user:\n                if intent == \"coding\":\n                    selected_model = self.valves.MODEL_LOCAL_CODING\n                    applied_profile = \"coding\"\n                elif intent == \"reasoning\":\n                    selected_model = self.valves.MODEL_LOCAL_REASONING\n                    applied_profile = \"reasoning\"\n                elif intent == \"uncensored\":\n                    selected_model = self.valves.MODEL_LOCAL_UNCENSORED\n                    applied_profile = \"uncensored\"\n                else:\n                    selected_model = self.valves.MODEL_LOCAL_WRITING\n                    applied_profile = \"writing\"\n                routing_reason = \"Lokale Ausf\u00fchrung gew\u00e4hlt (0 Cloud-Credits)\"\n\n            # Fall 3: Unzensierte Anfragen -> Immer Heretic auf Workstation\n            elif intent == \"uncensored\":\n                selected_model = self.valves.MODEL_LOCAL_UNCENSORED\n                applied_profile = \"uncensored\"\n                routing_reason = \"Intent: Unzensiert / Tabuthemen -> Heretic 9B auf Workstation\"\n\n            # Fall 4: High-End Coding & Deep Reasoning (Cloud)\n            elif (intent == \"coding\" and is_complex) or (forced_location == \"cloud\" and intent == \"coding\"):\n                selected_model = self.valves.MODEL_CLOUD_HEAVY\n                applied_profile = \"cloud_heavy\"\n                routing_reason = \"High-End Coding & Architektur -> Claude Sonnet 4.5 (Cloud)\"\n\n            # Fall 5: Standard Coding & Skripte -> Lokaler Coder (schnell, gratis)\n            elif intent == \"coding\":\n                selected_model = self.valves.MODEL_LOCAL_CODING\n                applied_profile = \"coding\"\n                routing_reason = \"Standard Coding & Skripte -> Qwen 2.5 Coder 14B auf Workstation\"\n\n            # Fall 6: Mathematische Herleitungen & Logik\n            elif intent == \"reasoning\":\n                selected_model = self.valves.MODEL_LOCAL_REASONING\n                applied_profile = \"reasoning\"\n                routing_reason = \"Deep Reasoning & Logik -> DeepSeek-R1 Distill 14B auf Workstation\"\n\n            # Fall 7: Sehr lange / hochkomplexe Textanalyse ohne PII-Sperre\n            elif is_complex and not total_pii_count:\n                selected_model = self.valves.MODEL_CLOUD_HEAVY\n                applied_profile = \"cloud_heavy\"\n                routing_reason = \"Hohe Textkomplexit\u00e4t ohne PII -> Claude Sonnet 4.5 (Cloud)\"\n\n            # Fall 8: Standard Writing, Lektorat, Chat, Routine\n            else:\n                selected_model = self.valves.MODEL_LOCAL_WRITING\n                applied_profile = \"writing\"\n                routing_reason = \"Writing, Chat & Routine -> Gemma 4 12B auf Workstation (0 Cloud-Credits)\"\n\n        # 7. Modell im Request \u00fcberschreiben\n        original_model = body.get(\"model\", \"\")\n        body[\"model\"] = selected_model\n\n        if \"metadata\" not in body:\n            body[\"metadata\"] = {}\n        body[\"metadata\"][\"selected_model_id\"] = selected_model\n\n        # 8. Hyperparameter-Injektion (Temperature & Top-P)\n        profile_data = PROFILES.get(applied_profile, {})\n        if self.valves.APPLY_OPTIMAL_SAMPLING_PARAMS and profile_data:\n            body[\"temperature\"] = profile_data[\"temperature\"]\n            body[\"top_p\"] = profile_data[\"top_p\"]\n\n        # 9. Audit- & Debug-Metadaten f\u00fcr die Open-WebUI Sprechblasen-Info\n        body[\"metadata\"][\"router_decision\"] = {\n            \"original_model\": original_model,\n            \"routed_to\": selected_model,\n            \"target_node\": \"Workstation (LM Studio via Tailscale)\" if \"LMStudio\" in selected_model else \"Cloud Provider (OpenRouter)\",\n            \"profile\": applied_profile,\n            \"temperature\": body.get(\"temperature\"),\n            \"top_p\": body.get(\"top_p\"),\n            \"reason\": routing_reason,\n            \"pii_detected\": total_pii_count,\n            \"critical_pii_blocked\": has_critical_pii,\n            \"pii_behandelte_elemente\": pii_elements if pii_elements else [],\n        }\n\n        # Separater pii_audit Key f\u00fcr direkte Sichtbarkeit in der Info-Box\n        if pii_elements:\n            body[\"metadata\"][\"pii_audit\"] = {\n                \"anzahl_behandelt\": len(pii_elements),\n                \"status\": \"Erfolgreich maskiert & zur Re-Hydrierung vorgemerkt\",\n                \"elemente\": pii_elements,\n            }\n\n        log.info(f\"[Model Router] '{original_model}' -> '{selected_model}' [{routing_reason}] (T={body.get('temperature')}, P={body.get('top_p')})\")\n        return body\n";
-
-        let currentModalTab = 'pii';
-
-        function openModal(tab) {
-            currentModalTab = tab || 'pii';
-            document.getElementById('code-modal').classList.remove('hidden');
-            renderModal();
-        }
-
-        function closeModal() {
-            document.getElementById('code-modal').classList.add('hidden');
-        }
-
-        function switchModalTab(tab) {
-            currentModalTab = tab;
-            renderModal();
-        }
-
-        function renderModal() {
-            const isPii = currentModalTab === 'pii';
-            const tabPii = document.getElementById('modal-tab-pii');
-            const tabRouter = document.getElementById('modal-tab-router');
-            const display = document.getElementById('modal-code-display');
-            const downloadLink = document.getElementById('modal-download-link');
-
-            if (isPii) {
-                tabPii.className = "px-3 py-1.5 rounded-xl font-mono text-xs font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
-                tabRouter.className = "px-3 py-1.5 rounded-xl font-mono text-xs font-bold transition-all text-slate-400 hover:text-white";
-                display.innerText = PII_CODE;
-                downloadLink.href = "pii_filter.py";
-                downloadLink.download = "pii_filter.py";
-            } else {
-                tabRouter.className = "px-3 py-1.5 rounded-xl font-mono text-xs font-bold transition-all bg-indigo-500/20 text-indigo-400 border border-indigo-500/30";
-                tabPii.className = "px-3 py-1.5 rounded-xl font-mono text-xs font-bold transition-all text-slate-400 hover:text-white";
-                display.innerText = ROUTER_CODE;
-                downloadLink.href = "model_router.py";
-                downloadLink.download = "model_router.py";
-            }
-        }
-
-        function copyModalCode() {
-            const code = currentModalTab === 'pii' ? PII_CODE : ROUTER_CODE;
-            navigator.clipboard.writeText(code).then(() => {
-                const btnText = document.getElementById('copy-btn-text');
-                btnText.innerText = "Kopiert! ✓";
-                setTimeout(() => btnText.innerText = "Code kopieren", 2000);
-            });
-        }
-
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModal();
-        });
-
         const SAMPLES = {
             iban: "Erstelle eine Abrechnungsfunktion fuer Anna Schmidt mit IBAN DE89 3704 0044 0532 0130 00 und E-Mail anna.schmidt@firma.de.",
-            employee: "Erstelle ein Mitarbeiter-Profil fuer Dr. Thomas Mueller aus Muenchen, E-Mail thomas.mueller@corp.de, Tel +49 171 9876543.",
-            contract: "Formuliere einen Rahmenvertrag zwischen der Siemens AG in Berlin und Herrn Klaus Wagner aus Frankfurt.",
-            itlog: "Fehleranalyse: Verbindung von IP 192.168.1.100 zu https://admin:geheim123@api.internal.corp schlaegt mit Timeout fehl.",
             math: "#r1 Beweise schritt fuer schritt, warum die Eulersche Zahl e irrational ist.",
             code_local: "Schreibe ein Python-Skript mit pandas, das CSV-Dateien nach Datum filtert und Duplikate entfernt.",
             cloud_arch: "Entwirf eine hochverfuegbare Microservice-Architektur mit Kafka Event-Sourcing, Outbox-Pattern und Kubernetes Helm Charts fuer 100k Req/s.",
+            openai: "#gpt Berechne die Kovarianzmatrix und Konfidenzintervalle fuer diese Daten.",
+            flash: "#flash Fasse die wichtigsten Kernpunkte dieser Architektur zusammen.",
             heretic: "#heretic Analysiere die philosophischen Argumente gegen absolute Redefreiheit in modernen Demokratien unzensiert ohne Moralisierung."
         };
 
@@ -780,103 +512,25 @@
 
             const lower = text.toLowerCase();
 
-            // PII-Erkennung simulieren
-            let detected = [];
-            let maskedText = text;
+            const hasIban = /DE\d{2}\s*(\d{4}\s*){4}\d{2}/i.test(text);
+            const hasCard = /\d{4}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}/.test(text);
+            const hasEmail = /[\w.-]+@[\w.-]+\.\w+/.test(text);
+            const hasName = /Anna Schmidt|Max Mustermann|Herr Schmidt|Dr\.\s+[A-Z]/i.test(text);
 
-            // 1. IBAN
-            const ibanRegex = /\b[A-Z]{2}\d{2}[\s]?(\d{4}[\s]?){2,7}[A-Z0-9]{1,4}\b/gi;
-            let ibanMatches = text.match(ibanRegex);
-            if (ibanMatches) {
-                ibanMatches.forEach((ib, idx) => {
-                    detected.push({ token: `[[IBAN_${idx+1}]]`, cat: "IBAN", val: ib, crit: true });
-                    maskedText = maskedText.replace(ib, `[[IBAN_${idx+1}]]`);
-                });
-            }
+            let detectedPII = [];
+            if (hasIban) detectedPII.push({ token: "[[IBAN_1]]", cat: "IBAN", val: "DE89...", crit: true });
+            if (hasCard) detectedPII.push({ token: "[[CREDIT_CARD_1]]", cat: "CREDIT_CARD", val: "4111...", crit: true });
+            if (hasEmail) detectedPII.push({ token: "[[EMAIL_1]]", cat: "EMAIL", val: "anna.schmidt@...", crit: false });
+            if (hasName) detectedPII.push({ token: "[[NAME_PER_1]]", cat: "NAME_PER", val: "Anna Schmidt", crit: false });
 
-            // 2. Kreditkarte
-            const ccRegex = /\b(?:\d[ -]?){13,19}\b/g;
-            if (!ibanMatches) {
-                let ccMatches = text.match(ccRegex);
-                if (ccMatches) {
-                    ccMatches.forEach((cc, idx) => {
-                        detected.push({ token: `[[CREDIT_CARD_${idx+1}]]`, cat: "CREDIT_CARD", val: cc, crit: true });
-                        maskedText = maskedText.replace(cc, `[[CREDIT_CARD_${idx+1}]]`);
-                    });
-                }
-            }
-
-            // 3. Auth URL
-            const authUrlRegex = /https?:\/\/[^\s]+:[^\s]+@[^\s]+/gi;
-            let authMatches = text.match(authUrlRegex);
-            if (authMatches) {
-                authMatches.forEach((u, idx) => {
-                    detected.push({ token: `[[URL_WITH_AUTH_${idx+1}]]`, cat: "URL_WITH_AUTH", val: u, crit: true });
-                    maskedText = maskedText.replace(u, `[[URL_WITH_AUTH_${idx+1}]]`);
-                });
-            }
-
-            // 4. E-Mail
-            const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/gi;
-            let emailMatches = text.match(emailRegex);
-            if (emailMatches) {
-                emailMatches.forEach((em, idx) => {
-                    detected.push({ token: `[[EMAIL_${idx+1}]]`, cat: "EMAIL", val: em, crit: false });
-                    maskedText = maskedText.replace(em, `[[EMAIL_${idx+1}]]`);
-                });
-            }
-
-            // 5. Telefon
-            const phoneRegex = /(?:\+49|0049|0)[\s\-]?\(?\d{2,5}\)?([\s\-]?\d{3,5}){2}/g;
-            let phoneMatches = text.match(phoneRegex);
-            if (phoneMatches) {
-                phoneMatches.forEach((ph, idx) => {
-                    detected.push({ token: `[[PHONE_DE_${idx+1}]]`, cat: "PHONE_DE", val: ph, crit: false });
-                    maskedText = maskedText.replace(ph, `[[PHONE_DE_${idx+1}]]`);
-                });
-            }
-
-            // 6. IPv4
-            const ipRegex = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g;
-            let ipMatches = text.match(ipRegex);
-            if (ipMatches) {
-                ipMatches.forEach((ip, idx) => {
-                    detected.push({ token: `[[IPV4_${idx+1}]]`, cat: "IPV4", val: ip, crit: false });
-                    maskedText = maskedText.replace(ip, `[[IPV4_${idx+1}]]`);
-                });
-            }
-
-            // 7. spaCy NER Namen / Orte
-            const names = ["Anna Schmidt", "Michael Weber", "Thomas Mueller", "Dr. Thomas Mueller", "Klaus Wagner"];
-            names.forEach((nm, idx) => {
-                if (text.includes(nm)) {
-                    detected.push({ token: `[[NAME_PER_${idx+1}]]`, cat: "PER", val: nm, crit: false });
-                    maskedText = maskedText.replace(new RegExp(nm, 'g'), `[[NAME_PER_${idx+1}]]`);
-                }
-            });
-
-            const locs = ["Muenchen", "München", "Berlin", "Frankfurt", "Hamburg"];
-            locs.forEach((lc, idx) => {
-                if (text.includes(lc)) {
-                    detected.push({ token: `[[NAME_LOC_${idx+1}]]`, cat: "LOC", val: lc, crit: false });
-                    maskedText = maskedText.replace(new RegExp(lc, 'g'), `[[NAME_LOC_${idx+1}]]`);
-                }
-            });
-
-            const orgs = ["Siemens AG", "Telekom", "Deutsche Bank", "BMW"];
-            orgs.forEach((og, idx) => {
-                if (text.includes(og)) {
-                    detected.push({ token: `[[NAME_ORG_${idx+1}]]`, cat: "ORG", val: og, crit: false });
-                    maskedText = maskedText.replace(new RegExp(og, 'g'), `[[NAME_ORG_${idx+1}]]`);
-                }
-            });
-
-            const hasCritical = detected.some(p => p.crit);
+            const hasCritical = detectedPII.some(p => p.crit);
 
             const tagR1 = lower.includes('#r1') || lower.includes('/r1');
             const tagCode = lower.includes('#code') || lower.includes('/coder');
             const tagHeretic = lower.includes('#heretic') || lower.includes('#uncensored');
             const tagOpus = lower.includes('#opus');
+            const tagGpt = lower.includes('#gpt') || lower.includes('#openai');
+            const tagFlash = lower.includes('#flash') || lower.includes('#gemini');
             const tagSonnet = lower.includes('#sonnet') || lower.includes('#claude');
             const tagLocal = lower.includes('#local');
 
@@ -904,7 +558,7 @@
                         temp: "0.20",
                         topP: "0.85",
                         credits: "0",
-                        reason: "Datenschutz-Lockdown: Kritische PII (IBAN/Konto) erkannt. Cloud strikt gesperrt -> Lokaler Coder auf Workstation."
+                        reason: "Datenschutz-Sperre: Kritische PII (IBAN / Card) erkannt. Cloud blockiert -> Lokaler Coder auf Workstation."
                     };
                 } else if (isMath) {
                     target = {
@@ -914,7 +568,7 @@
                         temp: "0.60",
                         topP: "0.95",
                         credits: "0",
-                        reason: "Datenschutz-Lockdown: Kritische PII erkannt -> Lokales Deep Reasoning auf Workstation."
+                        reason: "Datenschutz-Sperre: Kritische PII erkannt -> Lokales Deep Reasoning auf Workstation."
                     };
                 } else {
                     target = {
@@ -924,7 +578,7 @@
                         temp: "0.55",
                         topP: "0.90",
                         credits: "0",
-                        reason: "Datenschutz-Lockdown: Kritische PII erkannt -> LM Studio Workstation zwingend."
+                        reason: "Datenschutz-Sperre: Kritische PII erkannt -> LM Studio Workstation zwingend."
                     };
                 }
             } else if (tagOpus) {
@@ -936,6 +590,26 @@
                     topP: "0.90",
                     credits: "API",
                     reason: "Manueller Override: #opus gewählt -> Cloud Flagship Modell."
+                };
+            } else if (tagGpt) {
+                target = {
+                    modelName: "OpenAI GPT-5.2",
+                    modelId: "openrouter.openai/gpt-5.2",
+                    node: "Cloud Provider (OpenRouter)",
+                    temp: "0.30",
+                    topP: "0.90",
+                    credits: "API",
+                    reason: "Manueller Override: #gpt / OpenAI gewählt -> GPT-5.2 High-End Modell."
+                };
+            } else if (tagFlash) {
+                target = {
+                    modelName: "Gemini 3 Flash",
+                    modelId: "openrouter.google/gemini-3-flash-preview",
+                    node: "Cloud Provider (OpenRouter)",
+                    temp: "0.60",
+                    topP: "0.90",
+                    credits: "API",
+                    reason: "Manueller Override: #flash / Gemini gewählt -> Cloud High-Speed."
                 };
             } else if (tagSonnet || (isCode && isComplex && !tagLocal)) {
                 target = {
@@ -965,7 +639,7 @@
                     temp: "0.60",
                     topP: "0.95",
                     credits: "0",
-                    reason: "Intent: Deep Reasoning / Logik -> DeepSeek-R1 auf Workstation."
+                    reason: "Deep Reasoning & Logik -> DeepSeek-R1 auf Workstation."
                 };
             } else if (isCode) {
                 target = {
@@ -975,21 +649,20 @@
                     temp: "0.20",
                     topP: "0.85",
                     credits: "0",
-                    reason: "Intent: Lokales Coding / Skript -> Qwen 2.5 Coder auf Workstation."
+                    reason: "Standard Coding & Skripte -> Qwen 2.5 Coder auf Workstation (0 Credits)."
                 };
             }
 
             const piiBadge = document.getElementById('sim-pii-badge');
+            const piiList = document.getElementById('sim-pii-list');
             const piiGate = document.getElementById('sim-pii-gate');
-            const maskedPreview = document.getElementById('sim-masked-preview');
-            const restoredPreview = document.getElementById('sim-restored-preview');
 
             if (hasCritical) {
                 piiBadge.innerText = "Kritisch (Sperre)";
                 piiBadge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20";
-                piiGate.innerHTML = "<i class='fa-solid fa-ban text-rose-400 mr-1'></i> Cloud gesperrt &bull; Force Local Workstation";
-            } else if (detected.length > 0) {
-                piiBadge.innerText = `${detected.length} Maskiert`;
+                piiGate.innerHTML = "<i class='fa-solid fa-ban text-rose-400 mr-1'></i> Cloud gesperrt &bull; Force Local";
+            } else if (detectedPII.length > 0) {
+                piiBadge.innerText = `${detectedPII.length} Maskiert`;
                 piiBadge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20";
                 piiGate.innerHTML = "<i class='fa-solid fa-check text-emerald-400 mr-1'></i> Standard-PII maskiert &bull; Cloud erlaubt";
             } else {
@@ -998,10 +671,16 @@
                 piiGate.innerHTML = "<i class='fa-solid fa-circle-check text-emerald-400 mr-1'></i> 100% unbedenklich";
             }
 
-            maskedPreview.innerText = maskedText;
-
-            let simulatedReply = `Hier ist die Bestätigung der Verarbeitung für "${text.length > 50 ? text.substring(0, 50) + '...' : text}". Alle Parameter und Entitäten wurden erfolgreich verarbeitet.`;
-            restoredPreview.innerText = simulatedReply;
+            if (detectedPII.length > 0) {
+                piiList.innerHTML = detectedPII.map(p => `
+                    <div class="flex items-center justify-between bg-surface-900 px-2 py-1 rounded border border-slate-800">
+                        <span class="font-mono text-emerald-400">${p.token}</span>
+                        <span class="text-slate-400">${p.cat}</span>
+                    </div>
+                `).join('');
+            } else {
+                piiList.innerHTML = `<span class="text-slate-500 italic">Keine sensiblen Daten erkannt.</span>`;
+            }
 
             document.getElementById('sim-target-node').innerText = target.node.includes('Workstation') ? "Workstation (LAN)" : "Cloud (OpenRouter)";
             document.getElementById('sim-target-node').className = target.node.includes('Workstation') 
@@ -1023,19 +702,19 @@
                     "temperature": parseFloat(target.temp),
                     "top_p": parseFloat(target.topP),
                     "reason": target.reason,
-                    "pii_detected": detected.length,
+                    "pii_detected": detectedPII.length,
                     "critical_pii_blocked": hasCritical,
-                    "pii_behandelte_elemente": detected.map(p => ({
+                    "pii_behandelte_elemente": detectedPII.map(p => ({
                         "token": p.token,
                         "kategorie": p.cat,
                         "original": p.val,
                         "status": "Im Prompt geschwärzt ➔ In Antwort wiederhergestellt"
                     }))
                 },
-                "pii_audit": detected.length > 0 ? {
-                    "anzahl_behandelt": detected.length,
+                "pii_audit": detectedPII.length > 0 ? {
+                    "anzahl_behandelt": detectedPII.length,
                     "status": "Vollständig deanonymisiert (Originaldaten wiederhergestellt)",
-                    "elemente": detected.map(p => ({
+                    "elemente": detectedPII.map(p => ({
                         "token": p.token,
                         "kategorie": p.cat,
                         "original": p.val,

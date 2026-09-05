@@ -147,5 +147,39 @@ class TestModelRouter(unittest.TestCase):
         self.assertEqual(res["messages"][0]["content"], "Wie viele Primzahlen gibt es unter 100?")
 
 
+    def test_manual_gpt_override(self):
+        """Prüft, ob #gpt oder #openai zu OpenAI GPT-5.2 in der Cloud mit Profil cloud_gpt geroutet wird."""
+        body = {
+            "model": "default-ui-model",
+            "messages": [
+                {"role": "user", "content": "#gpt Berechne die Wahrscheinlichkeit bei einem Münzwurf."}
+            ],
+            "metadata": {}
+        }
+        res = self.router.inlet(body)
+        self.assertEqual(res["model"], "openrouter.openai/gpt-5.2")
+        self.assertEqual(res["metadata"]["router_decision"]["profile"], "cloud_gpt")
+        self.assertEqual(res["temperature"], PROFILES["cloud_gpt"]["temperature"])
+        self.assertEqual(res["top_p"], PROFILES["cloud_gpt"]["top_p"])
+        self.assertEqual(res["messages"][0]["content"], "Berechne die Wahrscheinlichkeit bei einem Münzwurf.")
+
+    def test_known_inactive_model_fallback(self):
+        """Prüft, ob bekannte defekte Modelle (404/400) automatisch auf funktionierende Alternativen fallen."""
+        # Valve absichtlich auf inaktives Modell stellen
+        self.router.valves.MODEL_CLOUD_FAST = "openrouter.google/gemini-3-pro-preview"
+        body = {
+            "model": "default-ui-model",
+            "messages": [
+                {"role": "user", "content": "#flash Erstelle eine Zusammenfassung"}
+            ],
+            "metadata": {}
+        }
+        res = self.router.inlet(body)
+        # Muss auf gemini-3-flash-preview umgeleitet worden sein
+        self.assertEqual(res["model"], "openrouter.google/gemini-3-flash-preview")
+        self.assertIn("Auto-Fallback", res["metadata"]["router_decision"]["reason"])
+
+
 if __name__ == "__main__":
     unittest.main()
+

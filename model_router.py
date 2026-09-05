@@ -95,6 +95,28 @@ PROFILES: dict[str, dict[str, Any]] = {
         "context_length": 32768,
         "rationale": "Sehr schnelle Cloud-Antworten bei minimaler Latenz.",
     },
+    "cloud_gpt": {
+        "label": "Cloud High-End (OpenAI GPT-5.2)",
+        "temperature": 0.30,
+        "top_p": 0.90,
+        "context_length": 64000,
+        "rationale": "OpenAI GPT-5.2 für analytische Aufgaben, Data-Science & GPT-spezifische Workflows.",
+    },
+}
+
+# ---------------------------------------------------------------------------
+# Bekannte inaktive / fehlerhafte Modelle (Automatisches Fallback zur Fehlervermeidung)
+# ---------------------------------------------------------------------------
+
+KNOWN_INACTIVE_MODELS: dict[str, str] = {
+    # 404 Nicht gefunden: Auf OpenRouter existiert kein google/gemini-3-pro-preview Endpunkt
+    "openrouter.google/gemini-3-pro-preview": "openrouter.google/gemini-3-flash-preview",
+    "google/gemini-3-pro-preview": "google/gemini-3-flash-preview",
+    # 400 Deaktivierte Presets auf OpenRouter
+    "openrouter.@preset/deepseek-v4": "openrouter.~deepseek/deepseek-v4-flash-latest",
+    "@preset/deepseek-v4": "~deepseek/deepseek-v4-flash-latest",
+    "openrouter.@preset/claude-code-google": "openrouter.anthropic/claude-sonnet-4.5",
+    "@preset/claude-code-google": "anthropic/claude-sonnet-4.5",
 }
 
 
@@ -139,6 +161,10 @@ class Valves(BaseModel):
     MODEL_CLOUD_FAST: str = Field(
         default="openrouter.google/gemini-3-flash-preview",
         description="Schnelles Cloud Modell für mittlere, unkritische Anfragen",
+    )
+    MODEL_CLOUD_GPT: str = Field(
+        default="openrouter.openai/gpt-5.2",
+        description="Cloud High-End Modell von OpenAI (GPT-5.2)",
     )
 
     # --- Datenschutz & Privacy Gate ---
@@ -216,8 +242,9 @@ class Filter:
             (r"#write\b|#text\b|#human\b", "writing", "local"),
             (r"#heretic\b|#uncensored\b", "uncensored", "local"),
             (r"#opus\b", "cloud_opus", "cloud"),
+            (r"#gpt5\b|#gpt-5\b|#gpt\b|#openai\b", "cloud_gpt", "cloud"),
             (r"#sonnet\b|#claude\b", "cloud_heavy", "cloud"),
-            (r"#flash\b", "cloud_fast", "cloud"),
+            (r"#flash\b|#gemini\b", "cloud_fast", "cloud"),
             (r"#local\b|/local\b", None, "local"),
             (r"#cloud\b|/cloud\b", None, "cloud"),
         ]
@@ -387,7 +414,15 @@ class Filter:
                 else:
                     selected_model = self.valves.MODEL_LOCAL_REASONING
                     applied_profile = "reasoning"
-                    routing_reason = f"#opus angefordert, aber wegen {privacy_reason} auf DeepSeek-R1 (WS) umgeleitet"
+            elif manual_profile == "cloud_gpt":
+                if not force_local_privacy:
+                    selected_model = self.valves.MODEL_CLOUD_GPT
+                    applied_profile = "cloud_gpt"
+                    routing_reason = "Manueller Override: #gpt / OpenAI GPT-5.2 gewählt"
+                else:
+                    selected_model = self.valves.MODEL_LOCAL_CODING if intent == "coding" else self.valves.MODEL_LOCAL_REASONING
+                    applied_profile = "coding" if intent == "coding" else "reasoning"
+                    routing_reason = f"#gpt angefordert, aber wegen {privacy_reason} auf Workstation umgeleitet"
             elif manual_profile in ("cloud_heavy", "cloud_fast"):
                 if not force_local_privacy:
                     selected_model = self.valves.MODEL_CLOUD_HEAVY if manual_profile == "cloud_heavy" else self.valves.MODEL_CLOUD_FAST
@@ -466,7 +501,12 @@ class Filter:
             else:
                 selected_model = self.valves.MODEL_LOCAL_WRITING
                 applied_profile = "writing"
-                routing_reason = "Writing, Chat & Routine -> Gemma 4 12B auf Workstation (0 Cloud-Credits)"
+        # 6b. Auto-Fallback für bekannte defekte oder inaktive Modell-IDs
+        if selected_model in KNOWN_INACTIVE_MODELS:
+            fallback = KNOWN_INACTIVE_MODELS[selected_model]
+            log.warning(f"[Model Router] Defektes/inaktives Modell '{selected_model}' abgefangen -> Fallback auf '{fallback}'")
+            routing_reason += f" (Auto-Fallback von {selected_model})"
+            selected_model = fallback
 
         # 7. Modell im Request überschreiben
         original_model = body.get("model", "")

@@ -240,6 +240,12 @@ html_parts.append("""
                     <button onclick="setSample('cloud_arch')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
                         ☁️ Cloud Architektur
                     </button>
+                    <button onclick="setSample('openai')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
+                        🌐 OpenAI (#gpt)
+                    </button>
+                    <button onclick="setSample('flash')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
+                        ⚡ Flash (#flash)
+                    </button>
                     <button onclick="setSample('heretic')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
                         🔓 Unzensiert
                     </button>
@@ -404,9 +410,9 @@ html_parts.append("""
             </div>
 
             <!-- Cloud Tier Row -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
                 <div class="glass-card glass-card-hover p-5 rounded-2xl border-l-4 border-l-indigo-500">
-                    <span class="px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 font-mono font-semibold text-xs border border-indigo-500/20">Cloud Tier</span>
+                    <span class="px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 font-mono font-semibold text-xs border border-indigo-500/20">Cloud High-End</span>
                     <h3 class="font-display font-bold text-white text-lg mt-2">🚀 Claude Sonnet 4.5</h3>
                     <p class="text-xs font-mono text-slate-400 truncate">openrouter.anthropic/claude-sonnet-4.5</p>
                     <p class="text-xs text-slate-300 mt-2">Große Refactorings, Microservices und Prompts &gt; 120 Wörter.</p>
@@ -417,11 +423,17 @@ html_parts.append("""
                     <p class="text-xs font-mono text-slate-400 truncate">openrouter.anthropic/claude-opus-4.6</p>
                     <p class="text-xs text-slate-300 mt-2">Tiefste philosophische Synthesen, Mammut-Texte und Strategie.</p>
                 </div>
+                <div class="glass-card glass-card-hover p-5 rounded-2xl border-l-4 border-l-emerald-500">
+                    <span class="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-mono font-semibold text-xs border border-emerald-500/20">OpenAI Flagship</span>
+                    <h3 class="font-display font-bold text-white text-lg mt-2">🌐 OpenAI GPT-5.2</h3>
+                    <p class="text-xs font-mono text-slate-400 truncate">openrouter.openai/gpt-5.2</p>
+                    <p class="text-xs text-slate-300 mt-2">Data Science, Wahrscheinlichkeiten & GPT-Workflows (#gpt).</p>
+                </div>
                 <div class="glass-card glass-card-hover p-5 rounded-2xl border-l-4 border-l-blue-500">
                     <span class="px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 font-mono font-semibold text-xs border border-blue-500/20">Cloud High-Speed</span>
                     <h3 class="font-display font-bold text-white text-lg mt-2">⚡ Gemini 3 Flash</h3>
                     <p class="text-xs font-mono text-slate-400 truncate">openrouter.google/gemini-3-flash-preview</p>
-                    <p class="text-xs text-slate-300 mt-2">Ultrakurze Latenzen, allgemeine Websynthesen und Quick Checks.</p>
+                    <p class="text-xs text-slate-300 mt-2">Ultrakurze Latenzen, Websynthesen und Quick Checks (#flash).</p>
                 </div>
             </div>
         </section>
@@ -458,6 +470,14 @@ html_parts.append("""
                     <button onclick="navigator.clipboard.writeText('#sonnet ')" class="text-slate-500 hover:text-white"><i class="fa-regular fa-copy"></i></button>
                 </div>
                 <div class="p-3.5 rounded-xl bg-surface-950 border border-slate-800/80 flex items-center justify-between">
+                    <div><code class="text-emerald-400 font-mono font-bold text-sm">#gpt</code><div class="text-[11px] text-slate-400 mt-0.5">OpenAI GPT-5.2</div></div>
+                    <button onclick="navigator.clipboard.writeText('#gpt ')" class="text-slate-500 hover:text-white"><i class="fa-regular fa-copy"></i></button>
+                </div>
+                <div class="p-3.5 rounded-xl bg-surface-950 border border-slate-800/80 flex items-center justify-between">
+                    <div><code class="text-cyan-300 font-mono font-bold text-sm">#flash</code><div class="text-[11px] text-slate-400 mt-0.5">Gemini 3 Flash</div></div>
+                    <button onclick="navigator.clipboard.writeText('#flash ')" class="text-slate-500 hover:text-white"><i class="fa-regular fa-copy"></i></button>
+                </div>
+                <div class="p-3.5 rounded-xl bg-surface-950 border border-slate-800/80 flex items-center justify-between">
                     <div><code class="text-emerald-300 font-mono font-bold text-sm">#local</code><div class="text-[11px] text-slate-400 mt-0.5">Force Workstation</div></div>
                     <button onclick="navigator.clipboard.writeText('#local ')" class="text-slate-500 hover:text-white"><i class="fa-regular fa-copy"></i></button>
                 </div>
@@ -482,6 +502,8 @@ html_parts.append("""
             math: "#r1 Beweise schritt fuer schritt, warum die Eulersche Zahl e irrational ist.",
             code_local: "Schreibe ein Python-Skript mit pandas, das CSV-Dateien nach Datum filtert und Duplikate entfernt.",
             cloud_arch: "Entwirf eine hochverfuegbare Microservice-Architektur mit Kafka Event-Sourcing, Outbox-Pattern und Kubernetes Helm Charts fuer 100k Req/s.",
+            openai: "#gpt Berechne die Kovarianzmatrix und Konfidenzintervalle fuer diese Daten.",
+            flash: "#flash Fasse die wichtigsten Kernpunkte dieser Architektur zusammen.",
             heretic: "#heretic Analysiere die philosophischen Argumente gegen absolute Redefreiheit in modernen Demokratien unzensiert ohne Moralisierung."
         };
 
@@ -492,15 +514,15 @@ html_parts.append("""
 
         function simulateRouting() {
             const text = document.getElementById('prompt-input').value;
-            const words = text.trim().split(/\\s+/).filter(Boolean);
+            const words = text.trim().split(/\s+/).filter(Boolean);
             document.getElementById('char-counter').innerText = `${words.length} Wörter`;
 
             const lower = text.toLowerCase();
 
-            const hasIban = /DE\\d{2}\\s*(\\d{4}\\s*){4}\\d{2}/i.test(text);
-            const hasCard = /\\b\\d{4}[ -]?\\d{4}[ -]?\\d{4}[ -]?\\d{4}\\b/.test(text);
-            const hasEmail = /[\\w.-]+@[\\w.-]+\\.\\w+/.test(text);
-            const hasName = /Anna Schmidt|Max Mustermann|Herr Schmidt|Dr\\.\\s+[A-Z]/i.test(text);
+            const hasIban = /DE\d{2}\s*(\d{4}\s*){4}\d{2}/i.test(text);
+            const hasCard = /\b\d{4}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}\b/.test(text);
+            const hasEmail = /[\w.-]+@[\w.-]+\.\w+/.test(text);
+            const hasName = /Anna Schmidt|Max Mustermann|Herr Schmidt|Dr\.\s+[A-Z]/i.test(text);
 
             let detectedPII = [];
             if (hasIban) detectedPII.push({ token: "[[IBAN_1]]", cat: "IBAN", val: "DE89...", crit: true });
@@ -514,12 +536,14 @@ html_parts.append("""
             const tagCode = lower.includes('#code') || lower.includes('/coder');
             const tagHeretic = lower.includes('#heretic') || lower.includes('#uncensored');
             const tagOpus = lower.includes('#opus');
+            const tagGpt = lower.includes('#gpt') || lower.includes('#openai');
+            const tagFlash = lower.includes('#flash') || lower.includes('#gemini');
             const tagSonnet = lower.includes('#sonnet') || lower.includes('#claude');
             const tagLocal = lower.includes('#local');
 
             const isMath = tagR1 || /beweis|mathematisch|logik|herleiten/i.test(lower);
             const isHeretic = tagHeretic || /unzensiert|tabu|ohne moral/i.test(lower);
-            const isCode = tagCode || /python|typescript|sql|script|skript|funktion|def\\s+|code|architektur/i.test(lower);
+            const isCode = tagCode || /python|typescript|sql|script|skript|funktion|def\s+|code|architektur/i.test(lower);
             const isComplex = words.length >= 25 || /architektur|microservice|kafka|distributed/i.test(lower);
 
             let target = {
@@ -573,6 +597,26 @@ html_parts.append("""
                     topP: "0.90",
                     credits: "API",
                     reason: "Manueller Override: #opus gewählt -> Cloud Flagship Modell."
+                };
+            } else if (tagGpt) {
+                target = {
+                    modelName: "OpenAI GPT-5.2",
+                    modelId: "openrouter.openai/gpt-5.2",
+                    node: "Cloud Provider (OpenRouter)",
+                    temp: "0.30",
+                    topP: "0.90",
+                    credits: "API",
+                    reason: "Manueller Override: #gpt / OpenAI gewählt -> GPT-5.2 High-End Modell."
+                };
+            } else if (tagFlash) {
+                target = {
+                    modelName: "Gemini 3 Flash",
+                    modelId: "openrouter.google/gemini-3-flash-preview",
+                    node: "Cloud Provider (OpenRouter)",
+                    temp: "0.60",
+                    topP: "0.90",
+                    credits: "API",
+                    reason: "Manueller Override: #flash / Gemini gewählt -> Cloud High-Speed."
                 };
             } else if (tagSonnet || (isCode && isComplex && !tagLocal)) {
                 target = {
