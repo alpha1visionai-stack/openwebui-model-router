@@ -4,7 +4,7 @@ Ein intelligentes Routing-Gateway für [Open WebUI](https://github.com/open-webu
 
 Routet Anfragen dynamisch zwischen:
 1. **Lokaler Workstation (LM Studio via Tailscale/LAN):** Für vertrauliche Daten, PII, Routineaufgaben und unzensierte Recherchen (**0 Cloud-Credits**).
-2. **Cloud High-End (OpenRouter):** Für hochkomplexes Reasoning, Architektur und Mammut-Code (Claude 4.5 Sonnet / Opus 4.6).
+2. **Cloud High-End (Cortecs / OpenRouter):** Für hochkomplexes Reasoning, Architektur und Mammut-Code (Alibaba Qwen 3.5 397B MoE / DeepSeek V4 / Claude Sonnet 4.5 / Opus 4.6).
 
 > 📊 **Interaktives Web-Dashboard:**
 > - **Tailscale:** [http://100.116.36.64:8089](http://100.116.36.64:8089)
@@ -34,13 +34,13 @@ Routet Anfragen dynamisch zwischen:
                                        │                                │
                                        ▼                                ▼
                     ┌──────────────────────────────┐        ┌───────────────────────┐
-                    │    Workstation (Tailscale)   │        │ Cloud APIs / OpenRouter│
+                    │    Workstation (Tailscale)   │        │ Cloud APIs (Cortecs/OR)│
                     │       LM Studio (:1234)      │        │                       │
                     │ ──────────────────────────── │        │ ───────────────────── │
-                    │ • DeepSeek-R1 (Logik/Mathe)  │        │ • Claude Sonnet 4.5   │
-                    │ • Qwen 2.5 Coder (Skripte)   │        │ • Claude Opus 4.6     │
-                    │ • Gemma 4 (Anti-KI / Writing)│        │ • Gemini 3 Flash      │
-                    │ • Heretic 9B (Unzensiert)    │        │                       │
+                    │ • DeepSeek-R1 (Logik/Mathe)  │        │ • Qwen 3.5 397B MoE   │
+                    │ • Qwen 2.5 Coder (Skripte)   │        │ • DeepSeek V4 Flash   │
+                    │ • Gemma 4 (Anti-KI / Writing)│        │ • Claude Sonnet 4.5   │
+                    │ • Heretic 9B (Unzensiert)    │        │ • Claude Opus 4.6     │
                     └──────────────┬───────────────┘        └───────────┬───────────┘
                                    │                                    │
                                    └─────────────────┬──────────────────┘
@@ -72,7 +72,7 @@ In den Admin-Valves können die Cloud-Modelle für alle 5 typischen Praxisfälle
 
 | Fall / Profil | Valve-Parameter | Standard-Modell (Open WebUI ID) | Temp | Top-P | Einsatzzweck |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Fall 1: High-End Coding** | `MODEL_CLOUD_HEAVY` | `openrouter.anthropic/claude-sonnet-4.5` | `0.40` | `0.90` | Hochkomplexe Fullstack-Architekturen & Mammut-Code. |
+| **Fall 1: High-End Coding** | `MODEL_CLOUD_HEAVY` | `Cortecs.qwen3.5-397b-a17b` | `0.20` | `0.85` | Hochkomplexe Fullstack-Architekturen & Mammut-Code (Alibaba Qwen 3.5 397B MoE Open-Weight). |
 | **Fall 2: Deep Reasoning** | `MODEL_CLOUD_OPUS` | `openrouter.anthropic/claude-opus-4.6` | `0.50` | `0.90` | Tiefste strategische & philosophische Grundsatzanalysen (`#opus`). |
 | **Fall 3: Complex Writing** | `MODEL_CLOUD_WRITING` | `openrouter.anthropic/claude-sonnet-4.5` | `0.45` | `0.90` | Anspruchsvolle Textanalyse & lange Ausarbeitungen (> 120 Wörter). |
 | **Fall 4: Cloud Fast** | `MODEL_CLOUD_FAST` | `openrouter.google/gemini-3-flash-preview` | `0.60` | `0.90` | Schnelle allgemeine Cloud-Recherchen mit minimaler Latenz (`#flash`). |
@@ -209,13 +209,22 @@ Dies stellt sicher, dass Open WebUI den SSE-Stream für den Browser sofort mit `
 
 ## 💻 OpenCode Integration (Weg 1)
 
-Das Gateway dient gleichzeitig als OpenAI-kompatibler Endpunkt für autonome Coding-Agenten wie **OpenCode**:
+Das Gateway dient gleichzeitig als OpenAI-kompatibler Endpunkt für autonome Coding-Agenten wie **OpenCode** (Web-UI auf Port 4096 & CLI):
 * **Provider:** `@ai-sdk/openai-compatible`
-* **BaseURL:** `http://open-webui:8080/api` (intern im `caddy_network`)
-* **API-Key:** Open WebUI Bearer Key
-* **Features:** Voller Zero-Leakage PII-Schutz für Code, automatische Kontext-Eskalation an Claude Sonnet 4.5 bei großen Agenten-Prompts (>7k Tokens) und Live-Deanonymisierung von Tool-Call Argumenten (`delta.tool_calls`).
+* **BaseURL:** `http://open-webui:8080/api` (intern im Docker `caddy_network`)
+* **API-Key:** Open WebUI Bearer Key (`sk-opencode-router-...`)
+* **Vollständige Modellauswahl in OpenCode:**
+  1. `🛡️ Auto-Router (Hybrid Gateway + PII)`: Automatische Routing-Entscheidung und Kontext-Eskalation.
+  2. `⚡ Qwen 2.5 Coder 14B (Lokal: Code)`: Lokale Code-Entwicklung auf der RTX 4090 Workstation.
+  3. `🧠 DeepSeek-R1 Distill 14B (Lokal: Reasoning)`: Lokale mathematische Logik & CoT.
+  4. `🌐 Google Gemma 4 12B (Lokal: Text & Chat)`: Lokaler Textallrounder (Human Master Stil).
+  5. `🔓 Qwen 3.8 Heretic 9B (Lokal: Unzensiert)`: Lokales unzensiertes Modell für freie Recherche.
+  6. `🇨🇳 Alibaba Qwen 3.5 397B MoE (Cloud Open-Weight)`: Chinesisches Open-Weight Flaggschiff für High-End Architektur.
+  7. `⚡ DeepSeek V4 Flash (Cloud Speed)`: Ultraschnelle Cloud-Antworten (< 2s).
+  8. `🧠 Claude Sonnet 4.5 (Cloud Fallback)`: Proprietäres Fallback-Modell.
+* **Features:** Voller Zero-Leakage PII-Schutz für Code, automatische Kontext-Eskalation an Qwen 3.5 397B MoE bei großen Agenten-Prompts (>7k Tokens) und Live-Deanonymisierung von Tool-Call Argumenten (`delta.tool_calls`).
 
-Details & `opencode.json` Konfiguration: 👉 **[`USER_GUIDE.md#10-externe-entwickler-tools--opencode-integration`](USER_GUIDE.md)**
+Details & vollständige `opencode.json`: 👉 **[`USER_GUIDE.md#10-externe-entwickler-tools--opencode-integration`](USER_GUIDE.md)**
 
 
 

@@ -16,7 +16,7 @@ Dein KI-System kombiniert zwei Sicherheits- und Performance-Ebenen zu einer voll
 1. **Datenschutz (Privacy Gate):** Sensible Daten (Namen, Orte, Firmen, E-Mails) werden in der User-Eingabe geschwärzt (`[[NAME_PER_1]]`), bevor ein externes Modell sie sehen kann. Nach der Antwort werden sie automatisch wieder mit den Originaldaten befüllt.
 2. **Intelligentes Modell-Routing:** Ein nachgelagertes Gateway entscheidet anhand von **Datenschutzstufe**, **Aufgabentyp (Intent)** und **Komplexität**, wohin die Anfrage gesendet wird:
    - **Lokale Workstation (LM Studio via Tailscale):** Für sensible/kritische Daten, Programmier-Routine, unzensierte Recherchen und Alltags-Chat (**0 Cloud-Credits / gratis**).
-   - **Cloud High-End (OpenRouter):** Für hochkomplexe Systemarchitekturen, tiefste Logik und Mammut-Code (Claude Sonnet 4.5 / Opus 4.6), sofern keine kritischen Daten vorliegen.
+   - **Cloud High-End (Cortecs / OpenRouter):** Für hochkomplexe Systemarchitekturen, tiefste Logik und Mammut-Code (Alibaba Qwen 3.5 397B MoE / DeepSeek V4 / Claude Sonnet 4.5 / Opus 4.6), sofern keine kritischen Daten vorliegen.
 3. **Automatische Hyperparameter:** Für jedes Modell werden automatisch die optimalen Werte für `temperature` und `top_p` gesetzt.
 
 ---
@@ -29,7 +29,7 @@ Wir haben unsere Architektur exakt gegen die drei Kernpfeiler des **Perplexity H
 * **Perplexity Blueprint:** Ein Orchestrator teilt eine Gesamtaufgabe intelligent auf. Die Cloud übernimmt anspruchsvolles Reasoning & Websuche, während lokale Modelle vertrauliche Dokumente und sensible Daten verarbeiten. Ein zentraler Orchestrator führt die Ergebnisse nahtlos zusammen.
 * **Unsere Implementierung in Open WebUI:**
   - **Realisierung:** Unser zweistufiges Pipeline-System (`pii_filter.py` auf Priority 0 + `model_router.py` auf Priority 10) übernimmt genau diese Orchestrierung.
-  - **Verteilung:** Reine Struktur- und Architekturfragen ohne PII werden an High-End Cloud-Modelle (Claude 4.5 Sonnet / Opus 4.6) übergeben. Sobald PII oder unkritische Routineaufgaben vorliegen, übernimmt die lokale Workstation (LM Studio via Tailscale).
+  - **Verteilung:** Reine Struktur- und Architekturfragen ohne PII werden an High-End Cloud-Modelle (Alibaba Qwen 3.5 397B MoE / DeepSeek V4 / Claude 4.5 Sonnet / Opus 4.6) übergeben. Sobald PII oder unkritische Routineaufgaben vorliegen, übernimmt die lokale Workstation (LM Studio via Tailscale).
   - **Zusammenführung:** Durch den Re-Hydrierungs-Outlet und den Streaming-Subtoken-Buffer werden die vertraulichen Daten erst auf dem Minisforum-Server wieder in die Antwort eingefügt. Die Cloud sieht zu keinem Zeitpunkt Rohdaten.
 
 ### 📸 Pfeiler 2: Modell-Split & Zero Cloud Credits (Blueprint-Prinzip 2)
@@ -82,11 +82,11 @@ Wir haben unsere Architektur exakt gegen die drei Kernpfeiler des **Perplexity H
                  │                            │
                  ▼ (Tailscale / LAN :1234)    ▼ (Internet HTTPS)
 ┌────────────────────────────────┐ ┌──────────────────────────┐
-│ WORKSTATION (LM Studio GPU)    │ │ OPENROUTER (Cloud)       │
-│ • DeepSeek-R1 (Logik)          │ │ • Claude Sonnet 4.5      │
-│ • Qwen 2.5 Coder (Skripte)     │ │ • Claude Opus 4.6        │
-│ • Gemma 4 (Writing / Anti-KI)  │ │ • Gemini 3 Flash         │
-│ • Heretic 9B (Unzensiert)      │ │                          │
+│ WORKSTATION (LM Studio GPU)    │ │ CLOUD (Cortecs/OpenRouter)│
+│ • DeepSeek-R1 (Logik)          │ │ • Qwen 3.5 397B MoE      │
+│ • Qwen 2.5 Coder (Skripte)     │ │ • DeepSeek V4 Flash      │
+│ • Gemma 4 (Writing / Anti-KI)  │ │ • Claude Sonnet 4.5      │
+│ • Heretic 9B (Unzensiert)      │ │ • Claude Opus 4.6        │
 └────────────────┬───────────────┘ └──────────┬───────────────┘
                  │                            │
                  └───────────────┬────────────┘
@@ -193,7 +193,7 @@ Zwei Grenzwerte in den Valves bestimmen, ob lokale 12B/14B-Modelle genügen oder
 | :--- | :--- | :--- | :--- | :--- |
 | **Kritisches PII** | Beliebig | 🔒 **IBAN etc.** | `LMStudio.qwen2.5-coder-14b` oder `deepseek-r1` | **Lokale Workstation (0 Credits):** LAN-Isolierung erzwungen. |
 | **Coding** | Standard (< 25 Zeilen) | Maskiert / Keine | `LMStudio.qwen2.5-coder-14b-instruct` | **Lokale Workstation (0 Credits):** Schnell, deterministisch. |
-| **Coding** | Komplex (> 25 Zeilen / Architektur) | Maskiert / Keine | `openrouter.anthropic/claude-sonnet-4.5` | **Cloud High-End:** Höchste Präzision bei Enterprise-Architektur. |
+| **Coding** | Komplex (> 25 Zeilen / Architektur) | Maskiert / Keine | `Cortecs.qwen3.5-397b-a17b` | **Cloud High-End (Open-Weight):** Alibaba Qwen 3.5 397B MoE für Enterprise-Architektur. |
 | **Deep Reasoning** | Logik / Beweise | Maskiert / Keine | `LMStudio.deepseek-r1-distill-qwen-14b` | **Lokale Workstation (0 Credits):** R1-Denkketten im `<think>`-Block. |
 | **Unzensiert** | Tabuthemen / Historie | Beliebig | `LMStudio.qwen3.8-9b-distill-uncensored-heretic-i1` | **Lokale Workstation (0 Credits):** Volle redaktionelle Freiheit. |
 | **Writing / Chat** | Standard (< 120 Wörter) | Beliebig | `LMStudio.google/gemma-4-12b-qat` | **Lokale Workstation (0 Credits):** Natürlicher menschlicher Sprachrhythmus. |
@@ -625,31 +625,46 @@ Die Konfigurationsdatei befindet sich auf dem Minisforum-Server unter `/root/sta
           "name": "🛡️ Auto-Router (Hybrid Gateway + PII)"
         },
         "LMStudio.qwen2.5-coder-14b-instruct": {
-          "name": "⚡ Qwen 2.5 Coder 14B (Lokal via WebUI)"
+          "name": "⚡ Qwen 2.5 Coder 14B (Lokal: Code)"
+        },
+        "LMStudio.deepseek-r1-distill-qwen-14b": {
+          "name": "🧠 DeepSeek-R1 Distill 14B (Lokal: Reasoning)"
+        },
+        "LMStudio.google/gemma-4-12b-qat": {
+          "name": "🌐 Google Gemma 4 12B (Lokal: Text & Chat)"
+        },
+        "LMStudio.qwen3.8-9b-distill-uncensored-heretic-i1": {
+          "name": "🔓 Qwen 3.8 Heretic 9B (Lokal: Unzensiert)"
+        },
+        "Cortecs.qwen3.5-397b-a17b": {
+          "name": "🇨🇳 Alibaba Qwen 3.5 397B MoE (Cloud Open-Weight)"
+        },
+        "openrouter.~deepseek/deepseek-v4-flash-latest": {
+          "name": "⚡ DeepSeek V4 Flash (Cloud Speed)"
         },
         "openrouter.anthropic/claude-sonnet-4.5": {
-          "name": "🧠 Claude Sonnet 4.5 (Cloud via Gateway)"
+          "name": "🧠 Claude Sonnet 4.5 (Cloud Fallback)"
         }
       }
     },
     "lmstudio": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "LM Studio Workstation",
+      "name": "LM Studio Workstation (Direkt)",
       "options": {
         "baseURL": "http://192.168.168.17:1234/v1"
       },
       "models": {
         "qwen2.5-coder-14b-instruct": {
-          "name": "⚡ Qwen 2.5 Coder 14B (Standard)"
+          "name": "⚡ Qwen 2.5 Coder 14B (Direkt)"
         },
         "deepseek-r1-distill-qwen-14b": {
-          "name": "🧠 DeepSeek-R1 Distill 14B (Reasoning)"
+          "name": "🧠 DeepSeek-R1 Distill 14B (Direkt)"
         },
         "google/gemma-4-12b-qat": {
-          "name": "🌐 Google Gemma 4 12B (Allrounder)"
+          "name": "🌐 Google Gemma 4 12B (Direkt)"
         },
         "qwen3.8-9b-distill-uncensored-heretic-i1": {
-          "name": "🔓 Qwen 3.8 Heretic 9B (Unzensiert)"
+          "name": "🔓 Qwen 3.8 Heretic 9B (Direkt)"
         }
       }
     }
@@ -658,18 +673,28 @@ Die Konfigurationsdatei befindet sich auf dem Minisforum-Server unter `/root/sta
 ```
 
 ### 3. OpenCode Bedienung & Modell-Wahl
-Sobald OpenCode neu gestartet wurde (`docker restart opencode`), stehen die Modelle sowohl in der OpenCode Web-UI (`http://100.116.36.64:4096`) als auch im Terminal zur Verfügung:
+Sobald OpenCode neu gestartet wurde (`docker restart opencode`), stehen alle 8 Modelle sowohl in der OpenCode Web-UI (`http://100.116.36.64:4096`) als auch im Terminal zur Verfügung:
 
 1. **Auto-Router Modus (`openwebui/Cortecs.gemini-3.7-flash`):**
    * Automatische Intent- und PII-Erkennung.
-   * Bei großen Agenten-Sessions automatische Eskalation an Cloud-Coder (Claude Sonnet 4.5).
-   * Höchste Sicherheit und minimale Tokenkosten.
-2. **Direktes Cloud-Modell (`openwebui/openrouter.anthropic/claude-sonnet-4.5`):**
-   * 1:1 Routing an Claude Sonnet 4.5 mit 200k Kontextfenster.
-   * Voller PII-Schutz aktiv (Datenschutz-Inlet & Outlet-Rehydrierung).
-3. **Direktes lokales Modell (`openwebui/LMStudio.qwen2.5-coder-14b-instruct`):**
-   * 100% lokale Ausführung auf der RTX 4090 Workstation ohne Cloud-Traffic.
-   * Hinweis: Bitte in LM Studio die Context-Length für das Modell auf 16k oder 32k stellen, wenn große Codebases verarbeitet werden.
+   * Standard-Coding bleibt lokal auf der Workstation (Qwen 2.5 Coder, 0 Credits).
+   * Bei großen Agenten-Sessions (> 7.000 Tokens) oder komplexer Systemarchitektur automatische Eskalation an das chinesische Flaggschiff **Alibaba Qwen 3.5 397B MoE** (`Cortecs.qwen3.5-397b-a17b`).
+   * Höchste Sicherheit, Zero Cloud-Leakage bei kritischer PII und minimale Tokenkosten.
+
+2. **Die 4 lokalen Modelle via WebUI Gateway (`openwebui/LMStudio.*`):**
+   * `⚡ Qwen 2.5 Coder 14B`: Für präzisen, schnellen Code und Skripte.
+   * `🧠 DeepSeek-R1 Distill 14B`: Für logische Herleitungen und komplexe mathematische Algorithmen.
+   * `🌐 Google Gemma 4 12B`: Für Dokumentation, README-Texte und natürlich formulierte Beschreibungen.
+   * `🔓 Qwen 3.8 Heretic 9B`: Für unzensierte Analysen ohne moralisierende Weigerungen.
+   * *Vorteil gegenüber Direkt-Anbindung:* Läuft über das Gateway – dank **Option 4** wird deine Auswahl 1:1 respektiert (kein Auto-Routing), während der **PII-Filter** weiterhin deine Daten schützt!
+
+3. **Chinesische Open-Weight Flaggschiffe (`openwebui/Cortecs.*` / `openrouter.*`):**
+   * `🇨🇳 Alibaba Qwen 3.5 397B MoE`: Massives 397-Milliarden-Parameter Mixture-of-Experts Modell mit Spitzen-Leistung bei Systemarchitektur und Fullstack-Coding (Open Weights von Alibaba Tongyi Lab).
+   * `⚡ DeepSeek V4 Flash`: Ultraschnell (< 2s Latenz) und extrem günstig.
+
+4. **Proprietäres Cloud-Fallback (`openwebui/openrouter.anthropic/claude-sonnet-4.5`):**
+   * Optionales Fallback-Modell für Vergleiche oder spezielle Workflows.
+
 
 
 

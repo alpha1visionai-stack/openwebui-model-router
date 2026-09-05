@@ -417,7 +417,7 @@
 <li class="leading-relaxed"><strong class="text-white font-semibold">Datenschutz (Privacy Gate):</strong> Sensible Daten (Namen, Orte, Firmen, E-Mails) werden in der User-Eingabe geschwärzt (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">[[NAME_PER_1]]</code>), bevor ein externes Modell sie sehen kann. Nach der Antwort werden sie automatisch wieder mit den Originaldaten befüllt.</li>
 <li class="leading-relaxed"><strong class="text-white font-semibold">Intelligentes Modell-Routing:</strong> Ein nachgelagertes Gateway entscheidet anhand von <strong class="text-white font-semibold">Datenschutzstufe</strong>, <strong class="text-white font-semibold">Aufgabentyp (Intent)</strong> und <strong class="text-white font-semibold">Komplexität</strong>, wohin die Anfrage gesendet wird:</li>
 <li class="leading-relaxed"><strong class="text-white font-semibold">Lokale Workstation (LM Studio via Tailscale):</strong> Für sensible/kritische Daten, Programmier-Routine, unzensierte Recherchen und Alltags-Chat (<strong class="text-white font-semibold">0 Cloud-Credits / gratis</strong>).</li>
-<li class="leading-relaxed"><strong class="text-white font-semibold">Cloud High-End (OpenRouter):</strong> Für hochkomplexe Systemarchitekturen, tiefste Logik und Mammut-Code (Claude Sonnet 4.5 / Opus 4.6), sofern keine kritischen Daten vorliegen.</li>
+<li class="leading-relaxed"><strong class="text-white font-semibold">Cloud High-End (Cortecs / OpenRouter):</strong> Für hochkomplexe Systemarchitekturen, tiefste Logik und Mammut-Code (Alibaba Qwen 3.5 397B MoE / DeepSeek V4 / Claude Sonnet 4.5 / Opus 4.6), sofern keine kritischen Daten vorliegen.</li>
 <li class="leading-relaxed"><strong class="text-white font-semibold">Automatische Hyperparameter:</strong> Für jedes Modell werden automatisch die optimalen Werte für <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">temperature</code> und <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">top_p</code> gesetzt.</li>
 </ol>
 <hr class="my-8 border-slate-800/80">
@@ -442,7 +442,7 @@
 <li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Perplexity Blueprint:</strong> Ein Orchestrator teilt eine Gesamtaufgabe intelligent auf. Die Cloud übernimmt anspruchsvolles Reasoning & Websuche, während lokale Modelle vertrauliche Dokumente und sensible Daten verarbeiten. Ein zentraler Orchestrator führt die Ergebnisse nahtlos zusammen.</span></li>
 <li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Unsere Implementierung in Open WebUI:</strong></span></li>
 <li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Realisierung:</strong> Unser zweistufiges Pipeline-System (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">pii_filter.py</code> auf Priority 0 + <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">model_router.py</code> auf Priority 10) übernimmt genau diese Orchestrierung.</span></li>
-<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Verteilung:</strong> Reine Struktur- und Architekturfragen ohne PII werden an High-End Cloud-Modelle (Claude 4.5 Sonnet / Opus 4.6) übergeben. Sobald PII oder unkritische Routineaufgaben vorliegen, übernimmt die lokale Workstation (LM Studio via Tailscale).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Verteilung:</strong> Reine Struktur- und Architekturfragen ohne PII werden an High-End Cloud-Modelle (Alibaba Qwen 3.5 397B MoE / DeepSeek V4 / Claude 4.5 Sonnet / Opus 4.6) übergeben. Sobald PII oder unkritische Routineaufgaben vorliegen, übernimmt die lokale Workstation (LM Studio via Tailscale).</span></li>
 <li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Zusammenführung:</strong> Durch den Re-Hydrierungs-Outlet und den Streaming-Subtoken-Buffer werden die vertraulichen Daten erst auf dem Minisforum-Server wieder in die Antwort eingefügt. Die Cloud sieht zu keinem Zeitpunkt Rohdaten.</span></li>
 </ul>
 
@@ -529,11 +529,11 @@
                  │                            │
                  ▼ (Tailscale / LAN :1234)    ▼ (Internet HTTPS)
 ┌────────────────────────────────┐ ┌──────────────────────────┐
-│ WORKSTATION (LM Studio GPU)    │ │ OPENROUTER (Cloud)       │
-│ • DeepSeek-R1 (Logik)          │ │ • Claude Sonnet 4.5      │
-│ • Qwen 2.5 Coder (Skripte)     │ │ • Claude Opus 4.6        │
-│ • Gemma 4 (Writing / Anti-KI)  │ │ • Gemini 3 Flash         │
-│ • Heretic 9B (Unzensiert)      │ │                          │
+│ WORKSTATION (LM Studio GPU)    │ │ CLOUD (Cortecs/OpenRouter)│
+│ • DeepSeek-R1 (Logik)          │ │ • Qwen 3.5 397B MoE      │
+│ • Qwen 2.5 Coder (Skripte)     │ │ • DeepSeek V4 Flash      │
+│ • Gemma 4 (Writing / Anti-KI)  │ │ • Claude Sonnet 4.5      │
+│ • Heretic 9B (Unzensiert)      │ │ • Claude Opus 4.6        │
 └────────────────┬───────────────┘ └──────────┬───────────────┘
                  │                            │
                  └───────────────┬────────────┘
@@ -727,7 +727,7 @@
                         <thead><tr><th class="px-3.5 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800 whitespace-nowrap">Erkannter Intent</th><th class="px-3.5 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800 whitespace-nowrap">Komplexität</th><th class="px-3.5 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800 whitespace-nowrap">PII-Status</th><th class="px-3.5 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800 whitespace-nowrap">Gewähltes Zielmodell</th><th class="px-3.5 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800 whitespace-nowrap">Ausführungsort & Rationale</th></tr></thead>
                         <tbody><tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Kritisches PII</strong></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Beliebig</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">🔒 <strong class="text-white font-semibold">IBAN etc.</strong></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">LMStudio.qwen2.5-coder-14b</code> oder <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">deepseek-r1</code></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Lokale Workstation (0 Credits):</strong> LAN-Isolierung erzwungen.</td></tr>
 <tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Coding</strong></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Standard (< 25 Zeilen)</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Maskiert / Keine</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">LMStudio.qwen2.5-coder-14b-instruct</code></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Lokale Workstation (0 Credits):</strong> Schnell, deterministisch.</td></tr>
-<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Coding</strong></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Komplex (> 25 Zeilen / Architektur)</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Maskiert / Keine</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">openrouter.anthropic/claude-sonnet-4.5</code></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Cloud High-End:</strong> Höchste Präzision bei Enterprise-Architektur.</td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Coding</strong></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Komplex (> 25 Zeilen / Architektur)</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Maskiert / Keine</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">Cortecs.qwen3.5-397b-a17b</code></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Cloud High-End (Open-Weight):</strong> Alibaba Qwen 3.5 397B MoE für Enterprise-Architektur.</td></tr>
 <tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Deep Reasoning</strong></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Logik / Beweise</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Maskiert / Keine</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">LMStudio.deepseek-r1-distill-qwen-14b</code></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Lokale Workstation (0 Credits):</strong> R1-Denkketten im <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all"><think></code>-Block.</td></tr>
 <tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Unzensiert</strong></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Tabuthemen / Historie</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Beliebig</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">LMStudio.qwen3.8-9b-distill-uncensored-heretic-i1</code></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Lokale Workstation (0 Credits):</strong> Volle redaktionelle Freiheit.</td></tr>
 <tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Writing / Chat</strong></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Standard (< 120 Wörter)</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words">Beliebig</td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">LMStudio.google/gemma-4-12b-qat</code></td><td class="px-3.5 py-2.5 text-xs text-slate-300 border-b border-slate-800/60 leading-relaxed break-words"><strong class="text-white font-semibold">Lokale Workstation (0 Credits):</strong> Natürlicher menschlicher Sprachrhythmus.</td></tr>
@@ -1516,31 +1516,46 @@ Erstelle mir eine formatierte Zusammenfassung der Auszahlungssumme von 1.450,00 
           &quot;name&quot;: &quot;🛡️ Auto-Router (Hybrid Gateway + PII)&quot;
         },
         &quot;LMStudio.qwen2.5-coder-14b-instruct&quot;: {
-          &quot;name&quot;: &quot;⚡ Qwen 2.5 Coder 14B (Lokal via WebUI)&quot;
+          &quot;name&quot;: &quot;⚡ Qwen 2.5 Coder 14B (Lokal: Code)&quot;
+        },
+        &quot;LMStudio.deepseek-r1-distill-qwen-14b&quot;: {
+          &quot;name&quot;: &quot;🧠 DeepSeek-R1 Distill 14B (Lokal: Reasoning)&quot;
+        },
+        &quot;LMStudio.google/gemma-4-12b-qat&quot;: {
+          &quot;name&quot;: &quot;🌐 Google Gemma 4 12B (Lokal: Text &amp; Chat)&quot;
+        },
+        &quot;LMStudio.qwen3.8-9b-distill-uncensored-heretic-i1&quot;: {
+          &quot;name&quot;: &quot;🔓 Qwen 3.8 Heretic 9B (Lokal: Unzensiert)&quot;
+        },
+        &quot;Cortecs.qwen3.5-397b-a17b&quot;: {
+          &quot;name&quot;: &quot;🇨🇳 Alibaba Qwen 3.5 397B MoE (Cloud Open-Weight)&quot;
+        },
+        &quot;openrouter.~deepseek/deepseek-v4-flash-latest&quot;: {
+          &quot;name&quot;: &quot;⚡ DeepSeek V4 Flash (Cloud Speed)&quot;
         },
         &quot;openrouter.anthropic/claude-sonnet-4.5&quot;: {
-          &quot;name&quot;: &quot;🧠 Claude Sonnet 4.5 (Cloud via Gateway)&quot;
+          &quot;name&quot;: &quot;🧠 Claude Sonnet 4.5 (Cloud Fallback)&quot;
         }
       }
     },
     &quot;lmstudio&quot;: {
       &quot;npm&quot;: &quot;@ai-sdk/openai-compatible&quot;,
-      &quot;name&quot;: &quot;LM Studio Workstation&quot;,
+      &quot;name&quot;: &quot;LM Studio Workstation (Direkt)&quot;,
       &quot;options&quot;: {
         &quot;baseURL&quot;: &quot;http://192.168.168.17:1234/v1&quot;
       },
       &quot;models&quot;: {
         &quot;qwen2.5-coder-14b-instruct&quot;: {
-          &quot;name&quot;: &quot;⚡ Qwen 2.5 Coder 14B (Standard)&quot;
+          &quot;name&quot;: &quot;⚡ Qwen 2.5 Coder 14B (Direkt)&quot;
         },
         &quot;deepseek-r1-distill-qwen-14b&quot;: {
-          &quot;name&quot;: &quot;🧠 DeepSeek-R1 Distill 14B (Reasoning)&quot;
+          &quot;name&quot;: &quot;🧠 DeepSeek-R1 Distill 14B (Direkt)&quot;
         },
         &quot;google/gemma-4-12b-qat&quot;: {
-          &quot;name&quot;: &quot;🌐 Google Gemma 4 12B (Allrounder)&quot;
+          &quot;name&quot;: &quot;🌐 Google Gemma 4 12B (Direkt)&quot;
         },
         &quot;qwen3.8-9b-distill-uncensored-heretic-i1&quot;: {
-          &quot;name&quot;: &quot;🔓 Qwen 3.8 Heretic 9B (Unzensiert)&quot;
+          &quot;name&quot;: &quot;🔓 Qwen 3.8 Heretic 9B (Direkt)&quot;
         }
       }
     }
@@ -1556,18 +1571,30 @@ Erstelle mir eine formatierte Zusammenfassung der Auszahlungssumme von 1.450,00 
                 </h3>
             </div>
             
-<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5 break-words">Sobald OpenCode neu gestartet wurde (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">docker restart opencode</code>), stehen die Modelle sowohl in der OpenCode Web-UI (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">http://100.116.36.64:4096</code>) als auch im Terminal zur Verfügung:</p>
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5 break-words">Sobald OpenCode neu gestartet wurde (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">docker restart opencode</code>), stehen alle 8 Modelle sowohl in der OpenCode Web-UI (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">http://100.116.36.64:4096</code>) als auch im Terminal zur Verfügung:</p>
 <ol class="list-decimal list-inside space-y-2 my-3 text-xs sm:text-sm text-slate-300 pl-2 break-words">
 <li class="leading-relaxed"><strong class="text-white font-semibold">Auto-Router Modus (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">openwebui/Cortecs.gemini-3.7-flash</code>):</strong></li>
 <li class="leading-relaxed">Automatische Intent- und PII-Erkennung.</li>
-<li class="leading-relaxed">Bei großen Agenten-Sessions automatische Eskalation an Cloud-Coder (Claude Sonnet 4.5).</li>
-<li class="leading-relaxed">Höchste Sicherheit und minimale Tokenkosten.</li>
-<li class="leading-relaxed"><strong class="text-white font-semibold">Direktes Cloud-Modell (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">openwebui/openrouter.anthropic/claude-sonnet-4.5</code>):</strong></li>
-<li class="leading-relaxed">1:1 Routing an Claude Sonnet 4.5 mit 200k Kontextfenster.</li>
-<li class="leading-relaxed">Voller PII-Schutz aktiv (Datenschutz-Inlet & Outlet-Rehydrierung).</li>
-<li class="leading-relaxed"><strong class="text-white font-semibold">Direktes lokales Modell (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">openwebui/LMStudio.qwen2.5-coder-14b-instruct</code>):</strong></li>
-<li class="leading-relaxed">100% lokale Ausführung auf der RTX 4090 Workstation ohne Cloud-Traffic.</li>
-<li class="leading-relaxed">Hinweis: Bitte in LM Studio die Context-Length für das Modell auf 16k oder 32k stellen, wenn große Codebases verarbeitet werden.</li>
+<li class="leading-relaxed">Standard-Coding bleibt lokal auf der Workstation (Qwen 2.5 Coder, 0 Credits).</li>
+<li class="leading-relaxed">Bei großen Agenten-Sessions (> 7.000 Tokens) oder komplexer Systemarchitektur automatische Eskalation an das chinesische Flaggschiff <strong class="text-white font-semibold">Alibaba Qwen 3.5 397B MoE</strong> (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">Cortecs.qwen3.5-397b-a17b</code>).</li>
+<li class="leading-relaxed">Höchste Sicherheit, Zero Cloud-Leakage bei kritischer PII und minimale Tokenkosten.</li>
+</ol>
+<ol class="list-decimal list-inside space-y-2 my-3 text-xs sm:text-sm text-slate-300 pl-2 break-words">
+<li class="leading-relaxed">*<em class="text-slate-300 italic">Die 4 lokalen Modelle via WebUI Gateway (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">openwebui/LMStudio.</em></code>):**</li>
+<li class="leading-relaxed"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">⚡ Qwen 2.5 Coder 14B</code>: Für präzisen, schnellen Code und Skripte.</li>
+<li class="leading-relaxed"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">🧠 DeepSeek-R1 Distill 14B</code>: Für logische Herleitungen und komplexe mathematische Algorithmen.</li>
+<li class="leading-relaxed"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">🌐 Google Gemma 4 12B</code>: Für Dokumentation, README-Texte und natürlich formulierte Beschreibungen.</li>
+<li class="leading-relaxed"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">🔓 Qwen 3.8 Heretic 9B</code>: Für unzensierte Analysen ohne moralisierende Weigerungen.</li>
+<li class="leading-relaxed"><em class="text-slate-300 italic">Vorteil gegenüber Direkt-Anbindung:</em> Läuft über das Gateway – dank <strong class="text-white font-semibold">Option 4</strong> wird deine Auswahl 1:1 respektiert (kein Auto-Routing), während der <strong class="text-white font-semibold">PII-Filter</strong> weiterhin deine Daten schützt!</li>
+</ol>
+<ol class="list-decimal list-inside space-y-2 my-3 text-xs sm:text-sm text-slate-300 pl-2 break-words">
+<li class="leading-relaxed">*<em class="text-slate-300 italic">Chinesische Open-Weight Flaggschiffe (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">openwebui/Cortecs.</em></code> / <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">openrouter.<em class="text-slate-300 italic"></code>):</em>*</li>
+<li class="leading-relaxed"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">🇨🇳 Alibaba Qwen 3.5 397B MoE</code>: Massives 397-Milliarden-Parameter Mixture-of-Experts Modell mit Spitzen-Leistung bei Systemarchitektur und Fullstack-Coding (Open Weights von Alibaba Tongyi Lab).</li>
+<li class="leading-relaxed"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">⚡ DeepSeek V4 Flash</code>: Ultraschnell (< 2s Latenz) und extrem günstig.</li>
+</ol>
+<ol class="list-decimal list-inside space-y-2 my-3 text-xs sm:text-sm text-slate-300 pl-2 break-words">
+<li class="leading-relaxed"><strong class="text-white font-semibold">Proprietäres Cloud-Fallback (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">openwebui/openrouter.anthropic/claude-sonnet-4.5</code>):</strong></li>
+<li class="leading-relaxed">Optionales Fallback-Modell für Vergleiche oder spezielle Workflows.</li>
 </ol>
                 </div>
             </main>
