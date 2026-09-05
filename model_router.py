@@ -697,7 +697,7 @@ class Filter:
             node_label = "Lokale GPU Workstation (0 Credits)" if is_local else "Cloud Provider (OpenRouter)"
             banner = (
                 f"<details>\n"
-                f"<summary>🛡️ <b>Routing:</b> {node_label} &bull; <code>{routed_to}</code> &bull; 🔒 {pii_count} PII</summary>\n\n"
+                f"<summary>🛡️ Routing: {node_label} • {routed_to} • 🔒 {pii_count} PII</summary>\n\n"
                 f"- **Ausgeführtes Modell:** `{routed_to}`"
                 f"{f' *(ursprünglich gewählt: `{original_model}`)*' if original_model and original_model != routed_to else ''}\n"
                 f"- **Ausführungsort:** {'Lokale GPU Workstation (LM Studio via LAN/Tailscale)' if is_local else 'Cloud Provider (OpenRouter)'}\n"
@@ -708,21 +708,42 @@ class Filter:
         else:
             if is_local:
                 banner = (
-                    f"> 🛡️ **Hybrid Gateway Routing:** **Lokale GPU Workstation** (`{routed_to}`) &bull; **0 Cloud-Credits**\n"
-                    f"> 🔒 **Privacy Gate:** {pii_count} PII-Elemente geschwärzt & wiederhergestellt &bull; *Grund: {reason}*"
+                    f"> 🛡️ **Hybrid Gateway Routing:** **Lokale GPU Workstation** (`{routed_to}`) • **0 Cloud-Credits**\n"
+                    f"> 🔒 **Privacy Gate:** {pii_count} PII-Elemente geschwärzt & wiederhergestellt • *Grund: {reason}*"
                 )
             else:
                 banner = (
                     f"> ☁️ **Hybrid Gateway Routing:** **Cloud Provider** (`{routed_to}`)\n"
-                    f"> 🛡️ **Privacy Gate:** {f'{pii_count} unkritische PII geschwärzt' if pii_count else 'Keine PII erkannt'} &bull; *Grund: {reason}*"
+                    f"> 🛡️ **Privacy Gate:** {f'{pii_count} unkritische PII geschwärzt' if pii_count else 'Keine PII erkannt'} • *Grund: {reason}*"
                 )
 
         current_content = msgs[target_idx].get("content") or ""
         if (
             not current_content.startswith("> 🛡️ **Hybrid Gateway Routing")
             and not current_content.startswith("> ☁️ **Hybrid Gateway Routing")
+            and not current_content.startswith("<details>\n<summary>🛡️ Routing:")
             and not current_content.startswith("<details>\n<summary>🛡️ <b>Routing:")
         ):
             msgs[target_idx]["content"] = f"{banner}\n\n{current_content}"
 
+        # Synchronize structured output if present (Open WebUI frontend prefers `output` over `content`)
+        msg_dict = msgs[target_idx]
+        if isinstance(msg_dict.get("output"), list) and msg_dict["output"]:
+            for item in msg_dict["output"]:
+                if isinstance(item, dict) and item.get("type") == "message":
+                    parts = item.get("content")
+                    if isinstance(parts, list):
+                        for part in parts:
+                            if isinstance(part, dict) and part.get("type") == "output_text":
+                                ptxt = part.get("text", "")
+                                if (
+                                    not ptxt.startswith("> 🛡️ **Hybrid Gateway Routing")
+                                    and not ptxt.startswith("> ☁️ **Hybrid Gateway Routing")
+                                    and not ptxt.startswith("<details>\n<summary>🛡️ Routing:")
+                                    and not ptxt.startswith("<details>\n<summary>🛡️ <b>Routing:")
+                                ):
+                                    part["text"] = f"{banner}\n\n{ptxt}"
+                                break
+
         return body
+

@@ -656,7 +656,7 @@ def _format_pii_audit_box(
     count = len(mapping)
     box = (
         f"<details>\n"
-        f"<summary>ℹ️ <b>Datenschutz- & PII-Protokoll</b> ({count} sensible Datenwerte geschwärzt & restauriert – Klick für Details)</summary>\n\n"
+        f"<summary>ℹ️ Datenschutz- & PII-Protokoll ({count} sensible Datenwerte geschwärzt & restauriert – Klick für Details)</summary>\n\n"
         f"### 🛡️ Lebenszyklus der sensiblen Daten in dieser Anfrage\n\n"
         f"#### 1. Erkannte & geschwärzte Entitäten (Inlet-Filter)\n"
         f"| Platzhalter (Token) | Kategorie | Originalwert (geschützt) | Status |\n"
@@ -867,6 +867,21 @@ def outlet(
         current_content = body["messages"][idx].get("content") or ""
         if "Datenschutz- & PII-Protokoll" not in current_content:
             body["messages"][idx]["content"] = f"{current_content}\n\n---\n{audit_box}"
+
+        # Synchronize structured output if present (Open WebUI frontend prefers `output` over `content`)
+        msg_dict = body["messages"][idx]
+        if isinstance(msg_dict.get("output"), list) and msg_dict["output"]:
+            for item in msg_dict["output"]:
+                if isinstance(item, dict) and item.get("type") == "message":
+                    parts = item.get("content")
+                    if isinstance(parts, list):
+                        for part in reversed(parts):
+                            if isinstance(part, dict) and part.get("type") == "output_text":
+                                ptxt = part.get("text", "")
+                                if "Datenschutz- & PII-Protokoll" not in ptxt:
+                                    part["text"] = f"{ptxt}\n\n---\n{audit_box}"
+                                break
+
 
     # Audit-Log für UI-Transparenz (Sichtbar im Info-Icon ℹ️)
     outlet_elements = []
