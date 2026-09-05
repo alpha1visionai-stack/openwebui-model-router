@@ -1,0 +1,60 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "openwebui": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Open WebUI Router & Gateway",
+      "options": {
+        "baseURL": "http://open-webui:8080/api",
+        "apiKey": "sk-opencode-router-dfebf885abbe47ad8e77"
+      },
+      "models": {
+        "Cortecs.gemini-3.7-flash": {
+          "name": "🛡️ Auto-Router (Hybrid Gateway + PII)"
+        },
+        "LMStudio.qwen2.5-coder-14b-instruct": {
+          "name": "⚡ Qwen 2.5 Coder 14B (Lokal: Code)"
+        },
+        "LMStudio.deepseek-r1-distill-qwen-14b": {
+          "name": "🧠 DeepSeek-R1 Distill 14B (Lokal: Reasoning)"
+        },
+        "LMStudio.google/gemma-4-12b-qat": {
+          "name": "🌐 Google Gemma 4 12B (Lokal: Text & Chat)"
+        },
+        "LMStudio.qwen3.8-9b-distill-uncensored-heretic-i1": {
+          "name": "🔓 Qwen 3.8 Heretic 9B (Lokal: Unzensiert)"
+        },
+        "Cortecs.qwen3.5-397b-a17b": {
+          "name": "🇨🇳 Alibaba Qwen 3.5 397B MoE (Cloud Open-Weight)"
+        },
+        "openrouter.~deepseek/deepseek-v4-flash-latest": {
+          "name": "⚡ DeepSeek V4 Flash (Cloud Speed)"
+        },
+        "openrouter.anthropic/claude-sonnet-4.5": {
+          "name": "🧠 Claude Sonnet 4.5 (Cloud Fallback)"
+        }
+      }
+    },
+    "lmstudio": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "LM Studio Workstation (Direkt)",
+      "options": {
+        "baseURL": "http://192.168.168.17:1234/v1"
+      },
+      "models": {
+        "qwen2.5-coder-14b-instruct": {
+          "name": "⚡ Qwen 2.5 Coder 14B (Direkt)"
+        },
+        "deepseek-r1-distill-qwen-14b": {
+          "name": "🧠 DeepSeek-R1 Distill 14B (Direkt)"
+        },
+        "google/gemma-4-12b-qat": {
+          "name": "🌐 Google Gemma 4 12B (Direkt)"
+        },
+        "qwen3.8-9b-distill-uncensored-heretic-i1": {
+          "name": "🔓 Qwen 3.8 Heretic 9B (Direkt)"
+        }
+      }
+    }
+  }
+}
