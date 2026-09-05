@@ -136,3 +136,11 @@ Unter jeder Antwortnachricht in Open WebUI findest du im Info-Icon (Metadaten) d
 ```bash
 python -m unittest test_model_router.py
 ```
+
+---
+
+## 📘 Detaillierte Prompts & Praxistests
+
+Vollständige Test-Prompts für alle fünf Hauptszenarien (Datenschutz-Lockdown, Deep Reasoning mit R1, Text-Veredelung, Cloud High-End und Privacy Gate Override-Test) findest du ausführlich dokumentiert in:
+👉 **[`USER_GUIDE.md#8-praxis-beispiele--test-prompts-prompt-showcase`](USER_GUIDE.md)**
+

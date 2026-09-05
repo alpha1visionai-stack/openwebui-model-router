@@ -199,3 +199,95 @@ Als Administrator kannst du das Verhalten des Routers jederzeit in der Open-WebU
    * `STRICT_LOCAL_ON_ANY_PII`: Wenn auf `True` gesetzt, darf bei *irgendeiner* PII (auch maskierten Namen) überhaupt nichts mehr in die Cloud.
    * `COMPLEXITY_WORD_THRESHOLD`: Standard `120` Wörter. Ab dieser Länge werden unkritische Anfragen an Claude Sonnet 4.5 in die Cloud geschickt.
    * `MODEL_LOCAL_*` & `MODEL_CLOUD_*`: Falls du in LM Studio neue Modelle lädst, kannst du die Modell-IDs hier direkt im Web-Interface aktualisieren.
+
+---
+
+## 🧪 8. Praxis-Beispiele & Test-Prompts (Prompt Showcase)
+
+Hier sind fünf praxiserprobte Test-Prompts, mit denen du die verschiedenen Sicherheits- und Routing-Mechanismen direkt in Open WebUI ausprobieren und im **Info-Icon (ℹ️)** überprüfen kannst:
+
+### 🏦 Szenario 1: Datenschutz-Lockdown (Kritisches PII + Coding)
+* **Ziel:** Überprüfen, ob Bankverbindungen zuverlässig erkannt werden und den Cloud-Abfluss sperren.
+* **Erwartetes Routing:**
+  - **Inlet:** Maskiert Name, Adresse, E-Mail, Telefon und IBAN zu `[[NAME_PER_1]]`, `[[IBAN_1]]` etc.
+  - **Privacy Gate:** Erkennt `[[IBAN_1]]` ➔ **Cloud-Sperre aktiv**.
+  - **Target:** Lokale Workstation `LMStudio.qwen2.5-coder-14b-instruct` (Temp: `0.20`, Top-P: `0.85`).
+  - **Outlet:** Re-hydriert alle Tokens wieder mit den echten Daten in der Code-Ausgabe.
+
+```text
+Hallo! Für unseren Mandanten Dr. Maximilian von Berg (Leopoldstraße 42, 80802 München, E-Mail: m.berg@alpen-consulting.de, Tel: +49 89 12345678) muss eine automatisierte Rechnungsprüfung implementiert werden.
+
+Seine hinterlegte Auszahlungs-IBAN lautet: DE89 3704 0044 0532 0130 00.
+
+Aufgabe:
+Schreibe mir ein sauberes Python-Skript (unter Verwendung von Pydantic v2), das:
+1. Ein Datenmodell `Mandant` mit allen oben genannten Attributen definiert.
+2. Eine Beispielfunktion enthält, die diese konkreten Mandantendaten instanziiert und eine kurze Überweisungsbestätigung im Konsolen-Log ausgibt.
+```
+
+---
+
+### 🧠 Szenario 2: Deep Reasoning & Mathematik (Lokal mit DeepSeek-R1)
+* **Ziel:** Prüfen, ob mathematische Beweise automatisch an das lokale R1-Modell geleitet werden.
+* **Erwartetes Routing:**
+  - **Intent:** Erkennt mathematische Beweisführung und formale Logik.
+  - **Target:** Lokale Workstation `LMStudio.deepseek-r1-distill-qwen-14b`.
+  - **Parameter:** Temp: `0.60`, Top-P: `0.95` (explorativer Denkspielraum für `<think>`-Tokens).
+
+```text
+Beweise formell durch vollständige Induktion, dass für alle natürlichen Zahlen n >= 1 gilt:
+1 + 2 + 3 + ... + n = n * (n + 1) / 2.
+Zeige jeden logischen Teilschritt explizit auf und begründe den Induktionsschritt mathematisch exakt.
+```
+
+---
+
+### ✍️ Szenario 3: Text-Veredelung & Writing (Anti-KI / Human Master)
+* **Ziel:** Null Cloud-Credits verbrauchen für alltägliche Schreib- und Redaktionsaufgaben.
+* **Erwartetes Routing:**
+  - **Inlet:** Maskiert `Frau Dr. Julia Sommerfeld` zu `[[NAME_PER_1]]`.
+  - **Intent:** Erkennt E-Mail / Schreib-Veredelung.
+  - **Target:** Lokale Workstation `LMStudio.google/gemma-4-12b-qat` (Temp: `0.55`, Top-P: `0.90`).
+  - **Outlet:** Setzt den echten Namen wieder ein. Kosten: **0 Cloud-Credits**.
+
+```text
+Sehr geehrte Frau Dr. Julia Sommerfeld, vielen Dank für das freundliche Telefonat heute Vormittag.
+
+Aufgabe:
+Formuliere mir aus dieser kurzen Notiz eine professionelle, warme und präzise Follow-up-E-Mail auf Deutsch. Der Tonfall soll menschlich, verbindlich und frei von typischen KI-Floskeln (wie 'Ich hoffe, diese E-Mail erreicht Sie wohlbehalten') sein. Betone, dass wir das besprochene Angebot bis kommenden Donnerstag finalisieren.
+```
+
+---
+
+### 🚀 Szenario 4: Cloud High-End Architektur (Claude Sonnet 4.5 via OpenRouter)
+* **Ziel:** Komplexe Software-Architektur ohne sensible PII zur Cloud delegieren.
+* **Erwartetes Routing:**
+  - **Prüfung:** Keine PII vorhanden, Anforderung übersteigt Komplexitätsschwelle (> 120 Wörter) bzw. nutzt `#sonnet`.
+  - **Target:** OpenRouter Cloud `openrouter.anthropic/claude-sonnet-4.5`.
+  - **Parameter:** Temp: `0.40`, Top-P: `0.90`.
+
+```text
+#sonnet
+Entwirf eine hochverfügbare Event-Driven Microservice-Architektur für eine E-Commerce-Plattform mit folgenden Anforderungen:
+1. Event-Bus mit Apache Kafka für Bestellungen, Bestandsänderungen und Rechnungsstellung.
+2. Outbox-Pattern zur Gewährleistung von Konsistenz zwischen PostgreSQL und Kafka ohne Two-Phase-Commits.
+3. Resilience-Pattern (Circuit Breaker, Dead-Letter-Queues und Idempotenz-Keys für Zahlungsabwicklungen).
+Erstelle ein übersichtliches Text-Architekturdiagramm und beschreibe die Fehlerbehandlung bei temporären Netzwerk-Partitions.
+```
+
+---
+
+### 🛡️ Szenario 5: Privacy Gate Override-Test (Schutz vor versehentlichem Cloud-Leak)
+* **Ziel:** Sicherstellen, dass das Privacy Gate selbst einen expliziten `#opus`-Tag überstimmt, wenn eine IBAN im Text steht.
+* **Erwartetes Routing:**
+  - **Tag:** User fordert `#opus` an.
+  - **Privacy Gate:** Erkennt IBAN ➔ **Erzwingt lokalen Fallback**!
+  - **Target:** Lokale Workstation `LMStudio.qwen2.5-coder-14b-instruct`.
+  - **Audit-Info (ℹ️):** `reason: "Overridden to local: prompt contains critical PII (IBAN)"`.
+
+```text
+#opus
+Hier ist die Abrechnung für Herrn Michael Weber mit IBAN DE44 5001 0517 5409 3211 00.
+Erstelle mir eine formatierte Zusammenfassung der Auszahlungssumme von 1.450,00 EUR und formatiere eine Überweisungszeile für das ERP-System.
+```
+
