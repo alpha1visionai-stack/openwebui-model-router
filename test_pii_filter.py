@@ -34,7 +34,10 @@ class TestPIIFilter(unittest.TestCase):
         body = self.filter.outlet(body, __metadata__=body.get("metadata"))
         restored = body["messages"][1]["content"]
         self.assertIn(iban, restored)
-        self.assertNotIn("[[IBAN_1]]", restored)
+        parts = restored.split("<details>")
+        actual_reply = parts[0]
+        self.assertNotIn("[[IBAN_1]]", actual_reply)
+        self.assertIn("Datenschutz- & PII-Protokoll", restored)
 
     def test_email_and_phone_redaction(self):
         email = "max.mustermann@unternehmen-gmbh.de"

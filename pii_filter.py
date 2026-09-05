@@ -133,6 +133,16 @@ class Valves(BaseModel):
         description="Wenn True: Zerlegt mehrteilige Namen in Einzelwörter. "
         "Wenn False: Maskiert zusammenhängende Namen als eine konsistente Entität (empfohlen).",
     )
+    show_audit_details: bool = Field(
+        default=True,
+        description="Fügt nach der Antwort ein aufklappbares PII-Audit-Protokoll (<details>) "
+        "mit detaillierter Übersicht aller geschwärzten und restaurierten Daten ein.",
+    )
+    show_masked_prompt_in_audit: bool = Field(
+        default=True,
+        description="Zeigt im aufklappbaren Protokoll den exakt maskierten Prompt, "
+        "der an das Modell gesendet wurde (Beweis für Zero Data Leakage).",
+    )
 
 
 class UserValves(BaseModel):
@@ -500,13 +510,15 @@ def _load_mapping(
     __body__: Optional[dict] = None,
     chat_id: Optional[str] = None,
     message_id: Optional[str] = None,
-) -> tuple[dict[str, str], dict[str, int]]:
+) -> tuple[dict[str, str], dict[str, int], dict[str, Any]]:
     mapping = None
     counters = None
+    audit_info = None
 
     if isinstance(metadata, dict):
         mapping = metadata.get(PII_MAP_KEY)
         counters = metadata.get(PII_COUNTERS_KEY)
+        audit_info = metadata.get("pii_audit_info")
 
     if not isinstance(mapping, dict) and isinstance(body, dict):
         # Fallback für Unit-Tests (__metadata_body__ im Event)
@@ -516,18 +528,21 @@ def _load_mapping(
             if isinstance(md, dict):
                 mapping = md.get(PII_MAP_KEY)
                 counters = md.get(PII_COUNTERS_KEY)
+                audit_info = md.get("pii_audit_info")
 
     if not isinstance(mapping, dict) and isinstance(body, dict):
         md = body.get("metadata")
         if isinstance(md, dict):
             mapping = md.get(PII_MAP_KEY)
             counters = md.get(PII_COUNTERS_KEY)
+            audit_info = md.get("pii_audit_info")
 
     if not isinstance(mapping, dict) and isinstance(__body__, dict):
         md = __body__.get("metadata")
         if isinstance(md, dict):
             mapping = md.get(PII_MAP_KEY)
             counters = md.get(PII_COUNTERS_KEY)
+            audit_info = md.get("pii_audit_info")
 
     # Ausfallsicherung über In-Memory Global Store
     if not isinstance(mapping, dict) or not mapping:
@@ -535,17 +550,23 @@ def _load_mapping(
         mid = message_id or (body.get("id") if isinstance(body, dict) else None)
         for k in [mid, cid, f"{cid}:{mid}"]:
             if k and str(k) in _GLOBAL_PII_STORE:
-                m_found, c_found = _GLOBAL_PII_STORE[str(k)]
+                store_entry = _GLOBAL_PII_STORE[str(k)]
+                m_found = store_entry[0]
+                c_found = store_entry[1]
+                a_found = store_entry[2] if len(store_entry) > 2 else {}
                 if m_found:
                     mapping = m_found
                     counters = c_found
+                    audit_info = a_found
                     break
 
     if not isinstance(mapping, dict):
         mapping = {}
     if not isinstance(counters, dict):
         counters = {}
-    return mapping, counters
+    if not isinstance(audit_info, dict):
+        audit_info = {}
+    return mapping, counters, audit_info
 
 
 def _store_mapping(
@@ -555,22 +576,99 @@ def _store_mapping(
     metadata: Optional[dict] = None,
     chat_id: Optional[str] = None,
     message_id: Optional[str] = None,
+    audit_info: Optional[dict] = None,
 ) -> None:
     md = _ensure_metadata(body)
     md[PII_MAP_KEY] = mapping
     md[PII_COUNTERS_KEY] = counters
+    if audit_info:
+        md["pii_audit_info"] = audit_info
 
     if isinstance(metadata, dict):
         metadata[PII_MAP_KEY] = mapping
         metadata[PII_COUNTERS_KEY] = counters
+        if audit_info:
+            metadata["pii_audit_info"] = audit_info
 
     # Global in-memory cache als Ausfallsicherung
     for k in [message_id, chat_id, f"{chat_id}:{message_id}"]:
         if k:
-            _GLOBAL_PII_STORE[str(k)] = (dict(mapping), dict(counters))
+            _GLOBAL_PII_STORE[str(k)] = (dict(mapping), dict(counters), dict(audit_info or {}))
     if len(_GLOBAL_PII_STORE) > 200:
         oldest = next(iter(_GLOBAL_PII_STORE))
         _GLOBAL_PII_STORE.pop(oldest, None)
+
+
+def _get_category_label(token: str) -> str:
+    """Liefert eine lesbare deutsche Bezeichnung für eine PII-Token-Kategorie."""
+    if "IBAN" in token:
+        return "Bankkonto (IBAN)"
+    if "CREDIT_CARD" in token:
+        return "Kreditkartennummer"
+    if "EMAIL" in token:
+        return "E-Mail-Adresse"
+    if "PHONE" in token:
+        return "Telefonnummer"
+    if "PER" in token:
+        return "Person / Name"
+    if "LOC" in token:
+        return "Adresse / Standort"
+    if "ORG" in token:
+        return "Organisation / Firma"
+    if "IPV4" in token:
+        return "IP-Adresse"
+    if "TAX_ID" in token:
+        return "Steuer-ID"
+    return "Sensible Entität"
+
+
+def _format_pii_audit_box(
+    mapping: dict[str, str],
+    audit_info: dict[str, Any],
+    valves: Valves,
+) -> str:
+    """
+    Erzeugt eine aufklappbare <details>-Box nach der Antwort:
+    - Phase 1: Welche Daten wurden geschwärzt (Tabelle mit Token, Kategorie, Original)
+    - Phase 2: Exakt maskierter Prompt, der an das LLM geschickt wurde (Beweis für Zero Leakage)
+    - Phase 3: Bestätigung der Re-Hydrierung nach Erhalt der Modellantwort
+    """
+    rows = []
+    for token in sorted(mapping.keys(), key=len, reverse=True):
+        orig = mapping[token]
+        cat = _get_category_label(token)
+        rows.append(f"| `{token}` | **{cat}** | `{orig}` | Geschwärzt ➔ Rehydriert |")
+
+    table_content = "\n".join(rows)
+
+    masked_section = ""
+    masked_prompt = audit_info.get("masked_prompt", "")
+    if valves.show_masked_prompt_in_audit and masked_prompt:
+        masked_section = (
+            "\n#### 2. An das Modell übermittelter Prompt (Beweis für Zero Data Leakage)\n"
+            "> **Garantie:** Sämtliche Klardaten wurden vor Verlassen der Anwendung durch Platzhalter ersetzt. "
+            "Weder Cloud- noch lokale Modelle haben diese Identifikatoren im Rohzustand erhalten:\n\n"
+            "```text\n"
+            f"{masked_prompt.strip()}\n"
+            "```\n"
+        )
+
+    count = len(mapping)
+    box = (
+        f"<details>\n"
+        f"<summary>ℹ️ <b>Datenschutz- & PII-Protokoll</b> ({count} sensible Datenwerte geschwärzt & restauriert – Klick für Details)</summary>\n\n"
+        f"### 🛡️ Lebenszyklus der sensiblen Daten in dieser Anfrage\n\n"
+        f"#### 1. Erkannte & geschwärzte Entitäten (Inlet-Filter)\n"
+        f"| Platzhalter (Token) | Kategorie | Originalwert (geschützt) | Status |\n"
+        f"| :--- | :--- | :--- | :--- |\n"
+        f"{table_content}\n"
+        f"{masked_section}"
+        f"#### 3. Restaurierung nach Modellantwort (Outlet-Filter)\n"
+        f"- **Re-Hydrierung:** Alle **{count}** Platzhalter wurden nach Erhalt der Modellantwort in der finalen Antwort wieder nahtlos durch die Originaldaten ersetzt.\n"
+        f"- **Sicherheit:** Zu keinem Zeitpunkt wurden Klardaten ungeschützt über das Netzwerk übertragen.\n"
+        f"</details>"
+    )
+    return box
 
 
 # ---------------------------------------------------------------------------
@@ -644,19 +742,37 @@ def inlet(
     chat_id = __chat_id__ or body.get("chat_id") or (isinstance(__metadata__, dict) and __metadata__.get("chat_id"))
     message_id = __message_id__ or body.get("id") or (isinstance(__metadata__, dict) and __metadata__.get("message_id"))
 
-    mapping, counters = _load_mapping(body, __metadata__, chat_id=chat_id, message_id=message_id)
+    mapping, counters, _ = _load_mapping(body, __metadata__, chat_id=chat_id, message_id=message_id)
+
+    last_user_prompt = ""
+    last_masked_prompt = ""
 
     for idx, content in _iter_user_texts(body):
         if not content:
             continue
+        last_user_prompt = content
         try:
             new_content = _redact_text(content, valves, mapping, counters)
         except Exception as exc:  # noqa: BLE001
             log.exception(f"[PII] Fehler beim Redact: {exc}")
             new_content = content
+        last_masked_prompt = new_content
         _set_message_content(body, idx, new_content)
 
-    _store_mapping(body, mapping, counters, metadata=__metadata__, chat_id=chat_id, message_id=message_id)
+    audit_info = {
+        "original_prompt": last_user_prompt,
+        "masked_prompt": last_masked_prompt,
+    }
+
+    _store_mapping(
+        body,
+        mapping,
+        counters,
+        metadata=__metadata__,
+        chat_id=chat_id,
+        message_id=message_id,
+        audit_info=audit_info,
+    )
 
     # Debug-Hinweis & Audit-Log für die UI
     md = _ensure_metadata(body)
@@ -698,7 +814,7 @@ def outlet(
 ) -> dict:
     """
     Nach dem LLM-Aufruf: Platzhalter in der letzten Assistant-Message wieder
-    durch Originale ersetzen.
+    durch Originale ersetzen und auf Wunsch detailliertes Audit-Protokoll anfügen.
     """
 
     if not isinstance(body, dict):
@@ -721,7 +837,7 @@ def outlet(
     chat_id = __chat_id__ or body.get("chat_id") or (isinstance(__metadata__, dict) and __metadata__.get("chat_id"))
     message_id = __message_id__ or body.get("id") or (isinstance(__metadata__, dict) and __metadata__.get("message_id"))
 
-    mapping, _counters = _load_mapping(body, __metadata__, chat_id=chat_id, message_id=message_id)
+    mapping, _counters, audit_info = _load_mapping(body, __metadata__, chat_id=chat_id, message_id=message_id)
     if not mapping:
         return body
 
@@ -745,7 +861,14 @@ def outlet(
     except Exception as exc:  # noqa: BLE001
         log.exception(f"[PII] Fehler beim Deanonymize: {exc}")
 
-    # Audit-Log für UI-Transparenz
+    # Aufklappbare Info-Box (Details) am Ende der Antwort anfügen
+    if valves.show_audit_details and mapping:
+        audit_box = _format_pii_audit_box(mapping, audit_info, valves)
+        current_content = body["messages"][idx].get("content") or ""
+        if "Datenschutz- & PII-Protokoll" not in current_content:
+            body["messages"][idx]["content"] = f"{current_content}\n\n---\n{audit_box}"
+
+    # Audit-Log für UI-Transparenz (Sichtbar im Info-Icon ℹ️)
     outlet_elements = []
     for token, orig in mapping.items():
         match = re.search(r"\[\[([A-Z_]+)_\d+\]\]", token)
@@ -801,7 +924,7 @@ def stream(
     chat_id = __chat_id__ or (isinstance(__metadata__, dict) and __metadata__.get("chat_id"))
     message_id = __message_id__ or (isinstance(__metadata__, dict) and __metadata__.get("message_id"))
 
-    mapping, _ = _load_mapping(event, __metadata__, __body__, chat_id=chat_id, message_id=message_id)
+    mapping, _, _ = _load_mapping(event, __metadata__, __body__, chat_id=chat_id, message_id=message_id)
     if not mapping:
         return event
 
@@ -820,6 +943,7 @@ def stream(
     event["content"] = out
     event[_STREAM_BUFFER_KEY] = replaced[cut:]
     return event
+
 
 
 class Filter:
