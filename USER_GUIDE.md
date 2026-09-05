@@ -25,20 +25,14 @@ Dein KI-System kombiniert zwei Sicherheits- und Performance-Ebenen zu einer voll
 
 Wir haben unsere Architektur exakt gegen die drei Kernpfeiler des **Perplexity Hybrid Compute Blueprints** abgeglichen und im Detail umgesetzt:
 
-### 📸 Pfeiler 1: Hybrid Compute – Ein Task, zwei Welten (Vorlage Screenshot 1)
-
-<p align="center"><img src="docs/blueprint/blueprint-1-hybrid-compute.jpeg" alt="Hybrid Compute Blueprint" width="600"/></p>
-
+### 📸 Pfeiler 1: Hybrid Compute – Ein Task, zwei Welten (Blueprint-Prinzip 1)
 * **Perplexity Blueprint:** Ein Orchestrator teilt eine Gesamtaufgabe intelligent auf. Die Cloud übernimmt anspruchsvolles Reasoning & Websuche, während lokale Modelle vertrauliche Dokumente und sensible Daten verarbeiten. Ein zentraler Orchestrator führt die Ergebnisse nahtlos zusammen.
 * **Unsere Implementierung in Open WebUI:**
   - **Realisierung:** Unser zweistufiges Pipeline-System (`pii_filter.py` auf Priority 0 + `model_router.py` auf Priority 10) übernimmt genau diese Orchestrierung.
   - **Verteilung:** Reine Struktur- und Architekturfragen ohne PII werden an High-End Cloud-Modelle (Claude 4.5 Sonnet / Opus 4.6) übergeben. Sobald PII oder unkritische Routineaufgaben vorliegen, übernimmt die lokale Workstation (LM Studio via Tailscale).
   - **Zusammenführung:** Durch den Re-Hydrierungs-Outlet und den Streaming-Subtoken-Buffer werden die vertraulichen Daten erst auf dem Minisforum-Server wieder in die Antwort eingefügt. Die Cloud sieht zu keinem Zeitpunkt Rohdaten.
 
-### 📸 Pfeiler 2: Modell-Split & Zero Cloud Credits (Vorlage Screenshot 2)
-
-<p align="center"><img src="docs/blueprint/blueprint-2-model-split.jpeg" alt="Model Split Blueprint" width="600"/></p>
-
+### 📸 Pfeiler 2: Modell-Split & Zero Cloud Credits (Blueprint-Prinzip 2)
 * **Perplexity Blueprint:** Aufgaben werden auf spezialisierte lokale Modelle aufgeteilt, um 0 Cloud-Credits zu verbrauchen: Gemma 4 für Writing, Qwen Coder für Code, DeepSeek für Reasoning.
 * **Unsere Implementierung in Open WebUI:**
   - **1:1 Parität erreicht:**
@@ -48,10 +42,7 @@ Wir haben unsere Architektur exakt gegen die drei Kernpfeiler des **Perplexity H
     - `LMStudio.qwen3.8-9b-distill-uncensored-heretic-i1`: Unzensierte historische und kontroverse Recherchen ohne Moralisierung (Temp `0.70`, Top-P `0.90`).
   - **Kosten:** Alltägliche Chat- und Arbeitslasten laufen zu 100 % lokal über die GPU-Workstation (**0 API-Kosten**).
 
-### 📸 Pfeiler 3: Privacy Gate & 4-Aktionen-Klassifikator (Vorlage Screenshot 3)
-
-<p align="center"><img src="docs/blueprint/blueprint-3-privacy-gate.jpeg" alt="Privacy Gate Blueprint" width="600"/></p>
-
+### 📸 Pfeiler 3: Privacy Gate & 4-Aktionen-Klassifikator (Blueprint-Prinzip 3)
 * **Perplexity Blueprint:** Ein Privacy Gate mit einem vollwertigen PII-Klassifikator (nicht nur einfache Regex). 4 Aktionen:
   1. *Mask Value:* Wert durch Platzhalter ersetzen.
   2. *Keep Local:* Bei sensiblen Inhalten lokal auf dem Gerät bleiben.

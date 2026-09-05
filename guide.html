@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="de" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benutzer-Handbuch: Hybrid Model Router & Privacy Gate</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        surface: {
+                            800: '#131b2e',
+                            850: '#0f172a',
+                            900: '#0b0f19',
+                            950: '#070a12',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #070a12;
+            color: #e2e8f0;
+        }
+        .font-display { font-family: 'Outfit', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        .toc-link.active {
+            color: #818cf8;
+            border-color: #6366f1;
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen selection:bg-indigo-500 selection:text-white pb-24">
+
+    <!-- Top Navigation Bar -->
+    <nav class="border-b border-slate-800/80 bg-surface-900/95 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="px-3 py-1.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-2 text-xs font-semibold" title="Zurück zum Live-Dashboard">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>Dashboard</span>
+                </a>
+                <div class="h-5 w-px bg-slate-800 hidden sm:block"></div>
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-400 font-bold">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <span class="font-display font-bold text-white tracking-tight hidden md:inline">
+                        Benutzer-Handbuch (Volltext)
+                    </span>
+                </div>
+            </div>
+
+            <!-- Search & Actions -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                    <input type="text" id="doc-search" placeholder="Handbuch durchsuchen..." oninput="filterGuide(this.value)" class="pl-8 pr-3 py-1.5 rounded-xl bg-surface-950 border border-slate-800 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 w-44 sm:w-64 transition-all">
+                </div>
+                <a href="http://100.116.36.64:8080" target="_blank" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs font-semibold transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-comments"></i>
+                    <span class="hidden sm:inline">Open WebUI (:8080)</span>
+                </a>
+                <button onclick="window.print()" class="px-3 py-1.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-slate-300 border border-slate-700 text-xs font-semibold transition-all flex items-center gap-1.5" title="Drucken oder als PDF speichern">
+                    <i class="fa-solid fa-print"></i>
+                    <span class="hidden sm:inline">PDF</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container (Sidebar + Content) -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Sticky Sidebar (Table of Contents) -->
+            <aside class="hidden lg:block lg:col-span-4 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-2 space-y-4">
+                <div class="glass-card p-4 rounded-2xl">
+                    <div class="text-xs font-bold font-mono uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between">
+                        <span>INHALTSVERZEICHNIS</span>
+                        <i class="fa-solid fa-list text-indigo-400"></i>
+                    </div>
+                    <nav class="space-y-0.5" id="toc-nav">
+                        
+            <a href="#1-was-macht-dieses-system" class="toc-link block px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-surface-800/60 rounded-lg transition-all border-l-2 border-transparent hover:border-indigo-400">
+                🌟 1. Was macht dieses System?
+            </a>
+            
+
+            <a href="#1-1-architektur-reflexion-perplexity-hybrid-compute-blueprint-vs-unsere-implementierung" class="toc-link block px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-surface-800/60 rounded-lg transition-all border-l-2 border-transparent hover:border-indigo-400">
+                🏛️ 1.1 Architektur-Reflexion: Perplexity Hybrid Compute Blueprint vs. Unsere Implementierung
+            </a>
+            
+
+            <a href="#pfeiler-1-hybrid-compute-ein-task-zwei-welten-blueprint-prinzip-1" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                📸 Pfeiler 1: Hybrid Compute – Ein Task, zwei Welten (Blueprint-Prinzip 1)
+            </a>
+            
+
+            <a href="#pfeiler-2-modell-split-zero-cloud-credits-blueprint-prinzip-2" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                📸 Pfeiler 2: Modell-Split & Zero Cloud Credits (Blueprint-Prinzip 2)
+            </a>
+            
+
+            <a href="#pfeiler-3-privacy-gate-4-aktionen-klassifikator-blueprint-prinzip-3" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                📸 Pfeiler 3: Privacy Gate & 4-Aktionen-Klassifikator (Blueprint-Prinzip 3)
+            </a>
+            
+
+            <a href="#2-die-system-topologie" class="toc-link block px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-surface-800/60 rounded-lg transition-all border-l-2 border-transparent hover:border-indigo-400">
+                🏗️ 2. Die System-Topologie
+            </a>
+            
+
+            <a href="#3-die-modell-profile-wann-was-verwendet-wird" class="toc-link block px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-surface-800/60 rounded-lg transition-all border-l-2 border-transparent hover:border-indigo-400">
+                🧠 3. Die Modell-Profile & wann was verwendet wird
+            </a>
+            
+
+            <a href="#a-lokale-modelle-workstation-bull-lm-studio" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                A. Lokale Modelle (Workstation &bull; LM Studio)
+            </a>
+            
+
+            <a href="#b-cloud-modelle-openrouter-flexible-fallkonfiguration" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                B. Cloud-Modelle (OpenRouter) & Flexible Fallkonfiguration
+            </a>
+            
+
+            <a href="#4-die-pii-datenschutz-komponente-im-detail-pii_filter-py" class="toc-link block px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-surface-800/60 rounded-lg transition-all border-l-2 border-transparent hover:border-indigo-400">
+                🛡️ 4. Die PII-Datenschutz-Komponente im Detail (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">pii_filter.py</code>)
+            </a>
+            
+
+            <a href="#4-1-die-2-schichten-erkennungs-engine" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                4.1 Die 2-Schichten Erkennungs-Engine
+            </a>
+            
+
+            <a href="#4-2-der-4-phasen-lebenszyklus-reversibilit-t-streaming" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                4.2 Der 4-Phasen Lebenszyklus (Reversibilität & Streaming)
+            </a>
+            
+
+            <a href="#4-3-reasoning-schutz-deanonymize_reasoning" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                4.3 Reasoning-Schutz (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">deanonymize_reasoning</code>)
+            </a>
+            
+
+            <a href="#4-4-konfiguration-anpassung-valves" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                4.4 Konfiguration & Anpassung (Valves)
+            </a>
+            
+
+            <a href="#4-5-transparenz-audit-log-das-info-icon" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                4.5 Transparenz & Audit-Log (Das Info-Icon ℹ️)
+            </a>
+            
+
+            <a href="#5-manuelle-steuerung-im-chat-tags-aliase" class="toc-link block px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-surface-800/60 rounded-lg transition-all border-l-2 border-transparent hover:border-indigo-400">
+                🕹️ 5. Manuelle Steuerung im Chat (Tags & Aliase)
+            </a>
+            
+
+            <a href="#kurzbefehle-f-r-lokale-modelle" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                Kurzbefehle für lokale Modelle:
+            </a>
+            
+
+            <a href="#kurzbefehle-f-r-cloud-modelle" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                Kurzbefehle für Cloud-Modelle:
+            </a>
+            
+
+            <a href="#6-transparenz-audit-modell-pii-verlauf-im-info-icon" class="toc-link block px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-surface-800/60 rounded-lg transition-all border-l-2 border-transparent hover:border-indigo-400">
+                🔍 6. Transparenz & Audit: Modell & PII-Verlauf im Info-Icon (ℹ️)
+            </a>
+            
+
+            <a href="#1-das-routing-router_decision" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                1. Das Routing (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">router_decision</code>)
+            </a>
+            
+
+            <a href="#2-das-pii-audit-log-pii_audit" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                2. Das PII-Audit-Log (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">pii_audit</code>)
+            </a>
+            
+
+            <a href="#7-einstellungen-feinjustierung-admin-user-valves" class="toc-link block px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-surface-800/60 rounded-lg transition-all border-l-2 border-transparent hover:border-indigo-400">
+                ⚙️ 7. Einstellungen & Feinjustierung (Admin & User Valves)
+            </a>
+            
+
+            <a href="#7-1-admin-valves-globale-systemkonfiguration" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                7.1 Admin Valves (Globale Systemkonfiguration)
+            </a>
+            
+
+            <a href="#7-2-user-valves-pers-nliche-einstellungen-pro-account" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                7.2 User Valves (Persönliche Einstellungen pro Account)
+            </a>
+            
+
+            <a href="#8-praxis-beispiele-test-prompts-prompt-showcase" class="toc-link block px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-surface-800/60 rounded-lg transition-all border-l-2 border-transparent hover:border-indigo-400">
+                🧪 8. Praxis-Beispiele & Test-Prompts (Prompt Showcase)
+            </a>
+            
+
+            <a href="#szenario-1-datenschutz-lockdown-kritisches-pii-coding" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                🏦 Szenario 1: Datenschutz-Lockdown (Kritisches PII + Coding)
+            </a>
+            
+
+            <a href="#szenario-2-deep-reasoning-mathematik-lokal-mit-deepseek-r1" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                🧠 Szenario 2: Deep Reasoning & Mathematik (Lokal mit DeepSeek-R1)
+            </a>
+            
+
+            <a href="#szenario-3-text-veredelung-writing-anti-ki-human-master" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                ✍️ Szenario 3: Text-Veredelung & Writing (Anti-KI / Human Master)
+            </a>
+            
+
+            <a href="#szenario-4-cloud-high-end-architektur-claude-sonnet-4-5-via-openrouter" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                🚀 Szenario 4: Cloud High-End Architektur (Claude Sonnet 4.5 via OpenRouter)
+            </a>
+            
+
+            <a href="#szenario-5-privacy-gate-override-test-schutz-vor-versehentlichem-cloud-leak" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                🛡️ Szenario 5: Privacy Gate Override-Test (Schutz vor versehentlichem Cloud-Leak)
+            </a>
+            
+
+            <a href="#9-technische-details-latenz-troubleshooting-good-to-know" class="toc-link block px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-surface-800/60 rounded-lg transition-all border-l-2 border-transparent hover:border-indigo-400">
+                ⚡ 9. Technische Details, Latenz & Troubleshooting (Good to Know)
+            </a>
+            
+
+            <a href="#1-nahtlose-modell-synchronisation-im-browser-selected_model_id" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                1. Nahtlose Modell-Synchronisation im Browser (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">selected_model_id</code>)
+            </a>
+            
+
+            <a href="#2-cold-starts-vram-ladezeiten-auf-der-workstation" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                2. Cold-Starts & VRAM-Ladezeiten auf der Workstation
+            </a>
+            
+
+            <a href="#3-der-interne-denkprozess-reasoning_content-cot" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                3. Der interne Denkprozess (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">reasoning_content</code> / CoT)
+            </a>
+            
+
+            <a href="#4-verbindung-nicht-vorzeitig-abbrechen" class="toc-link block pl-6 pr-3 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all">
+                4. Verbindung nicht vorzeitig abbrechen
+            </a>
+            
+                    </nav>
+                </div>
+
+                <!-- Quick Badge Info Card -->
+                <div class="glass-card p-4 rounded-2xl text-xs space-y-2.5">
+                    <div class="font-bold text-white font-display flex items-center gap-2">
+                        <i class="fa-solid fa-server text-emerald-400"></i>
+                        <span>System-Endpunkte</span>
+                    </div>
+                    <div class="space-y-1.5 text-slate-400 font-mono text-[11px]">
+                        <div class="flex justify-between"><span>WebUI:</span><span class="text-emerald-400">100.116.36.64:8080</span></div>
+                        <div class="flex justify-between"><span>Dashboard:</span><span class="text-indigo-400">100.116.36.64:8089</span></div>
+                        <div class="flex justify-between"><span>Workstation:</span><span class="text-cyan-400">100.75.244.51:1234</span></div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Reading Article -->
+            <main class="col-span-1 lg:col-span-8 space-y-6">
+                <div class="glass-card p-6 sm:p-10 rounded-3xl" id="guide-article">
+                    
+            <div class="pb-6 mb-8 border-b border-slate-800">
+                <span class="text-xs uppercase font-bold tracking-widest text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-3 py-1 rounded-full inline-block mb-3">Dokumentation & Handbuch</span>
+                <h1 class="text-3xl sm:text-4xl font-extrabold font-display text-white tracking-tight leading-tight">📘 Benutzer-Handbuch: Hybrid Model Router & Privacy Gate</h1>
+            </div>
+            
+
+                <div class="my-5 p-4 rounded-2xl border border-indigo-500/30 bg-indigo-950/20 text-xs leading-relaxed">
+                    <div class="flex items-center gap-2 text-indigo-300 font-semibold font-mono uppercase tracking-wider mb-1.5">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>HINWEIS</span>
+                    </div>
+                    <div class="text-slate-300"><strong class="text-white font-semibold">Setup:</strong> Open WebUI auf Minisforum Server &bull; Compute Node via Tailscale (LM Studio Workstation) &bull; Cloud APIs (OpenRouter)<br>📊 <strong class="text-white font-semibold">Interaktives Live-Dashboard:</strong><br>- <strong class="text-white font-semibold">Tailscale (Team & Remote):</strong> <a href="http://100.116.36.64:8089" class="text-indigo-400 hover:text-indigo-300 underline underline-offset-2 transition-colors">http://100.116.36.64:8089</a><br>- <strong class="text-white font-semibold">Lokales Netzwerk (Office LAN):</strong> <a href="http://192.168.168.202:8089" class="text-indigo-400 hover:text-indigo-300 underline underline-offset-2 transition-colors">http://192.168.168.202:8089</a><br>- <strong class="text-white font-semibold">Im Agentic Handbuch:</strong> <a href="http://100.116.36.64:8088" class="text-indigo-400 hover:text-indigo-300 underline underline-offset-2 transition-colors">http://100.116.36.64:8088</a> (Direktaufruf-Karte 4 oder <a href="http://100.116.36.64:8088/router/" class="text-indigo-400 hover:text-indigo-300 underline underline-offset-2 transition-colors">/router/</a>)</div>
+                </div>
+                
+<hr class="my-8 border-slate-800/80">
+
+            <div id="1-was-macht-dieses-system" class="pt-8 pb-3 mt-6 border-t border-slate-800/60 first:border-0 scroll-mt-24">
+                <h2 class="text-2xl font-bold font-display text-white flex items-center gap-3">
+                    <span>🌟 1. Was macht dieses System?</span>
+                    <a href="#1-was-macht-dieses-system" class="text-slate-600 hover:text-indigo-400 text-sm transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h2>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">Dein KI-System kombiniert zwei Sicherheits- und Performance-Ebenen zu einer vollautomatischen <strong class="text-white font-semibold">Hybrid-Orchestrierung</strong> (nach dem Vorbild von <em class="text-slate-300 italic">Perplexity Hybrid Compute</em>):</p>
+<ol class="list-decimal list-inside space-y-1.5 my-3 text-xs text-slate-300 pl-2">
+<li class="leading-relaxed"><strong class="text-white font-semibold">Datenschutz (Privacy Gate):</strong> Sensible Daten (Namen, Orte, Firmen, E-Mails) werden in der User-Eingabe geschwärzt (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[NAME_PER_1]]</code>), bevor ein externes Modell sie sehen kann. Nach der Antwort werden sie automatisch wieder mit den Originaldaten befüllt.</li>
+<li class="leading-relaxed"><strong class="text-white font-semibold">Intelligentes Modell-Routing:</strong> Ein nachgelagertes Gateway entscheidet anhand von <strong class="text-white font-semibold">Datenschutzstufe</strong>, <strong class="text-white font-semibold">Aufgabentyp (Intent)</strong> und <strong class="text-white font-semibold">Komplexität</strong>, wohin die Anfrage gesendet wird:</li>
+<li class="leading-relaxed"><strong class="text-white font-semibold">Lokale Workstation (LM Studio via Tailscale):</strong> Für sensible/kritische Daten, Programmier-Routine, unzensierte Recherchen und Alltags-Chat (<strong class="text-white font-semibold">0 Cloud-Credits / gratis</strong>).</li>
+<li class="leading-relaxed"><strong class="text-white font-semibold">Cloud High-End (OpenRouter):</strong> Für hochkomplexe Systemarchitekturen, tiefste Logik und Mammut-Code (Claude Sonnet 4.5 / Opus 4.6), sofern keine kritischen Daten vorliegen.</li>
+<li class="leading-relaxed"><strong class="text-white font-semibold">Automatische Hyperparameter:</strong> Für jedes Modell werden automatisch die optimalen Werte für <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">temperature</code> und <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">top_p</code> gesetzt.</li>
+</ol>
+<hr class="my-8 border-slate-800/80">
+
+            <div id="1-1-architektur-reflexion-perplexity-hybrid-compute-blueprint-vs-unsere-implementierung" class="pt-8 pb-3 mt-6 border-t border-slate-800/60 first:border-0 scroll-mt-24">
+                <h2 class="text-2xl font-bold font-display text-white flex items-center gap-3">
+                    <span>🏛️ 1.1 Architektur-Reflexion: Perplexity Hybrid Compute Blueprint vs. Unsere Implementierung</span>
+                    <a href="#1-1-architektur-reflexion-perplexity-hybrid-compute-blueprint-vs-unsere-implementierung" class="text-slate-600 hover:text-indigo-400 text-sm transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h2>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">Wir haben unsere Architektur exakt gegen die drei Kernpfeiler des <strong class="text-white font-semibold">Perplexity Hybrid Compute Blueprints</strong> abgeglichen und im Detail umgesetzt:</p>
+
+            <div id="pfeiler-1-hybrid-compute-ein-task-zwei-welten-blueprint-prinzip-1" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>📸 Pfeiler 1: Hybrid Compute – Ein Task, zwei Welten (Blueprint-Prinzip 1)</span>
+                    <a href="#pfeiler-1-hybrid-compute-ein-task-zwei-welten-blueprint-prinzip-1" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Perplexity Blueprint:</strong> Ein Orchestrator teilt eine Gesamtaufgabe intelligent auf. Die Cloud übernimmt anspruchsvolles Reasoning & Websuche, während lokale Modelle vertrauliche Dokumente und sensible Daten verarbeiten. Ein zentraler Orchestrator führt die Ergebnisse nahtlos zusammen.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Unsere Implementierung in Open WebUI:</strong></span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Realisierung:</strong> Unser zweistufiges Pipeline-System (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">pii_filter.py</code> auf Priority 0 + <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">model_router.py</code> auf Priority 10) übernimmt genau diese Orchestrierung.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Verteilung:</strong> Reine Struktur- und Architekturfragen ohne PII werden an High-End Cloud-Modelle (Claude 4.5 Sonnet / Opus 4.6) übergeben. Sobald PII oder unkritische Routineaufgaben vorliegen, übernimmt die lokale Workstation (LM Studio via Tailscale).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Zusammenführung:</strong> Durch den Re-Hydrierungs-Outlet und den Streaming-Subtoken-Buffer werden die vertraulichen Daten erst auf dem Minisforum-Server wieder in die Antwort eingefügt. Die Cloud sieht zu keinem Zeitpunkt Rohdaten.</span></li>
+</ul>
+
+            <div id="pfeiler-2-modell-split-zero-cloud-credits-blueprint-prinzip-2" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>📸 Pfeiler 2: Modell-Split & Zero Cloud Credits (Blueprint-Prinzip 2)</span>
+                    <a href="#pfeiler-2-modell-split-zero-cloud-credits-blueprint-prinzip-2" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Perplexity Blueprint:</strong> Aufgaben werden auf spezialisierte lokale Modelle aufgeteilt, um 0 Cloud-Credits zu verbrauchen: Gemma 4 für Writing, Qwen Coder für Code, DeepSeek für Reasoning.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Unsere Implementierung in Open WebUI:</strong></span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">1:1 Parität erreicht:</strong></span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LMStudio.deepseek-r1-distill-qwen-14b</code>: Deep Reasoning, formale Logik, mathematische Beweise (Temp <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.60</code>, Top-P <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.95</code>).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LMStudio.qwen2.5-coder-14b-instruct</code>: Syntax-präzises Programmieren, Skripte, Refactorings (Temp <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.20</code>, Top-P <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.85</code>).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LMStudio.google/gemma-4-12b-qat</code>: Natürliche menschliche Diktion, Anti-KI Schreibstil, E-Mails und Zusammenfassungen (Temp <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.55</code>, Top-P <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.90</code>).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LMStudio.qwen3.8-9b-distill-uncensored-heretic-i1</code>: Unzensierte historische und kontroverse Recherchen ohne Moralisierung (Temp <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.70</code>, Top-P <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.90</code>).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Kosten:</strong> Alltägliche Chat- und Arbeitslasten laufen zu 100 % lokal über die GPU-Workstation (<strong class="text-white font-semibold">0 API-Kosten</strong>).</span></li>
+</ul>
+
+            <div id="pfeiler-3-privacy-gate-4-aktionen-klassifikator-blueprint-prinzip-3" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>📸 Pfeiler 3: Privacy Gate & 4-Aktionen-Klassifikator (Blueprint-Prinzip 3)</span>
+                    <a href="#pfeiler-3-privacy-gate-4-aktionen-klassifikator-blueprint-prinzip-3" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Perplexity Blueprint:</strong> Ein Privacy Gate mit einem vollwertigen PII-Klassifikator (nicht nur einfache Regex). 4 Aktionen:</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><em class="text-slate-300 italic">Mask Value:</em> Wert durch Platzhalter ersetzen.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><em class="text-slate-300 italic">Keep Local:</em> Bei sensiblen Inhalten lokal auf dem Gerät bleiben.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><em class="text-slate-300 italic">Refuse:</em> Anfrage bereinigen / blockieren.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><em class="text-slate-300 italic">Ask You:</em> Benutzer entscheiden lassen / kontrollieren.</span></li>
+</ul>
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">Cloud-Modelle operieren ausschließlich auf abstrakter Struktur, ohne private Daten zu halten.</p>
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Unsere Implementierung in Open WebUI:</strong></span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">2-Schichten Klassifikator:</strong> Kombination aus deterministischer Regex-Engine (IBAN, Kreditkarten, Passwörter in URLs, SSN, E-Mail, Telefon, IPs) und Machine-Learning NLP (<strong class="text-white font-semibold">spaCy NER</strong> <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">de_core_news_sm</code> für Personen, Orte, Organisationen).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Die 4 Aktionen umgesetzt:</strong></span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Mask Value:</strong> Namen, Orte, Organisationen und E-Mails werden mit reversiblen Tokens (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[NAME_PER_1]]</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[EMAIL_1]]</code>) maskiert. Cloud-Modelle analysieren die Satz- und Logikstruktur, besitzen aber keine echten Personendaten.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Keep Local:</strong> Kritisches Finanz-PII (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">IBAN</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">CREDIT_CARD</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">SSN_US</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">URL_WITH_AUTH</code>) löst einen sofortigen <strong class="text-white font-semibold">Hard Lockdown</strong> aus. Selbst wenn der Nutzer ein Cloud-Modell oder <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#opus</code> gewählt hat, wird der Request hardware-seitig lokal erzwungen.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Refuse / Sanitization:</strong> Gefährliche Authentifizierungs-Muster in URLs (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">user:pass@</code>) werden bereinigt und neutralisiert.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Ask You / Benutzer-Souveränität:</strong> Benutzer können über Chat-Tags (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#local</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#cloud</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#r1</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#code</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#write</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#heretic</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#opus</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#sonnet</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#flash</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#gpt</code>) die Kontrolle übernehmen und in den <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">UserValves</code> ihr bevorzugtes Cloud-Standardmodell individuell festlegen.</span></li>
+</ul>
+<hr class="my-8 border-slate-800/80">
+
+            <div id="2-die-system-topologie" class="pt-8 pb-3 mt-6 border-t border-slate-800/60 first:border-0 scroll-mt-24">
+                <h2 class="text-2xl font-bold font-display text-white flex items-center gap-3">
+                    <span>🏗️ 2. Die System-Topologie</span>
+                    <a href="#2-die-system-topologie" class="text-slate-600 hover:text-indigo-400 text-sm transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h2>
+            </div>
+            
+
+                <div class="relative group my-4 rounded-2xl overflow-hidden bg-surface-950 border border-slate-800 shadow-xl">
+                    <div class="flex items-center justify-between px-4 py-2 bg-surface-900 border-b border-slate-800/80 text-xs font-mono text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
+                            <span class="text-slate-300 font-semibold">CODE</span>
+                        </div>
+                        <button onclick="copyToClipboard('code-block-54')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Kopieren</span>
+                        </button>
+                    </div>
+                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed"><code id="code-block-54">[Browser / Handy]
+       │
+       ▼ (Port 8080)
+┌─────────────────────────────────────────────────────────────┐
+│ MINISFORUM SERVER (Home Server)                             │
+│                                                             │
+│ 1. Filter: PII Redaction Filter (Priority 0)                │
+│    Erkennt IBAN, E-Mail, Namen via Regex + spaCy NER        │
+│    Ersetzt z.B. &quot;Herr Schmidt&quot; durch &quot;[[NAME_PER_1]]&quot;       │
+│                                                             │
+│ 2. Filter: Hybrid Model Router (Priority 10)                │
+│    - Prüft: Gibt es unmaskierbare PII (z.B. IBAN/Bankdaten)?│
+│    - Prüft: Handelt es sich um Code, Mathe, Text, Recherche?│
+│    - Wählt Modell &amp; setzt exakte Temp/Top-P                 │
+└────────────────┬────────────────────────────┬───────────────┘
+                 │                            │
+   [Sensibel / Routine / 0 Credits]     [Maskiert + High-Complexity]
+                 │                            │
+                 ▼ (Tailscale / LAN :1234)    ▼ (Internet HTTPS)
+┌────────────────────────────────┐ ┌──────────────────────────┐
+│ WORKSTATION (LM Studio GPU)    │ │ OPENROUTER (Cloud)       │
+│ • DeepSeek-R1 (Logik)          │ │ • Claude Sonnet 4.5      │
+│ • Qwen 2.5 Coder (Skripte)     │ │ • Claude Opus 4.6        │
+│ • Gemma 4 (Writing / Anti-KI)  │ │ • Gemini 3 Flash         │
+│ • Heretic 9B (Unzensiert)      │ │                          │
+└────────────────┬───────────────┘ └──────────┬───────────────┘
+                 │                            │
+                 └───────────────┬────────────┘
+                                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 3. PII Outlet / Stream (Minisforum Server)                  │
+│    Setzt &quot;[[NAME_PER_1]]&quot; wieder zu &quot;Herr Schmidt&quot; zusammen │
+└────────────────────────────────┬────────────────────────────┘
+                                 ▼
+                       [Fertige Antwort im Chat]</code></pre>
+                </div>
+                
+<hr class="my-8 border-slate-800/80">
+
+            <div id="3-die-modell-profile-wann-was-verwendet-wird" class="pt-8 pb-3 mt-6 border-t border-slate-800/60 first:border-0 scroll-mt-24">
+                <h2 class="text-2xl font-bold font-display text-white flex items-center gap-3">
+                    <span>🧠 3. Die Modell-Profile & wann was verwendet wird</span>
+                    <a href="#3-die-modell-profile-wann-was-verwendet-wird" class="text-slate-600 hover:text-indigo-400 text-sm transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h2>
+            </div>
+            
+
+            <div id="a-lokale-modelle-workstation-bull-lm-studio" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>A. Lokale Modelle (Workstation &bull; LM Studio)</span>
+                    <a href="#a-lokale-modelle-workstation-bull-lm-studio" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+
+                <div class="my-6 overflow-x-auto rounded-2xl border border-slate-800 shadow-lg bg-surface-950/60">
+                    <table class="min-w-full divide-y divide-slate-800 font-sans">
+                        <thead><tr><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Profil</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Modell in Open WebUI</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Temp</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Top-P</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Wann wählt das Gateway dieses Modell?</th></tr></thead>
+                        <tbody><tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">🧠 Deep Reasoning</strong></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LMStudio.deepseek-r1-distill-qwen-14b</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.60</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.95</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Mathematische Beweise, formale Logik, Chain-of-Thought, logische Rätsel.</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">💻 Coding & Skripte</strong></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LMStudio.qwen2.5-coder-14b-instruct</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.20</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.85</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Python-Skripte, SQL-Abfragen, Bash, Regex, Debugging, Code-Reviews.</td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">✍️ Writing & Chat</strong></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LMStudio.google/gemma-4-12b-qat</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.55</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.90</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Text-Veredelung, Aufsätze, Mails, Zusammenfassungen, Standard-Chat (Human Master / Anti-KI).</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">🔓 Unzensiert</strong></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LMStudio.qwen3.8-9b-distill-uncensored-heretic-i1</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.70</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.90</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Tabuthemen, kontroverse Fragen, unzensierte historische Analysen ohne Moralisierung.</td></tr>
+</tbody>
+                    </table>
+                </div>
+                
+
+            <div id="b-cloud-modelle-openrouter-flexible-fallkonfiguration" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>B. Cloud-Modelle (OpenRouter) & Flexible Fallkonfiguration</span>
+                    <a href="#b-cloud-modelle-openrouter-flexible-fallkonfiguration" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">Über die Admin-Valves können die Cloud-Modelle für alle 5 typischen Praxisfälle flexibel und ohne Code-Änderung ausgetauscht werden:</p>
+
+                <div class="my-6 overflow-x-auto rounded-2xl border border-slate-800 shadow-lg bg-surface-950/60">
+                    <table class="min-w-full divide-y divide-slate-800 font-sans">
+                        <thead><tr><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Profil</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Fall / Einsatzzweck</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Valve-Name</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Standard-Modell (Open WebUI ID)</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Temp</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Top-P</th></tr></thead>
+                        <tbody><tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">🚀 Cloud High-End</strong></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Fall 1: High-End Coding & Architektur</strong> (Prompts > 120 Wörter oder <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#sonnet</code> / <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#claude</code>)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">MODEL_CLOUD_HEAVY</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">openrouter.anthropic/claude-sonnet-4.5</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.40</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.90</code></td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">🏛️ Cloud Flagship</strong></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Fall 2: Deep Reasoning, Philosophie & Strategie</strong> (Erfordert <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#opus</code>)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">MODEL_CLOUD_OPUS</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">openrouter.anthropic/claude-opus-4.6</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.50</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.90</code></td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">✍️ Cloud Writing</strong></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Fall 3: Komplexe Textanalyse & Mammut-Texte</strong> (Lange Schreibaufträge > 120 Wörter)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">MODEL_CLOUD_WRITING</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">openrouter.anthropic/claude-sonnet-4.5</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.45</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.90</code></td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">⚡ Cloud Fast</strong></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Fall 4: Schnelle unkritische Abfragen & Suche</strong> (Erfordert <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#flash</code> / <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#gemini</code>)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">MODEL_CLOUD_FAST</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">openrouter.google/gemini-3-flash-preview</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.60</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.90</code></td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">🌐 OpenAI Flagship</strong></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Fall 5: Analytik, Data Science & OpenAI-Tasks</strong> (Erfordert <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#gpt</code> / <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#openai</code>)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">MODEL_CLOUD_GPT</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">openrouter.openai/gpt-5.2</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.30</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.90</code></td></tr>
+</tbody>
+                    </table>
+                </div>
+                
+
+                <div class="my-5 p-4 rounded-2xl border border-emerald-500/30 bg-emerald-950/20 text-xs leading-relaxed">
+                    <div class="flex items-center gap-2 text-emerald-300 font-semibold font-mono uppercase tracking-wider mb-1.5">
+                        <i class="fa-solid fa-lightbulb"></i>
+                        <span>TIPP</span>
+                    </div>
+                    <div class="text-slate-300"><strong class="text-white font-semibold">👤 Individuelle Benutzer-Präferenz (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">UserValves.preferred_cloud_model</code>):</strong><br>Jeder Benutzer kann in seinen Profileinstellungen unter <strong class="text-white font-semibold">Account ➔ Functions ➔ Hybrid Model Router</strong> ein persönliches Standard-Cloud-Modell hinterlegen. Wird dieses gesetzt, wird es bei generellen Cloud-Anfragen bevorzugt verwendet.</div>
+                </div>
+                
+
+                <div class="my-5 p-4 rounded-2xl border border-indigo-500/30 bg-indigo-950/20 text-xs leading-relaxed">
+                    <div class="flex items-center gap-2 text-indigo-300 font-semibold font-mono uppercase tracking-wider mb-1.5">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>HINWEIS</span>
+                    </div>
+                    <div class="text-slate-300"><strong class="text-white font-semibold">🛡️ Intelligenter Auto-Fallback Schutz:</strong><br>Veraltete oder von OpenRouter deaktivierte Modell-IDs (wie das nicht existierende <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">google/gemini-3-pro-preview</code> oder deaktivierte Presets wie <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">@preset/deepseek-v4</code>) werden vom Gateway <strong class="text-white font-semibold">vollautomatisch abgefangen und auf stabile, operative Alternativen umgeleitet</strong>. Es kommt dadurch zu keinerlei 404- oder 400-Abbrüchen im Chat.</div>
+                </div>
+                
+<hr class="my-8 border-slate-800/80">
+
+            <div id="4-die-pii-datenschutz-komponente-im-detail-pii_filter-py" class="pt-8 pb-3 mt-6 border-t border-slate-800/60 first:border-0 scroll-mt-24">
+                <h2 class="text-2xl font-bold font-display text-white flex items-center gap-3">
+                    <span>🛡️ 4. Die PII-Datenschutz-Komponente im Detail (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">pii_filter.py</code>)</span>
+                    <a href="#4-die-pii-datenschutz-komponente-im-detail-pii_filter-py" class="text-slate-600 hover:text-indigo-400 text-sm transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h2>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">Das System setzt auf einen hochentwickelten, zweilagigen und <strong class="text-white font-semibold">vollständig reversiblen</strong> Anonymisierungs-Filter, der als vorgeschalteter Wächter (Priority 0) in Open WebUI agiert. Er stellt sicher, dass weder echte Identitäten noch kritische Finanzdaten jemals ungeschützt an externe Cloud-APIs übertragen werden.</p>
+
+            <div id="4-1-die-2-schichten-erkennungs-engine" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>4.1 Die 2-Schichten Erkennungs-Engine</span>
+                    <a href="#4-1-die-2-schichten-erkennungs-engine" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+
+                <div class="my-6 overflow-x-auto rounded-2xl border border-slate-800 shadow-lg bg-surface-950/60">
+                    <table class="min-w-full divide-y divide-slate-800 font-sans">
+                        <thead><tr><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Schicht</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Technologie</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Erkannte Datentypen & Entitäten</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Erzeugter Platzhalter</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Auswirkung auf Cloud-Routing</th></tr></thead>
+                        <tbody><tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Layer 1: Strukturierte Daten</strong></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Präzise reguläre Ausdrücke (Regex)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">IBAN</strong> (Deutsche & internat. Kontonummern)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[IBAN_1]]</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">🔒 <strong class="text-white font-semibold">Hard Lockdown</strong> (Cloud strikt verboten)</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Kreditkarten</strong> (Visa, MC, Amex 13–19 stellig)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[CREDIT_CARD_1]]</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">🔒 <strong class="text-white font-semibold">Hard Lockdown</strong> (Cloud strikt verboten)</td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Passwörter in URLs</strong> (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">https://user:pass@...</code>)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[URL_WITH_AUTH_1]]</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">🔒 <strong class="text-white font-semibold">Hard Lockdown</strong> (Cloud strikt verboten)</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">US SSN / Sozialversicherungsnr.</strong></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[SSN_US_1]]</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">🔒 <strong class="text-white font-semibold">Hard Lockdown</strong> (Cloud strikt verboten)</td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">E-Mail-Adressen</strong> (Geschäftlich & privat)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[EMAIL_1]]</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">🟡 Maskiert & an Cloud erlaubt (sofern kein Lockdown)</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Telefonnummern</strong> (DE Mobil/Festnetz & Intl)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[PHONE_DE_1]]</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[PHONE_INTL_1]]</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">🟡 Maskiert & an Cloud erlaubt</td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">IPv4-Adressen</strong> (Netzwerk-Infrastruktur)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[IPV4_1]]</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">🟡 Maskiert & an Cloud erlaubt</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Layer 2: Unstrukturierte Entitäten</strong></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">spaCy NER (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">de_core_news_sm</code>)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Personen & Namen</strong> (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">PER</code> / <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">PERSON</code>)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[PER_1]]</code> (oder <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[NAME_PER_1]]</code>)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">🟡 Maskiert & an Cloud erlaubt</td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Orte & Städte</strong> (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LOC</code> / <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">GPE</code>)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[LOC_1]]</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">🟡 Maskiert & an Cloud erlaubt</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Organisationen & Firmen</strong> (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">ORG</code>)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[ORG_1]]</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">🟡 Maskiert & an Cloud erlaubt</td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Sonstige Entitäten</strong> (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">MISC</code>)</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[MISC_1]]</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">🟡 Maskiert & an Cloud erlaubt</td></tr>
+</tbody>
+                    </table>
+                </div>
+                
+<h4 class="text-sm font-semibold font-display text-slate-200 mt-4 mb-2">🛡️ Schutz gegen False-Positives (Stopwords & Heuristiken)</h4>
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">Um zu verhindern, dass normale deutsche Alltagswörter wie <em class="text-slate-300 italic">„Hallo“</em>, <em class="text-slate-300 italic">„Bitte“</em>, <em class="text-slate-300 italic">„Danke“</em>, <em class="text-slate-300 italic">„Montag“</em>, <em class="text-slate-300 italic">„Morgen“</em> oder <em class="text-slate-300 italic">„Ende“</em> fälschlicherweise von spaCy als Personen oder Orte maskiert werden, besitzt der Filter eine integrierte Stoppwort-Bibliothek (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">NER_STOPWORDS</code>) und ignoriert Wörter unter 3 Zeichen (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">ner_min_token_len=3</code>).</p>
+<hr class="my-8 border-slate-800/80">
+
+            <div id="4-2-der-4-phasen-lebenszyklus-reversibilit-t-streaming" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>4.2 Der 4-Phasen Lebenszyklus (Reversibilität & Streaming)</span>
+                    <a href="#4-2-der-4-phasen-lebenszyklus-reversibilit-t-streaming" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+
+                <div class="relative group my-4 rounded-2xl overflow-hidden bg-surface-950 border border-slate-800 shadow-xl">
+                    <div class="flex items-center justify-between px-4 py-2 bg-surface-900 border-b border-slate-800/80 text-xs font-mono text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
+                            <span class="text-slate-300 font-semibold">CODE</span>
+                        </div>
+                        <button onclick="copyToClipboard('code-block-73')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Kopieren</span>
+                        </button>
+                    </div>
+                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed"><code id="code-block-73">1. INLET (User tippt)       2. ROUTER (P=10)           3. INFERENZ                 4. OUTLET / STREAM
+&quot;Herr Schmidt aus München&quot;  Prüft PII-Counters         Modell sieht nur:           Ersetzt [[PER_1]]
+         │                           │                 &quot;[[PER_1]] aus [[LOC_1]]&quot;         │
+         ▼                           ▼                           │                       ▼
+   [[PER_1]] &amp; [[LOC_1]]    -&gt; Routet lokal oder Cloud          │              &quot;Herr Schmidt aus München&quot;
+   Mapping in metadata      (Kritisch = Local only!)             │              Im Browser sichtbar!</code></pre>
+                </div>
+                
+<ol class="list-decimal list-inside space-y-1.5 my-3 text-xs text-slate-300 pl-2">
+<li class="leading-relaxed"><strong class="text-white font-semibold">Inlet (Maskierung vor dem Senden):</strong></li>
+<li class="leading-relaxed">Der Filter scannt die Benutzereingabe, erzeugt fortlaufende Platzhalter (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[PER_1]]</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[IBAN_1]]</code>) und speichert das geheime Zuordnungs-Wörterbuch in <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">body["metadata"]["pii_map"]</code>.</li>
+<li class="leading-relaxed"><strong class="text-white font-semibold">Gateway-Entscheidung (Model Router):</strong></li>
+<li class="leading-relaxed">Der Router liest <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">metadata["pii_counters"]</code>. Bei kritischen Funden (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">IBAN</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">CREDIT_CARD</code>) wird die Cloud hardwareseitig gesperrt – der Request bleibt auf der lokalen Workstation.</li>
+<li class="leading-relaxed"><strong class="text-white font-semibold">Outlet (Vollständige Re-Hydrierung):</strong></li>
+<li class="leading-relaxed">Sobald das Modell antwortet, durchläuft die Antwort das <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">outlet</code>. Alle Platzhalter werden millimetergenau durch die Originaldaten ersetzt.</li>
+<li class="leading-relaxed"><strong class="text-white font-semibold">Live-Streaming Hook (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">stream</code>):</strong></li>
+<li class="leading-relaxed">Beim Token-Streaming (SSE) kommen Tokens stückweise an. Ein Platzhalter wie <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[IBAN_1]]</code> könnte über zwei Chunks zerschnitten sein (Chunk 1: <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">Konto: [[IB</code>, Chunk 2: <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">AN_1]] verbucht</code>).</li>
+<li class="leading-relaxed">Der Filter besitzt einen <strong class="text-white font-semibold">adaptiven Substring-Buffer</strong>: Er puffert unvollständige Tokens kurz zwischen und expandiert den Klartext flüssig in dem Moment, in dem das schließende <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">]]</code> eintrifft. Für den Benutzer gibt es kein sichtbares Flackern oder Aufblitzen von Platzhaltern.</li>
+</ol>
+<hr class="my-8 border-slate-800/80">
+
+            <div id="4-3-reasoning-schutz-deanonymize_reasoning" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>4.3 Reasoning-Schutz (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">deanonymize_reasoning</code>)</span>
+                    <a href="#4-3-reasoning-schutz-deanonymize_reasoning" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">Modelle wie <strong class="text-white font-semibold">DeepSeek-R1</strong> oder <strong class="text-white font-semibold">Gemma 4</strong> generieren vor dem eigentlichen Text ausführliche Denkprozesse (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">reasoning_content</code> bzw. <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800"><think></code>).</p>
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span>Ist <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">deanonymize_reasoning: true</code> (Standard), werden die Platzhalter auch im einklappbaren Denkblock wieder mit den echten Namen befüllt.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span>Dadurch bleibt der Gedankengang für den Benutzer vollständig nachvollziehbar und transparent.</span></li>
+</ul>
+<hr class="my-8 border-slate-800/80">
+
+            <div id="4-4-konfiguration-anpassung-valves" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>4.4 Konfiguration & Anpassung (Valves)</span>
+                    <a href="#4-4-konfiguration-anpassung-valves" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">In Open WebUI unter <strong class="text-white font-semibold">Workspace ➔ Functions ➔ PII Redaction Filter (Reversible) ➔ Valves (⚙️)</strong> können Administratoren das Verhalten feingranular steuern:</p>
+
+                <div class="my-6 overflow-x-auto rounded-2xl border border-slate-800 shadow-lg bg-surface-950/60">
+                    <table class="min-w-full divide-y divide-slate-800 font-sans">
+                        <thead><tr><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Parameter (Valve)</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Standard</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Beschreibung</th></tr></thead>
+                        <tbody><tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">enable_regex</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">true</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Aktiviert die strukturierte Erkennung (IBAN, E-Mail, Telefon, IP).</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">enable_ner</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">true</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Aktiviert spaCy NER für Personen, Orte und Organisationen.</td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">deanonymize_output</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">true</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Stellt Originaldaten im Outlet wieder her (auf <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">false</code> setzen für Anonymisierungs-Demos).</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">deanonymize_reasoning</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">true</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Füllt auch den Modell-Denkprozess (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800"><think></code>) wieder mit echten Daten.</td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">token_format</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[{label}_{n}]]</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Format der Platzhalter-Tokens.</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">extra_patterns</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">""</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Benutzerdefinierte Regex-Muster pro Zeile (`NAME\</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">PATTERN<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">), z. B. </code>MITARBEITER\</td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">M\d{6}`.</td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">ner_min_token_len</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">3</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Mindestlänge für Entity-Bestandteile zur Vermeidung von False Positives.</td></tr>
+</tbody>
+                    </table>
+                </div>
+                
+
+                <div class="my-5 p-4 rounded-2xl border border-emerald-500/30 bg-emerald-950/20 text-xs leading-relaxed">
+                    <div class="flex items-center gap-2 text-emerald-300 font-semibold font-mono uppercase tracking-wider mb-1.5">
+                        <i class="fa-solid fa-lightbulb"></i>
+                        <span>TIPP</span>
+                    </div>
+                    <div class="text-slate-300"><strong class="text-white font-semibold">User-Valves:</strong> Jeder Benutzer kann in seinen Profileinstellungen die PII-Redaktion für seinen eigenen Account temporär ein- oder ausschalten (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">UserValves.enabled</code>).</div>
+                </div>
+                
+<hr class="my-8 border-slate-800/80">
+
+            <div id="4-5-transparenz-audit-log-das-info-icon" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>4.5 Transparenz & Audit-Log (Das Info-Icon ℹ️)</span>
+                    <a href="#4-5-transparenz-audit-log-das-info-icon" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">Nach jeder Antwort legt der PII-Filter unter <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">metadata["pii_audit"]</code> ein revisionssicheres Protokoll ab. Klickt der Benutzer in Open WebUI auf das <strong class="text-white font-semibold">Info-Icon (ℹ️)</strong> einer Nachricht, sieht er:</p>
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span>Gesamtzahl der geschwärzten Entitäten.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span>Detail-Liste: Welches Token wurde für welchen Originalwert eingesetzt.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span>Zeitstempel und Status (<em class="text-slate-300 italic">„Vollständig deanonymisiert ✓“</em>).</span></li>
+</ul>
+<hr class="my-8 border-slate-800/80">
+
+            <div id="5-manuelle-steuerung-im-chat-tags-aliase" class="pt-8 pb-3 mt-6 border-t border-slate-800/60 first:border-0 scroll-mt-24">
+                <h2 class="text-2xl font-bold font-display text-white flex items-center gap-3">
+                    <span>🕹️ 5. Manuelle Steuerung im Chat (Tags & Aliase)</span>
+                    <a href="#5-manuelle-steuerung-im-chat-tags-aliase" class="text-slate-600 hover:text-indigo-400 text-sm transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h2>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">Du musst das Routing nicht der Automatik überlassen. Wenn du ein bestimmtes Modell erzwingen willst, schreibe einfach eines der folgenden Tags an eine beliebige Stelle in deinen Prompt (das Tag wird vor dem Senden an das Modell <strong class="text-white font-semibold">automatisch gelöscht</strong>):</p>
+
+            <div id="kurzbefehle-f-r-lokale-modelle" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>Kurzbefehle für lokale Modelle:</span>
+                    <a href="#kurzbefehle-f-r-lokale-modelle" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#r1</code> oder <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">/r1</code>: Erzwingt <strong class="text-white font-semibold">DeepSeek-R1</strong> (Temp <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.60</code>, Top-P <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.95</code>).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#code</code> oder <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">/coder</code>: Erzwingt <strong class="text-white font-semibold">Qwen 2.5 Coder</strong> (Temp <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.20</code>, Top-P <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.85</code>).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#write</code> oder <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#human</code>: Erzwingt <strong class="text-white font-semibold">Gemma 4</strong> (Temp <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.55</code>, Top-P <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.90</code>).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#heretic</code> oder <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#uncensored</code>: Erzwingt <strong class="text-white font-semibold">Heretic 9B</strong> (Temp <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.70</code>, Top-P <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.90</code>).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#local</code>: Forciert generelle Ausführung auf der lokalen Workstation.</span></li>
+</ul>
+
+            <div id="kurzbefehle-f-r-cloud-modelle" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>Kurzbefehle für Cloud-Modelle:</span>
+                    <a href="#kurzbefehle-f-r-cloud-modelle" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#sonnet</code> oder <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#claude</code>: Wählt <strong class="text-white font-semibold">Claude Sonnet 4.5</strong> (Cloud High-End).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#opus</code>: Wählt <strong class="text-white font-semibold">Claude Opus 4.6</strong> (Cloud Flagship für tiefste Synthesen).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#gpt</code> oder <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#openai</code>: Wählt <strong class="text-white font-semibold">OpenAI GPT-5.2</strong> (Cloud High-End für Analytik & Data-Science).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#flash</code> oder <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#gemini</code>: Wählt <strong class="text-white font-semibold">Gemini 3 Flash</strong> (schnelle Routine in der Cloud).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#cloud</code>: Bevorzugt Cloud-Verarbeitung (sofern datenschutzkonform).</span></li>
+</ul>
+
+                <div class="my-5 p-4 rounded-2xl border border-indigo-500/30 bg-indigo-950/20 text-xs leading-relaxed">
+                    <div class="flex items-center gap-2 text-indigo-300 font-semibold font-mono uppercase tracking-wider mb-1.5">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>HINWEIS</span>
+                    </div>
+                    <div class="text-slate-300"><strong class="text-white font-semibold">Beispiel:</strong><br><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#r1 Löse dieses Optimierungsproblem: f(x) = x^3 - 5x + 2</code><br>&rarr; Der Router entfernt <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#r1</code>, wählt DeepSeek-R1 auf der Workstation und setzt Temperatur <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.60</code>.</div>
+                </div>
+                
+<hr class="my-8 border-slate-800/80">
+
+            <div id="6-transparenz-audit-modell-pii-verlauf-im-info-icon" class="pt-8 pb-3 mt-6 border-t border-slate-800/60 first:border-0 scroll-mt-24">
+                <h2 class="text-2xl font-bold font-display text-white flex items-center gap-3">
+                    <span>🔍 6. Transparenz & Audit: Modell & PII-Verlauf im Info-Icon (ℹ️)</span>
+                    <a href="#6-transparenz-audit-modell-pii-verlauf-im-info-icon" class="text-slate-600 hover:text-indigo-400 text-sm transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h2>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">Unter jeder Antwortnachricht in Open WebUI kannst du im <strong class="text-white font-semibold">Info-Icon (ℹ️)</strong> die vollständige Historie und Herkunft der Nachricht einsehen.</p>
+
+            <div id="1-das-routing-router_decision" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>1. Das Routing (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">router_decision</code>)</span>
+                    <a href="#1-das-routing-router_decision" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">Zeigt, welches Modell gewählt wurde, warum, und welche Parameter gesetzt wurden:</p>
+
+                <div class="relative group my-4 rounded-2xl overflow-hidden bg-surface-950 border border-slate-800 shadow-xl">
+                    <div class="flex items-center justify-between px-4 py-2 bg-surface-900 border-b border-slate-800/80 text-xs font-mono text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
+                            <span class="text-slate-300 font-semibold">JSON</span>
+                        </div>
+                        <button onclick="copyToClipboard('code-block-130')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Kopieren</span>
+                        </button>
+                    </div>
+                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed"><code id="code-block-130">{
+  &quot;router_decision&quot;: {
+    &quot;original_model&quot;: &quot;openrouter.@preset/gpt-oss-europe&quot;,
+    &quot;routed_to&quot;: &quot;LMStudio.qwen2.5-coder-14b-instruct&quot;,
+    &quot;target_node&quot;: &quot;Workstation (LM Studio via Tailscale)&quot;,
+    &quot;profile&quot;: &quot;coding&quot;,
+    &quot;temperature&quot;: 0.2,
+    &quot;top_p&quot;: 0.85,
+    &quot;reason&quot;: &quot;Standard Coding &amp; Skripte -&gt; Qwen 2.5 Coder 14B auf Workstation&quot;,
+    &quot;pii_detected&quot;: 2,
+    &quot;critical_pii_blocked&quot;: false,
+    &quot;pii_behandelte_elemente&quot;: [
+      {
+        &quot;token&quot;: &quot;[[NAME_PER_1]]&quot;,
+        &quot;kategorie&quot;: &quot;NAME_PER&quot;,
+        &quot;original&quot;: &quot;Anna&quot;,
+        &quot;status&quot;: &quot;Im Prompt geschwärzt ➔ In Antwort wiederhergestellt&quot;
+      },
+      {
+        &quot;token&quot;: &quot;[[NAME_PER_2]]&quot;,
+        &quot;kategorie&quot;: &quot;NAME_PER&quot;,
+        &quot;original&quot;: &quot;Schmidt&quot;,
+        &quot;status&quot;: &quot;Im Prompt geschwärzt ➔ In Antwort wiederhergestellt&quot;
+      }
+    ]
+  }
+}</code></pre>
+                </div>
+                
+
+            <div id="2-das-pii-audit-log-pii_audit" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>2. Das PII-Audit-Log (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">pii_audit</code>)</span>
+                    <a href="#2-das-pii-audit-log-pii_audit" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">Zeigt lückenlos alle Teile, die vom PII-Filter erkannt, maskiert und nach der LLM-Antwort wieder zu den Originalen zusammengesetzt wurden:</p>
+
+                <div class="relative group my-4 rounded-2xl overflow-hidden bg-surface-950 border border-slate-800 shadow-xl">
+                    <div class="flex items-center justify-between px-4 py-2 bg-surface-900 border-b border-slate-800/80 text-xs font-mono text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
+                            <span class="text-slate-300 font-semibold">JSON</span>
+                        </div>
+                        <button onclick="copyToClipboard('code-block-133')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Kopieren</span>
+                        </button>
+                    </div>
+                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed"><code id="code-block-133">{
+  &quot;pii_audit&quot;: {
+    &quot;anzahl_behandelt&quot;: 2,
+    &quot;status&quot;: &quot;Vollständig deanonymisiert (Originaldaten wiederhergestellt)&quot;,
+    &quot;elemente&quot;: [
+      {
+        &quot;token&quot;: &quot;[[NAME_PER_1]]&quot;,
+        &quot;kategorie&quot;: &quot;NAME_PER&quot;,
+        &quot;original&quot;: &quot;Anna&quot;,
+        &quot;status&quot;: &quot;Im Prompt geschwärzt ➔ In Antwort erfolgreich wiederhergestellt&quot;
+      },
+      {
+        &quot;token&quot;: &quot;[[NAME_PER_2]]&quot;,
+        &quot;kategorie&quot;: &quot;NAME_PER&quot;,
+        &quot;original&quot;: &quot;Schmidt&quot;,
+        &quot;status&quot;: &quot;Im Prompt geschwärzt ➔ In Antwort erfolgreich wiederhergestellt&quot;
+      }
+    ]
+  }
+}</code></pre>
+                </div>
+                
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">Damit hast du die <strong class="text-white font-semibold">100 %ige Gewissheit</strong>:</p>
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span>Welche Daten das Modell im Rohzustand verlassen haben (nur neutrale Tokens wie <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[NAME_PER_1]]</code>).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span>Welche Daten nach Rückkehr des Modells wieder eingesetzt wurden.</span></li>
+</ul>
+<hr class="my-8 border-slate-800/80">
+
+            <div id="7-einstellungen-feinjustierung-admin-user-valves" class="pt-8 pb-3 mt-6 border-t border-slate-800/60 first:border-0 scroll-mt-24">
+                <h2 class="text-2xl font-bold font-display text-white flex items-center gap-3">
+                    <span>⚙️ 7. Einstellungen & Feinjustierung (Admin & User Valves)</span>
+                    <a href="#7-einstellungen-feinjustierung-admin-user-valves" class="text-slate-600 hover:text-indigo-400 text-sm transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h2>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">Sowohl Administratoren als auch Endanwender können das Verhalten des Routers ohne jede Code-Änderung über die Web-Oberfläche anpassen.</p>
+
+            <div id="7-1-admin-valves-globale-systemkonfiguration" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>7.1 Admin Valves (Globale Systemkonfiguration)</span>
+                    <a href="#7-1-admin-valves-globale-systemkonfiguration" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<ol class="list-decimal list-inside space-y-1.5 my-3 text-xs text-slate-300 pl-2">
+<li class="leading-relaxed">Navigiere zu <strong class="text-white font-semibold">Workspace ➔ Functions</strong>.</li>
+<li class="leading-relaxed">Klicke bei <strong class="text-white font-semibold">Hybrid Model Router</strong> auf das Zahnrad / Edit-Icon (⚙️ Valves).</li>
+<li class="leading-relaxed">Folgende Parameter stehen zur Verfügung:</li>
+</ol>
+
+                <div class="my-6 overflow-x-auto rounded-2xl border border-slate-800 shadow-lg bg-surface-950/60">
+                    <table class="min-w-full divide-y divide-slate-800 font-sans">
+                        <thead><tr><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Parameter</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Typ / Standard</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider bg-surface-900 border-b border-slate-800">Beschreibung</th></tr></thead>
+                        <tbody><tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">priority</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">10</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Wichtig:</strong> Muss immer auf <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">10</code> stehen, damit der Router nach dem PII-Filter (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0</code>) ausgeführt wird.</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">COMPLEXITY_WORD_THRESHOLD</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">120</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Ab wie vielen Wörtern ein unkritischer Prompt automatisch als komplex eingestuft und an die Cloud delegiert wird.</td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">STRICT_LOCAL_ON_ANY_PII</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">false</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Wenn <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">true</code>, wird bei <em class="text-slate-300 italic">jeder</em> PII (auch maskierten Namen/Orten) der Cloud-Abfluss komplett gesperrt. Standard <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">false</code> erlaubt maskierte Standard-PII für Struktur-Reasoning.</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">MODEL_LOCAL_ROUTINE</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LMStudio.google/gemma-4-12b-qat</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Lokales Modell für Routine-Chat, Zusammenfassungen, E-Mails und Standard-Prompts.</td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">MODEL_LOCAL_CODING</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LMStudio.qwen2.5-coder-14b-instruct</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Lokales Modell für Code-Generierung, Bash, SQL, Regex und Debugging.</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">MODEL_LOCAL_REASONING</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LMStudio.deepseek-r1-distill-qwen-14b</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Lokales Modell für formale Logik, mathematische Beweise und Denkketten.</td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">MODEL_LOCAL_UNCENSORED</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LMStudio.qwen3.8-9b-distill-uncensored-heretic-i1</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60">Lokales Modell für Tabuthemen und unzensierte Recherchen (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#heretic</code>).</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">MODEL_CLOUD_HEAVY</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">openrouter.anthropic/claude-sonnet-4.5</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Fall 1:</strong> Cloud-Modell für High-End Coding & Architektur (lange Prompts oder <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#sonnet</code> / <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#claude</code>).</td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">MODEL_CLOUD_OPUS</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">openrouter.anthropic/claude-opus-4.6</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Fall 2:</strong> Cloud-Modell für tiefstes Reasoning, Philosophie & Strategie (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#opus</code>).</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">MODEL_CLOUD_WRITING</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">openrouter.anthropic/claude-sonnet-4.5</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Fall 3:</strong> Cloud-Modell für komplexe Textanalyse & Mammut-Texte (> 120 Wörter).</td></tr>
+<tr class="bg-surface-950/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">MODEL_CLOUD_FAST</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">openrouter.google/gemini-3-flash-preview</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Fall 4:</strong> Cloud-Modell für schnelle, latenzkritische Cloud-Abfragen (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#flash</code> / <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#gemini</code>).</td></tr>
+<tr class="bg-surface-850/40 hover:bg-slate-800/40 transition-colors"><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">MODEL_CLOUD_GPT</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">openrouter.openai/gpt-5.2</code></td><td class="px-4 py-3 text-xs text-slate-300 border-b border-slate-800/60"><strong class="text-white font-semibold">Fall 5:</strong> Cloud-Modell für Data Science, Analytik & OpenAI-spezifische Aufgaben (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#gpt</code> / <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#openai</code>).</td></tr>
+</tbody>
+                    </table>
+                </div>
+                
+
+            <div id="7-2-user-valves-pers-nliche-einstellungen-pro-account" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>7.2 User Valves (Persönliche Einstellungen pro Account)</span>
+                    <a href="#7-2-user-valves-pers-nliche-einstellungen-pro-account" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">Jeder Nutzer kann im WebUI sein persönliches Profil individualisieren:</p>
+<ol class="list-decimal list-inside space-y-1.5 my-3 text-xs text-slate-300 pl-2">
+<li class="leading-relaxed">Klicke links unten auf deinen <strong class="text-white font-semibold">Benutzernamen / Profilbild ➔ Settings ➔ Functions</strong>.</li>
+<li class="leading-relaxed">Wähle <strong class="text-white font-semibold">Hybrid Model Router</strong>:</li>
+<li class="leading-relaxed"><code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">preferred_cloud_model</code>: Frei wählbare Modell-ID (z. B. <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">openrouter.anthropic/claude-sonnet-4.5</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">openrouter.google/gemini-3-flash-preview</code> oder ein beliebiges anderes in Open WebUI aktives Modell).</li>
+<li class="leading-relaxed">Wenn gesetzt, wird dieses Modell als persönliche Standard-Wahl bei generellen Cloud-Anfragen verwendet, anstelle des globalen Systemstandards.</li>
+</ol>
+<hr class="my-8 border-slate-800/80">
+
+            <div id="8-praxis-beispiele-test-prompts-prompt-showcase" class="pt-8 pb-3 mt-6 border-t border-slate-800/60 first:border-0 scroll-mt-24">
+                <h2 class="text-2xl font-bold font-display text-white flex items-center gap-3">
+                    <span>🧪 8. Praxis-Beispiele & Test-Prompts (Prompt Showcase)</span>
+                    <a href="#8-praxis-beispiele-test-prompts-prompt-showcase" class="text-slate-600 hover:text-indigo-400 text-sm transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h2>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">Hier sind fünf praxiserprobte Test-Prompts, mit denen du die verschiedenen Sicherheits- und Routing-Mechanismen direkt in Open WebUI ausprobieren und im <strong class="text-white font-semibold">Info-Icon (ℹ️)</strong> überprüfen kannst:</p>
+
+            <div id="szenario-1-datenschutz-lockdown-kritisches-pii-coding" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>🏦 Szenario 1: Datenschutz-Lockdown (Kritisches PII + Coding)</span>
+                    <a href="#szenario-1-datenschutz-lockdown-kritisches-pii-coding" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Ziel:</strong> Überprüfen, ob Bankverbindungen zuverlässig erkannt werden und den Cloud-Abfluss sperren.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Erwartetes Routing:</strong></span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Inlet:</strong> Maskiert Name, Adresse, E-Mail, Telefon und IBAN zu <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[NAME_PER_1]]</code>, <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[IBAN_1]]</code> etc.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Privacy Gate:</strong> Erkennt <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[IBAN_1]]</code> ➔ <strong class="text-white font-semibold">Cloud-Sperre aktiv</strong>.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Target:</strong> Lokale Workstation <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LMStudio.qwen2.5-coder-14b-instruct</code> (Temp: <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.20</code>, Top-P: <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.85</code>).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Outlet:</strong> Re-hydriert alle Tokens wieder mit den echten Daten in der Code-Ausgabe.</span></li>
+</ul>
+
+                <div class="relative group my-4 rounded-2xl overflow-hidden bg-surface-950 border border-slate-800 shadow-xl">
+                    <div class="flex items-center justify-between px-4 py-2 bg-surface-900 border-b border-slate-800/80 text-xs font-mono text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
+                            <span class="text-slate-300 font-semibold">TEXT</span>
+                        </div>
+                        <button onclick="copyToClipboard('code-block-169')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Kopieren</span>
+                        </button>
+                    </div>
+                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed"><code id="code-block-169">Hallo! Für unseren Mandanten Dr. Maximilian von Berg (Leopoldstraße 42, 80802 München, E-Mail: m.berg@alpen-consulting.de, Tel: +49 89 12345678) muss eine automatisierte Rechnungsprüfung implementiert werden.
+
+Seine hinterlegte Auszahlungs-IBAN lautet: DE89 3704 0044 0532 0130 00.
+
+Aufgabe:
+Schreibe mir ein sauberes Python-Skript (unter Verwendung von Pydantic v2), das:
+1. Ein Datenmodell `Mandant` mit allen oben genannten Attributen definiert.
+2. Eine Beispielfunktion enthält, die diese konkreten Mandantendaten instanziiert und eine kurze Überweisungsbestätigung im Konsolen-Log ausgibt.</code></pre>
+                </div>
+                
+<hr class="my-8 border-slate-800/80">
+
+            <div id="szenario-2-deep-reasoning-mathematik-lokal-mit-deepseek-r1" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>🧠 Szenario 2: Deep Reasoning & Mathematik (Lokal mit DeepSeek-R1)</span>
+                    <a href="#szenario-2-deep-reasoning-mathematik-lokal-mit-deepseek-r1" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Ziel:</strong> Prüfen, ob mathematische Beweise automatisch an das lokale R1-Modell geleitet werden.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Erwartetes Routing:</strong></span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Intent:</strong> Erkennt mathematische Beweisführung und formale Logik.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Target:</strong> Lokale Workstation <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LMStudio.deepseek-r1-distill-qwen-14b</code>.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Parameter:</strong> Temp: <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.60</code>, Top-P: <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.95</code> (explorativer Denkspielraum für <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800"><think></code>-Tokens).</span></li>
+</ul>
+
+                <div class="relative group my-4 rounded-2xl overflow-hidden bg-surface-950 border border-slate-800 shadow-xl">
+                    <div class="flex items-center justify-between px-4 py-2 bg-surface-900 border-b border-slate-800/80 text-xs font-mono text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
+                            <span class="text-slate-300 font-semibold">TEXT</span>
+                        </div>
+                        <button onclick="copyToClipboard('code-block-179')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Kopieren</span>
+                        </button>
+                    </div>
+                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed"><code id="code-block-179">Beweise formell durch vollständige Induktion, dass für alle natürlichen Zahlen n &gt;= 1 gilt:
+1 + 2 + 3 + ... + n = n * (n + 1) / 2.
+Zeige jeden logischen Teilschritt explizit auf und begründe den Induktionsschritt mathematisch exakt.</code></pre>
+                </div>
+                
+<hr class="my-8 border-slate-800/80">
+
+            <div id="szenario-3-text-veredelung-writing-anti-ki-human-master" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>✍️ Szenario 3: Text-Veredelung & Writing (Anti-KI / Human Master)</span>
+                    <a href="#szenario-3-text-veredelung-writing-anti-ki-human-master" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Ziel:</strong> Null Cloud-Credits verbrauchen für alltägliche Schreib- und Redaktionsaufgaben.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Erwartetes Routing:</strong></span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Inlet:</strong> Maskiert <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">Frau Dr. Julia Sommerfeld</code> zu <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">[[NAME_PER_1]]</code>.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Intent:</strong> Erkennt E-Mail / Schreib-Veredelung.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Target:</strong> Lokale Workstation <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LMStudio.google/gemma-4-12b-qat</code> (Temp: <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.55</code>, Top-P: <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.90</code>).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Outlet:</strong> Setzt den echten Namen wieder ein. Kosten: <strong class="text-white font-semibold">0 Cloud-Credits</strong>.</span></li>
+</ul>
+
+                <div class="relative group my-4 rounded-2xl overflow-hidden bg-surface-950 border border-slate-800 shadow-xl">
+                    <div class="flex items-center justify-between px-4 py-2 bg-surface-900 border-b border-slate-800/80 text-xs font-mono text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
+                            <span class="text-slate-300 font-semibold">TEXT</span>
+                        </div>
+                        <button onclick="copyToClipboard('code-block-190')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Kopieren</span>
+                        </button>
+                    </div>
+                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed"><code id="code-block-190">Sehr geehrte Frau Dr. Julia Sommerfeld, vielen Dank für das freundliche Telefonat heute Vormittag.
+
+Aufgabe:
+Formuliere mir aus dieser kurzen Notiz eine professionelle, warme und präzise Follow-up-E-Mail auf Deutsch. Der Tonfall soll menschlich, verbindlich und frei von typischen KI-Floskeln (wie &#x27;Ich hoffe, diese E-Mail erreicht Sie wohlbehalten&#x27;) sein. Betone, dass wir das besprochene Angebot bis kommenden Donnerstag finalisieren.</code></pre>
+                </div>
+                
+<hr class="my-8 border-slate-800/80">
+
+            <div id="szenario-4-cloud-high-end-architektur-claude-sonnet-4-5-via-openrouter" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>🚀 Szenario 4: Cloud High-End Architektur (Claude Sonnet 4.5 via OpenRouter)</span>
+                    <a href="#szenario-4-cloud-high-end-architektur-claude-sonnet-4-5-via-openrouter" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Ziel:</strong> Komplexe Software-Architektur ohne sensible PII zur Cloud delegieren.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Erwartetes Routing:</strong></span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Prüfung:</strong> Keine PII vorhanden, Anforderung übersteigt Komplexitätsschwelle (> 120 Wörter) bzw. nutzt <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#sonnet</code>.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Target:</strong> OpenRouter Cloud <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">openrouter.anthropic/claude-sonnet-4.5</code>.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Parameter:</strong> Temp: <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.40</code>, Top-P: <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">0.90</code>.</span></li>
+</ul>
+
+                <div class="relative group my-4 rounded-2xl overflow-hidden bg-surface-950 border border-slate-800 shadow-xl">
+                    <div class="flex items-center justify-between px-4 py-2 bg-surface-900 border-b border-slate-800/80 text-xs font-mono text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
+                            <span class="text-slate-300 font-semibold">TEXT</span>
+                        </div>
+                        <button onclick="copyToClipboard('code-block-200')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Kopieren</span>
+                        </button>
+                    </div>
+                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed"><code id="code-block-200">#sonnet
+Entwirf eine hochverfügbare Event-Driven Microservice-Architektur für eine E-Commerce-Plattform mit folgenden Anforderungen:
+1. Event-Bus mit Apache Kafka für Bestellungen, Bestandsänderungen und Rechnungsstellung.
+2. Outbox-Pattern zur Gewährleistung von Konsistenz zwischen PostgreSQL und Kafka ohne Two-Phase-Commits.
+3. Resilience-Pattern (Circuit Breaker, Dead-Letter-Queues und Idempotenz-Keys für Zahlungsabwicklungen).
+Erstelle ein übersichtliches Text-Architekturdiagramm und beschreibe die Fehlerbehandlung bei temporären Netzwerk-Partitions.</code></pre>
+                </div>
+                
+<hr class="my-8 border-slate-800/80">
+
+            <div id="szenario-5-privacy-gate-override-test-schutz-vor-versehentlichem-cloud-leak" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>🛡️ Szenario 5: Privacy Gate Override-Test (Schutz vor versehentlichem Cloud-Leak)</span>
+                    <a href="#szenario-5-privacy-gate-override-test-schutz-vor-versehentlichem-cloud-leak" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Ziel:</strong> Sicherstellen, dass das Privacy Gate selbst einen expliziten <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#opus</code>-Tag überstimmt, wenn eine IBAN im Text steht.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Erwartetes Routing:</strong></span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Tag:</strong> User fordert <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">#opus</code> an.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Privacy Gate:</strong> Erkennt IBAN ➔ <strong class="text-white font-semibold">Erzwingt lokalen Fallback</strong>!</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Target:</strong> Lokale Workstation <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LMStudio.qwen2.5-coder-14b-instruct</code>.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Audit-Info (ℹ️):</strong> <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">reason: "Overridden to local: prompt contains critical PII (IBAN)"</code>.</span></li>
+</ul>
+
+                <div class="relative group my-4 rounded-2xl overflow-hidden bg-surface-950 border border-slate-800 shadow-xl">
+                    <div class="flex items-center justify-between px-4 py-2 bg-surface-900 border-b border-slate-800/80 text-xs font-mono text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
+                            <span class="text-slate-300 font-semibold">TEXT</span>
+                        </div>
+                        <button onclick="copyToClipboard('code-block-211')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Kopieren</span>
+                        </button>
+                    </div>
+                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed"><code id="code-block-211">#opus
+Hier ist die Abrechnung für Herrn Michael Weber mit IBAN DE44 5001 0517 5409 3211 00.
+Erstelle mir eine formatierte Zusammenfassung der Auszahlungssumme von 1.450,00 EUR und formatiere eine Überweisungszeile für das ERP-System.</code></pre>
+                </div>
+                
+<hr class="my-8 border-slate-800/80">
+
+            <div id="9-technische-details-latenz-troubleshooting-good-to-know" class="pt-8 pb-3 mt-6 border-t border-slate-800/60 first:border-0 scroll-mt-24">
+                <h2 class="text-2xl font-bold font-display text-white flex items-center gap-3">
+                    <span>⚡ 9. Technische Details, Latenz & Troubleshooting (Good to Know)</span>
+                    <a href="#9-technische-details-latenz-troubleshooting-good-to-know" class="text-slate-600 hover:text-indigo-400 text-sm transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h2>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5">Damit du das Laufzeitverhalten der Pipeline im Alltag optimal verstehst und einschätzen kannst:</p>
+
+            <div id="1-nahtlose-modell-synchronisation-im-browser-selected_model_id" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>1. Nahtlose Modell-Synchronisation im Browser (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">selected_model_id</code>)</span>
+                    <a href="#1-nahtlose-modell-synchronisation-im-browser-selected_model_id" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Hintergrund:</strong> Wenn du im Chat ein Cloud-Modell (z. B. <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">Cortecs.gemini-3.7-flash</code>) ausgewählt hast, der Router deine Anfrage aber wegen einer IBAN auf die lokale Workstation (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">LMStudio.qwen2.5-coder-14b-instruct</code>) umleitet, tauscht das Gateway das Modell serverseitig zur Laufzeit aus.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Synchronisation:</strong> Der Router injiziert das Feld <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">selected_model_id</code> in die Metadaten. Open WebUI sendet dieses als allererstes Server-Sent-Event (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">data: {"selected_model_id": ...}</code>) an den Browser. Dadurch weiß dein Web-Frontend sofort, dass die eingehenden Tokens zu dem neuen Modell gehören, und rendert die Antwort ohne Verzögerung in die richtige Chat-Sprechblase.</span></li>
+</ul>
+
+            <div id="2-cold-starts-vram-ladezeiten-auf-der-workstation" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>2. Cold-Starts & VRAM-Ladezeiten auf der Workstation</span>
+                    <a href="#2-cold-starts-vram-ladezeiten-auf-der-workstation" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Wie LM Studio arbeitet:</strong> Auf der lokalen Workstation stehen mehrere 9B- bis 14B-Modelle bereit (Qwen Coder, DeepSeek-R1, Gemma 4, Heretic). LM Studio lädt Modelle bei Bedarf dynamisch in den VRAM der Grafikkarte (<em class="text-slate-300 italic">Just-in-Time Loading</em>).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Erst-Aufruf:</strong> Wenn du ein Modell anfragst, das gerade nicht im GPU-Speicher liegt, benötigt das Laden des Modells von der SSD in den Grafikspeicher ca. <strong class="text-white font-semibold">10–15 Sekunden</strong>.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Folge-Aufrufe:</strong> Sobald das Modell im Speicher liegt, antwortet es ohne Ladezeit sofort.</span></li>
+</ul>
+
+            <div id="3-der-interne-denkprozess-reasoning_content-cot" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>3. Der interne Denkprozess (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">reasoning_content</code> / CoT)</span>
+                    <a href="#3-der-interne-denkprozess-reasoning_content-cot" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Gedankengang vor Text:</strong> Modelle wie DeepSeek-R1 oder Gemma 4 erzeugen vor der eigentlichen Ausgabe einen internen Denkprozess (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800">reasoning_content</code> bzw. <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800"><think></code>).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Wichtig:</strong> Während dieser Phase generiert das lokale Modell 400–800 Denk-Tokens (dauert ca. 15–25 Sekunden auf der GPU). Open WebUI zeigt dies als einklappbaren Denkblock (<em class="text-slate-300 italic">"Denken..."</em> bzw. <em class="text-slate-300 italic">Thought</em>) an. Das ist <strong class="text-white font-semibold">kein Hänger oder Verbindungsabbruch</strong>, sondern die normale Ausführungszeit der lokalen Inferenz.</span></li>
+</ul>
+
+            <div id="4-verbindung-nicht-vorzeitig-abbrechen" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-lg font-bold font-display text-indigo-300 flex items-center gap-2">
+                    <span>4. Verbindung nicht vorzeitig abbrechen</span>
+                    <a href="#4-verbindung-nicht-vorzeitig-abbrechen" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<ul class="space-y-1.5 my-3 text-xs text-slate-300">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-0.5">&bull;</span><span><strong class="text-white font-semibold">Tipp:</strong> Wenn du eine komplexe Anfrage oder sensible Daten abschickst, lass dem Tab ca. <strong class="text-white font-semibold">20–30 Sekunden Zeit</strong>. Ein vorzeitiges Neuladen der Seite (<em class="text-slate-300 italic">F5 / Refresh</em>) trennt den WebSocket-Kanal zum Minisforum-Server, bricht die laufende GPU-Berechnung in LM Studio ab und hinterlässt eine unvollständige Nachricht.</span></li>
+</ul>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Toast Notification for Copy -->
+    <div id="copy-toast" class="fixed bottom-6 right-6 bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-xl shadow-emerald-500/20 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2">
+        <i class="fa-solid fa-check"></i>
+        <span>In die Zwischenablage kopiert!</span>
+    </div>
+
+    <script>
+        function copyToClipboard(elementId) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const text = el.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast();
+            });
+        }
+
+        function showToast() {
+            const toast = document.getElementById('copy-toast');
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2000);
+        }
+
+        function filterGuide(query) {
+            query = query.toLowerCase().trim();
+            const article = document.getElementById('guide-article');
+            const elements = article.querySelectorAll('p, li, tr, h2, h3, h4, .relative');
+            
+            if (!query) {
+                elements.forEach(p => p.style.display = '');
+                return;
+            }
+
+            elements.forEach(p => {
+                const text = p.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    p.style.display = '';
+                } else if (p.tagName !== 'H2' && p.tagName !== 'H3') {
+                    p.style.display = 'none';
+                }
+            });
+        }
+
+        // Active TOC tracking
+        window.addEventListener('scroll', () => {
+            const headings = document.querySelectorAll('h2[id], h3[id]');
+            let current = '';
+            headings.forEach(heading => {
+                const top = heading.getBoundingClientRect().top;
+                if (top <= 120) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            if (current) {
+                document.querySelectorAll('.toc-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + current) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
