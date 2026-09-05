@@ -472,6 +472,10 @@ class Filter:
         original_model = body.get("model", "")
         body["model"] = selected_model
 
+        if "metadata" not in body:
+            body["metadata"] = {}
+        body["metadata"]["selected_model_id"] = selected_model
+
         # 8. Hyperparameter-Injektion (Temperature & Top-P)
         profile_data = PROFILES.get(applied_profile, {})
         if self.valves.APPLY_OPTIMAL_SAMPLING_PARAMS and profile_data:
@@ -479,8 +483,6 @@ class Filter:
             body["top_p"] = profile_data["top_p"]
 
         # 9. Audit- & Debug-Metadaten für die Open-WebUI Sprechblasen-Info
-        if "metadata" not in body:
-            body["metadata"] = {}
         body["metadata"]["router_decision"] = {
             "original_model": original_model,
             "routed_to": selected_model,
