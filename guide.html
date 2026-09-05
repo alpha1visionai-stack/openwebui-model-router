@@ -348,6 +348,26 @@
                 4. Verbindung nicht vorzeitig abbrechen
             </a>
             
+
+            <a href="#10-externe-entwickler-tools-opencode-integration" class="toc-link block px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-surface-800/60 rounded-lg transition-all border-l-2 border-transparent hover:border-indigo-400 truncate" title="💻 10. Externe Entwickler-Tools & OpenCode Integration">
+                💻 10. Externe Entwickler-Tools & OpenCode Integration
+            </a>
+            
+
+            <a href="#1-architektur-vorteile-f-r-opencode" class="toc-link block pl-5 pr-2 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all truncate" title="1. Architektur & Vorteile für OpenCode">
+                1. Architektur & Vorteile für OpenCode
+            </a>
+            
+
+            <a href="#2-konfiguration-in-opencode-json" class="toc-link block pl-5 pr-2 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all truncate" title="2. Konfiguration in `opencode.json`">
+                2. Konfiguration in <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">opencode.json</code>
+            </a>
+            
+
+            <a href="#3-opencode-bedienung-modell-wahl" class="toc-link block pl-5 pr-2 py-1 text-[11px] text-slate-500 hover:text-indigo-300 hover:bg-surface-800/40 rounded-lg transition-all truncate" title="3. OpenCode Bedienung & Modell-Wahl">
+                3. OpenCode Bedienung & Modell-Wahl
+            </a>
+            
                     </nav>
                 </div>
 
@@ -1435,6 +1455,120 @@ Erstelle mir eine formatierte Zusammenfassung der Auszahlungssumme von 1.450,00 
 <ul class="space-y-2 my-3 text-xs sm:text-sm text-slate-300 break-words">
 <li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0"><strong class="text-white font-semibold">Tipp:</strong> Wenn du eine komplexe Anfrage oder sensible Daten abschickst, lass dem Tab ca. <strong class="text-white font-semibold">20–30 Sekunden Zeit</strong>. Ein vorzeitiges Neuladen der Seite (<em class="text-slate-300 italic">F5 / Refresh</em>) trennt den WebSocket-Kanal zum Minisforum-Server, bricht die laufende GPU-Berechnung in LM Studio ab und hinterlässt eine unvollständige Nachricht.</span></li>
 </ul>
+<hr class="my-8 border-slate-800/80">
+
+            <div id="10-externe-entwickler-tools-opencode-integration" class="pt-8 pb-3 mt-6 border-t border-slate-800/60 first:border-0 scroll-mt-24">
+                <h2 class="text-xl sm:text-2xl font-bold font-display text-white flex items-center justify-between gap-3 break-words">
+                    <span>💻 10. Externe Entwickler-Tools & OpenCode Integration</span>
+                    <a href="#10-externe-entwickler-tools-opencode-integration" class="text-slate-600 hover:text-indigo-400 text-sm transition-colors flex-shrink-0" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h2>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5 break-words">Du kannst das Open WebUI Gateway nicht nur über die Weboberfläche im Browser nutzen, sondern auch nahtlos an externe Agenten und Entwickler-Tools anbinden – insbesondere <strong class="text-white font-semibold">OpenCode</strong> (den modernen KI-Coding-Agenten).</p>
+
+            <div id="1-architektur-vorteile-f-r-opencode" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-base sm:text-lg font-bold font-display text-indigo-300 flex items-center justify-between gap-2 break-words">
+                    <span>1. Architektur & Vorteile für OpenCode</span>
+                    <a href="#1-architektur-vorteile-f-r-opencode" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors flex-shrink-0" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5 break-words">OpenCode (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">opencode</code>) nutzt standardmäßig den Vercel AI SDK Provider <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">@ai-sdk/openai-compatible</code>. Indem du OpenCode über das Open WebUI Gateway verbindest (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">http://open-webui:8080/api</code> intern im Docker-Netzwerk bzw. <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">http://100.116.36.64:8080/api</code> über Tailscale), profitierst du von folgenden Vorteilen:</p>
+<ul class="space-y-2 my-3 text-xs sm:text-sm text-slate-300 break-words">
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0">🛡️ <strong class="text-white font-semibold">Zero-Leakage PII-Schutz für Quellcode:</strong> E-Mails, API-Keys, Passwörter, IP-Adressen und Personennamen im Quellcode oder im Agenten-Prompt werden vor dem Verlassen der Infrastruktur geschwärzt (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">[[EMAIL_1]]</code>).</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0">🔄 <strong class="text-white font-semibold">Live-Deanonymisierung in Tool-Calls:</strong> Schreibt der Agent Code über Werkzeuge wie <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">write_file</code>, werden Platzhalter in den Streaming-Parametern (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">delta.tool_calls</code>) in Echtzeit rehydriert – deine Dateien auf der Festplatte enthalten also sofort den echten, korrekten Code!</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0">🧠 <strong class="text-white font-semibold">Intelligentes Auto-Routing mit Kontext-Eskalation:</strong> OpenCode schickt bei jeder Anfrage den vollen Agenten-Kontext (System-Prompt, Tool-Schemas, Verzeichnisstrukturen). Der Router erkennt dies automatisch anhand des geschätzten Kontextvolumens (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">MAX_LOCAL_CONTEXT_TOKENS</code>) und delegiert große Sessions an High-End Cloud-Modelle (z. B. Claude Sonnet 4.5), um Kontext-Überläufe auf der lokalen Workstation zu verhindern.</span></li>
+<li class="flex items-start gap-2 leading-relaxed"><span class="text-indigo-400 text-sm leading-none mt-1 flex-shrink-0">&bull;</span><span class="min-w-0">⚡ <strong class="text-white font-semibold">Direkter interner Docker-Pfad:</strong> Da sowohl Open WebUI als auch OpenCode auf dem Minisforum-Server im selben Netzwerk <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">caddy_network</code> laufen, kommunizieren sie mit extrem geringer Latenz direkt über <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">http://open-webui:8080/api</code>.</span></li>
+</ul>
+
+            <div id="2-konfiguration-in-opencode-json" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-base sm:text-lg font-bold font-display text-indigo-300 flex items-center justify-between gap-2 break-words">
+                    <span>2. Konfiguration in <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">opencode.json</code></span>
+                    <a href="#2-konfiguration-in-opencode-json" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors flex-shrink-0" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5 break-words">Die Konfigurationsdatei befindet sich auf dem Minisforum-Server unter <code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">/root/stacks/opencode-stack/opencode.json</code>:</p>
+
+                <div class="relative group my-4 rounded-2xl overflow-hidden bg-surface-950 border border-slate-800 shadow-xl min-w-0 max-w-full">
+                    <div class="flex items-center justify-between px-4 py-2 bg-surface-900 border-b border-slate-800/80 text-xs font-mono text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
+                            <span class="text-slate-300 font-semibold">JSON</span>
+                        </div>
+                        <button onclick="copyToClipboard('code-block-360')" class="px-2.5 py-1 rounded-md bg-surface-800 hover:bg-surface-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 text-[11px]">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Kopieren</span>
+                        </button>
+                    </div>
+                    <pre class="p-4 overflow-x-auto text-xs font-mono text-slate-200 leading-relaxed max-w-full whitespace-pre"><code id="code-block-360">{
+  &quot;$schema&quot;: &quot;https://opencode.ai/config.json&quot;,
+  &quot;provider&quot;: {
+    &quot;openwebui&quot;: {
+      &quot;npm&quot;: &quot;@ai-sdk/openai-compatible&quot;,
+      &quot;name&quot;: &quot;Open WebUI Router &amp; Gateway&quot;,
+      &quot;options&quot;: {
+        &quot;baseURL&quot;: &quot;http://open-webui:8080/api&quot;,
+        &quot;apiKey&quot;: &quot;sk-opencode-router-dfebf885abbe47ad8e77&quot;
+      },
+      &quot;models&quot;: {
+        &quot;Cortecs.gemini-3.7-flash&quot;: {
+          &quot;name&quot;: &quot;🛡️ Auto-Router (Hybrid Gateway + PII)&quot;
+        },
+        &quot;LMStudio.qwen2.5-coder-14b-instruct&quot;: {
+          &quot;name&quot;: &quot;⚡ Qwen 2.5 Coder 14B (Lokal via WebUI)&quot;
+        },
+        &quot;openrouter.anthropic/claude-sonnet-4.5&quot;: {
+          &quot;name&quot;: &quot;🧠 Claude Sonnet 4.5 (Cloud via Gateway)&quot;
+        }
+      }
+    },
+    &quot;lmstudio&quot;: {
+      &quot;npm&quot;: &quot;@ai-sdk/openai-compatible&quot;,
+      &quot;name&quot;: &quot;LM Studio Workstation&quot;,
+      &quot;options&quot;: {
+        &quot;baseURL&quot;: &quot;http://192.168.168.17:1234/v1&quot;
+      },
+      &quot;models&quot;: {
+        &quot;qwen2.5-coder-14b-instruct&quot;: {
+          &quot;name&quot;: &quot;⚡ Qwen 2.5 Coder 14B (Standard)&quot;
+        },
+        &quot;deepseek-r1-distill-qwen-14b&quot;: {
+          &quot;name&quot;: &quot;🧠 DeepSeek-R1 Distill 14B (Reasoning)&quot;
+        },
+        &quot;google/gemma-4-12b-qat&quot;: {
+          &quot;name&quot;: &quot;🌐 Google Gemma 4 12B (Allrounder)&quot;
+        },
+        &quot;qwen3.8-9b-distill-uncensored-heretic-i1&quot;: {
+          &quot;name&quot;: &quot;🔓 Qwen 3.8 Heretic 9B (Unzensiert)&quot;
+        }
+      }
+    }
+  }
+}</code></pre>
+                </div>
+                
+
+            <div id="3-opencode-bedienung-modell-wahl" class="pt-6 pb-2 scroll-mt-24">
+                <h3 class="text-base sm:text-lg font-bold font-display text-indigo-300 flex items-center justify-between gap-2 break-words">
+                    <span>3. OpenCode Bedienung & Modell-Wahl</span>
+                    <a href="#3-opencode-bedienung-modell-wahl" class="text-slate-600 hover:text-indigo-400 text-xs transition-colors flex-shrink-0" title="Direktlink"><i class="fa-solid fa-link"></i></a>
+                </h3>
+            </div>
+            
+<p class="text-xs sm:text-sm text-slate-300 leading-relaxed my-2.5 break-words">Sobald OpenCode neu gestartet wurde (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">docker restart opencode</code>), stehen die Modelle sowohl in der OpenCode Web-UI (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">http://100.116.36.64:4096</code>) als auch im Terminal zur Verfügung:</p>
+<ol class="list-decimal list-inside space-y-2 my-3 text-xs sm:text-sm text-slate-300 pl-2 break-words">
+<li class="leading-relaxed"><strong class="text-white font-semibold">Auto-Router Modus (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">openwebui/Cortecs.gemini-3.7-flash</code>):</strong></li>
+<li class="leading-relaxed">Automatische Intent- und PII-Erkennung.</li>
+<li class="leading-relaxed">Bei großen Agenten-Sessions automatische Eskalation an Cloud-Coder (Claude Sonnet 4.5).</li>
+<li class="leading-relaxed">Höchste Sicherheit und minimale Tokenkosten.</li>
+<li class="leading-relaxed"><strong class="text-white font-semibold">Direktes Cloud-Modell (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">openwebui/openrouter.anthropic/claude-sonnet-4.5</code>):</strong></li>
+<li class="leading-relaxed">1:1 Routing an Claude Sonnet 4.5 mit 200k Kontextfenster.</li>
+<li class="leading-relaxed">Voller PII-Schutz aktiv (Datenschutz-Inlet & Outlet-Rehydrierung).</li>
+<li class="leading-relaxed"><strong class="text-white font-semibold">Direktes lokales Modell (<code class="px-1.5 py-0.5 rounded bg-surface-950 text-emerald-400 font-mono text-xs border border-slate-800 break-all">openwebui/LMStudio.qwen2.5-coder-14b-instruct</code>):</strong></li>
+<li class="leading-relaxed">100% lokale Ausführung auf der RTX 4090 Workstation ohne Cloud-Traffic.</li>
+<li class="leading-relaxed">Hinweis: Bitte in LM Studio die Context-Length für das Modell auf 16k oder 32k stellen, wenn große Codebases verarbeitet werden.</li>
+</ol>
                 </div>
             </main>
         </div>

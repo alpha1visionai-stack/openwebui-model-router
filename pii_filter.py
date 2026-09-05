@@ -927,13 +927,38 @@ def stream(
     __chat_id__: Optional[str] = None,
     __message_id__: Optional[str] = None,
 ) -> dict:
-    """Live-Deanonymisierung für Streaming-Responses."""
+    """Live-Deanonymisierung für Streaming-Responses (unterstützt Open WebUI & Standard OpenAI SSE Chunks)."""
 
     if not isinstance(event, dict):
         return event
 
-    content = event.get("content")
-    if not isinstance(content, str):
+    # Erkennung von OpenAI-kompatiblem Delta-Chunk (Text-Content oder Tool-Call Arguments) vs. nativem WebUI-Event
+    is_delta = False
+    target_container = event
+    target_key = "content"
+
+    if "content" in event and isinstance(event.get("content"), str):
+        content = event["content"]
+    elif "choices" in event and isinstance(event["choices"], list) and len(event["choices"]) > 0:
+        delta = event["choices"][0].get("delta", {})
+        if "content" in delta and isinstance(delta.get("content"), str):
+            content = delta["content"]
+            target_container = delta
+            target_key = "content"
+            is_delta = True
+        elif "tool_calls" in delta and isinstance(delta.get("tool_calls"), list) and len(delta["tool_calls"]) > 0:
+            tc = delta["tool_calls"][0]
+            func = tc.get("function", {})
+            if "arguments" in func and isinstance(func.get("arguments"), str):
+                content = func["arguments"]
+                target_container = func
+                target_key = "arguments"
+                is_delta = True
+            else:
+                return event
+        else:
+            return event
+    else:
         return event
 
     chat_id = __chat_id__ or (isinstance(__metadata__, dict) and __metadata__.get("chat_id"))
@@ -943,20 +968,42 @@ def stream(
     if not mapping:
         return event
 
-    buf = event.get(_STREAM_BUFFER_KEY) or ""
+    # Puffer im metadata-Dict persistieren, da jedes SSE-Event ein neues dict ist
+    buf = ""
+    if isinstance(__metadata__, dict):
+        buf = __metadata__.get(_STREAM_BUFFER_KEY) or ""
+    elif isinstance(event, dict):
+        buf = event.get(_STREAM_BUFFER_KEY) or ""
     buf += content
 
     replaced = _deanonymize_text(buf, mapping)
 
-    cut = len(replaced)
-    open_idx = replaced.rfind("[[")
-    close_idx = replaced.find("]]", open_idx) if open_idx != -1 else -1
-    if open_idx != -1 and close_idx == -1:
-        cut = open_idx
+    # Prüfen, ob der Stream zu Ende ist (finish_reason gesetzt)
+    finish_reason = None
+    if "choices" in event and isinstance(event["choices"], list) and len(event["choices"]) > 0:
+        finish_reason = event["choices"][0].get("finish_reason")
 
-    out = replaced[:cut]
-    event["content"] = out
-    event[_STREAM_BUFFER_KEY] = replaced[cut:]
+    if finish_reason:
+        # Stream beendet -> Puffer komplett flushen
+        out = replaced
+        rem = ""
+    else:
+        # Pufferung unvollständiger Platzhalter-Tags (z. B. "[[EMA...")
+        cut = len(replaced)
+        open_idx = replaced.rfind("[[")
+        close_idx = replaced.find("]]", open_idx) if open_idx != -1 else -1
+        if open_idx != -1 and close_idx == -1:
+            cut = open_idx
+
+        out = replaced[:cut]
+        rem = replaced[cut:]
+
+    if isinstance(__metadata__, dict):
+        __metadata__[_STREAM_BUFFER_KEY] = rem
+    if isinstance(event, dict):
+        event[_STREAM_BUFFER_KEY] = rem
+
+    target_container[target_key] = out
     return event
 
 

@@ -278,6 +278,21 @@ class TestModelRouter(unittest.TestCase):
         res = self.router.inlet(body, __user__=user)
         self.assertEqual(res["model"], "LMStudio.qwen2.5-coder-14b-instruct")
 
+    def test_context_overflow_escalation_to_cloud(self):
+        """Wenn ein Coding-Agent einen riesigen Kontext (> 7000 Tokens) schickt, soll automatisch an Cloud Heavy eskaliert werden."""
+        huge_system_prompt = "system instructions " * 7500  # ca. 15.000 Tokens
+        body = {
+            "model": "default-ui-model",
+            "messages": [
+                {"role": "system", "content": huge_system_prompt},
+                {"role": "user", "content": "Schreibe eine kurze Python Funktion addiere(a, b)."}
+            ],
+            "metadata": {}
+        }
+        res = self.router.inlet(body)
+        self.assertEqual(res["model"], "openrouter.anthropic/claude-sonnet-4.5")
+        self.assertIn("Coding-Agent / Großer Kontext", res["metadata"]["router_decision"]["reason"])
+
 
 if __name__ == "__main__":
     unittest.main()

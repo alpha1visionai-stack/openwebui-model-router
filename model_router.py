@@ -196,6 +196,10 @@ class Valves(BaseModel):
         default=25,
         description="Zeilenanzahl Code, ab der Code-Aufgaben an Cloud High-End delegiert werden.",
     )
+    MAX_LOCAL_CONTEXT_TOKENS: int = Field(
+        default=7000,
+        description="Maximale geschätzte Tokenanzahl (gesamter Chat-Verlauf inkl. System-Prompt), die an lokale Modelle gesendet werden darf. Übersteigt der Request diesen Schwellenwert (z. B. bei Coding-Agenten wie OpenCode mit großen System-Prompts), wird automatisch an Cloud Heavy delegiert, um 'Context size exceeded' Fehler auf der Workstation zu verhindern (sofern keine kritische PII vorliegt).",
+    )
 
 
     # --- Manuelle Auswahl & Pinning (Option 4) ---
@@ -339,8 +343,9 @@ class Filter:
         code_triggers = [
             r"```", r"\bdef\s+", r"\bclass\s+", r"\bfunction\b", r"\bimport\s+",
             r"refactor", r"debug", r"bugfix", r"sql", r"dockerfile", r"regex",
-            r"(schreibe|erstelle|baue)\s+(ein|eine|einen)?\s*(python|typescript|bash|powershell|sql|script|skript|programm|funktion|code|logik|algorithmus)",
-            r"\b(code|coding|skript|script|programm|algorithmus|funktion|abrechnungs-logik|logik|klasse|datenbank|abfrage)\b",
+            r"(schreibe|erstelle|baue)\s+(ein|eine|einen)?\s*(python|typescript|bash|powershell|sql|script|skript|programm|funktion|code|logik|algorithmus|datei)",
+            r"\b(code|coding|skript|script|programm|algorithmus|funktion|abrechnungs-logik|logik|klasse|datenbank|abfrage|python-datei)\b",
+            r"\b\w+\.(py|js|ts|jsx|tsx|sh|sql|json|html|css|yaml|yml)\b",
             r"api endpoint", r"pull request", r"stack trace", r"unittest"
         ]
         is_coding = any(re.search(p, t) for p in code_triggers) or code_lines >= 3
@@ -471,6 +476,18 @@ class Filter:
         # 5. Intent & Komplexität ermitteln
         intent, is_complex = self._detect_intent(clean_text)
 
+        # Kontextgröße realistisch abschätzen (inkl. Messages, System-Prompt und Tool-Definitionen/Schemas)
+        total_prompt_chars = sum(len(str(m.get("content", "") or "")) for m in body.get("messages", []))
+        if "tools" in body and body["tools"]:
+            try:
+                total_prompt_chars += len(json.dumps(body["tools"]))
+            except Exception:
+                total_prompt_chars += len(str(body["tools"]))
+        if "system" in body and body["system"]:
+            total_prompt_chars += len(str(body["system"]))
+        estimated_context_tokens = total_prompt_chars // 4
+        exceeds_local_context = estimated_context_tokens > self.valves.MAX_LOCAL_CONTEXT_TOKENS
+
         # 6. Routing-Entscheidung treffen
         selected_model = ""
         applied_profile = "writing"
@@ -583,16 +600,25 @@ class Filter:
                 routing_reason = "Intent: Unzensiert / Tabuthemen -> Heretic 9B auf Workstation"
 
             # Fall 4: High-End Coding & Deep Reasoning (Cloud)
-            elif (intent == "coding" and is_complex) or (forced_location == "cloud" and intent == "coding"):
+            # Oder wenn der Chat-Kontext das lokale Kontextfenster übersteigt (z. B. OpenCode Agent)
+            elif (intent == "coding" and (is_complex or (exceeds_local_context and not force_local_privacy))) or (forced_location == "cloud" and intent == "coding"):
                 selected_model = effective_cloud_heavy
                 applied_profile = "cloud_heavy"
-                routing_reason = f"High-End Coding & Architektur -> {selected_model} (Cloud)"
+                if exceeds_local_context and not is_complex:
+                    routing_reason = f"Coding-Agent / Großer Kontext (~{estimated_context_tokens} Tokens > Limit {self.valves.MAX_LOCAL_CONTEXT_TOKENS}) -> {selected_model} (Cloud)"
+                else:
+                    routing_reason = f"High-End Coding & Architektur -> {selected_model} (Cloud)"
 
             # Fall 5: Standard Coding & Skripte -> Lokaler Coder (schnell, gratis)
             elif intent == "coding":
-                selected_model = self.valves.MODEL_LOCAL_CODING
-                applied_profile = "coding"
-                routing_reason = f"Standard Coding & Skripte -> {self.valves.MODEL_LOCAL_CODING} auf Workstation"
+                if exceeds_local_context and not force_local_privacy:
+                    selected_model = effective_cloud_heavy
+                    applied_profile = "cloud_heavy"
+                    routing_reason = f"Coding-Kontext übersteigt lokales Limit (~{estimated_context_tokens} Tokens) -> {selected_model} (Cloud)"
+                else:
+                    selected_model = self.valves.MODEL_LOCAL_CODING
+                    applied_profile = "coding"
+                    routing_reason = f"Standard Coding & Skripte -> {self.valves.MODEL_LOCAL_CODING} auf Workstation"
 
             # Fall 6: Mathematische Herleitungen & Logik
             elif intent == "reasoning":
@@ -605,17 +631,22 @@ class Filter:
                     applied_profile = "reasoning"
                     routing_reason = f"Deep Reasoning & Logik -> {self.valves.MODEL_LOCAL_REASONING} auf Workstation"
 
-            # Fall 7: Sehr lange / hochkomplexe Textanalyse ohne PII-Sperre
-            elif is_complex and not total_pii_count:
+            # Fall 7: Sehr lange / hochkomplexe Textanalyse (ohne kritische PII-Sperre)
+            elif is_complex and not force_local_privacy:
                 selected_model = effective_cloud_writing
                 applied_profile = "cloud_heavy"
-                routing_reason = f"Hohe Textkomplexität ohne PII -> {selected_model} (Cloud)"
+                routing_reason = f"Hohe Textkomplexität (maskiert) -> {selected_model} (Cloud)"
 
             # Fall 8: Standard Writing, Lektorat, Chat, Routine
             else:
-                selected_model = self.valves.MODEL_LOCAL_WRITING
-                applied_profile = "writing"
-                routing_reason = f"Writing, Chat & Routine -> {self.valves.MODEL_LOCAL_WRITING} auf Workstation (0 Cloud-Credits)"
+                if exceeds_local_context and not force_local_privacy:
+                    selected_model = effective_cloud_writing
+                    applied_profile = "cloud_heavy"
+                    routing_reason = f"Kontext übersteigt lokales Limit (~{estimated_context_tokens} Tokens) -> {selected_model} (Cloud)"
+                else:
+                    selected_model = self.valves.MODEL_LOCAL_WRITING
+                    applied_profile = "writing"
+                    routing_reason = f"Writing, Chat & Routine -> {self.valves.MODEL_LOCAL_WRITING} auf Workstation (0 Cloud-Credits)"
         # 6b. Auto-Fallback für bekannte defekte oder inaktive Modell-IDs
         if selected_model in KNOWN_INACTIVE_MODELS:
             fallback = KNOWN_INACTIVE_MODELS[selected_model]
@@ -629,7 +660,17 @@ class Filter:
 
         if "metadata" not in body:
             body["metadata"] = {}
-        body["metadata"]["selected_model_id"] = selected_model
+
+        # Nur für interaktive Web-UI Chats (chat_id vorhanden) das custom selected_model_id Event auslösen.
+        # Externe API-Clients (OpenCode / Vercel AI SDK / standard OpenAI SDK) erwarten ein striktes
+        # OpenAI SSE Chunk Schema (choices: [...]). Ein data: {"selected_model_id": ...} führt dort zu Validierungsfehlern.
+        is_interactive_chat = bool(
+            __chat_id__
+            or (isinstance(__metadata__, dict) and __metadata__.get("chat_id"))
+            or body.get("chat_id")
+        )
+        if is_interactive_chat:
+            body["metadata"]["selected_model_id"] = selected_model
 
         # 8. Hyperparameter-Injektion (Temperature & Top-P)
         profile_data = PROFILES.get(applied_profile, {})

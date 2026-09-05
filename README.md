@@ -198,10 +198,24 @@ Vollständige Test-Prompts für alle fünf Hauptszenarien (Datenschutz-Lockdown,
 
 ## ⚡ Streaming & Frontend-Synchronisation
 
-Beim dynamischen Modell-Routing zur Laufzeit (z. B. von einem Cloud-Standardmodell zu einem lokalen Workstation-Modell bei sensiblen Daten) injiziert das Gateway `selected_model_id` in die Request-Metadaten:
+Beim dynamischen Modell-Routing zur Laufzeit (z. B. von einem Cloud-Standardmodell zu einem lokalen Workstation-Modell bei sensiblen Daten) injiziert das Gateway `selected_model_id` bei interaktiven WebUI-Chats in die Request-Metadaten:
 ```python
-body["metadata"]["selected_model_id"] = selected_model
+if is_interactive_chat:
+    body["metadata"]["selected_model_id"] = selected_model
 ```
-Dies stellt sicher, dass Open WebUI den SSE-Stream sofort mit `data: {"selected_model_id": ...}` initialisiert. Die Benutzeroberfläche ordnet den Stream somit nahtlos der richtigen Sprechblase zu und visualisiert Denk-Tokens (`reasoning_content`) ohne Verzögerung.
+Dies stellt sicher, dass Open WebUI den SSE-Stream für den Browser sofort mit `data: {"selected_model_id": ...}` initialisiert, während externe API-Clients (wie OpenCode / Vercel AI SDK) ein 100% standardkonformes OpenAI-Chunk-Schema ohne Validierungsfehler erhalten.
+
+---
+
+## 💻 OpenCode Integration (Weg 1)
+
+Das Gateway dient gleichzeitig als OpenAI-kompatibler Endpunkt für autonome Coding-Agenten wie **OpenCode**:
+* **Provider:** `@ai-sdk/openai-compatible`
+* **BaseURL:** `http://open-webui:8080/api` (intern im `caddy_network`)
+* **API-Key:** Open WebUI Bearer Key
+* **Features:** Voller Zero-Leakage PII-Schutz für Code, automatische Kontext-Eskalation an Claude Sonnet 4.5 bei großen Agenten-Prompts (>7k Tokens) und Live-Deanonymisierung von Tool-Call Argumenten (`delta.tool_calls`).
+
+Details & `opencode.json` Konfiguration: 👉 **[`USER_GUIDE.md#10-externe-entwickler-tools--opencode-integration`](USER_GUIDE.md)**
+
 
 

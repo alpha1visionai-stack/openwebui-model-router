@@ -592,4 +592,84 @@ Damit du das Laufzeitverhalten der Pipeline im Alltag optimal verstehst und eins
 ### 4. Verbindung nicht vorzeitig abbrechen
 * **Tipp:** Wenn du eine komplexe Anfrage oder sensible Daten abschickst, lass dem Tab ca. **20–30 Sekunden Zeit**. Ein vorzeitiges Neuladen der Seite (*F5 / Refresh*) trennt den WebSocket-Kanal zum Minisforum-Server, bricht die laufende GPU-Berechnung in LM Studio ab und hinterlässt eine unvollständige Nachricht.
 
+---
+
+## 💻 10. Externe Entwickler-Tools & OpenCode Integration
+
+Du kannst das Open WebUI Gateway nicht nur über die Weboberfläche im Browser nutzen, sondern auch nahtlos an externe Agenten und Entwickler-Tools anbinden – insbesondere **OpenCode** (den modernen KI-Coding-Agenten).
+
+### 1. Architektur & Vorteile für OpenCode
+OpenCode (`opencode`) nutzt standardmäßig den Vercel AI SDK Provider `@ai-sdk/openai-compatible`. Indem du OpenCode über das Open WebUI Gateway verbindest (`http://open-webui:8080/api` intern im Docker-Netzwerk bzw. `http://100.116.36.64:8080/api` über Tailscale), profitierst du von folgenden Vorteilen:
+
+* 🛡️ **Zero-Leakage PII-Schutz für Quellcode:** E-Mails, API-Keys, Passwörter, IP-Adressen und Personennamen im Quellcode oder im Agenten-Prompt werden vor dem Verlassen der Infrastruktur geschwärzt (`[[EMAIL_1]]`).
+* 🔄 **Live-Deanonymisierung in Tool-Calls:** Schreibt der Agent Code über Werkzeuge wie `write_file`, werden Platzhalter in den Streaming-Parametern (`delta.tool_calls`) in Echtzeit rehydriert – deine Dateien auf der Festplatte enthalten also sofort den echten, korrekten Code!
+* 🧠 **Intelligentes Auto-Routing mit Kontext-Eskalation:** OpenCode schickt bei jeder Anfrage den vollen Agenten-Kontext (System-Prompt, Tool-Schemas, Verzeichnisstrukturen). Der Router erkennt dies automatisch anhand des geschätzten Kontextvolumens (`MAX_LOCAL_CONTEXT_TOKENS`) und delegiert große Sessions an High-End Cloud-Modelle (z. B. Claude Sonnet 4.5), um Kontext-Überläufe auf der lokalen Workstation zu verhindern.
+* ⚡ **Direkter interner Docker-Pfad:** Da sowohl Open WebUI als auch OpenCode auf dem Minisforum-Server im selben Netzwerk `caddy_network` laufen, kommunizieren sie mit extrem geringer Latenz direkt über `http://open-webui:8080/api`.
+
+### 2. Konfiguration in `opencode.json`
+Die Konfigurationsdatei befindet sich auf dem Minisforum-Server unter `/root/stacks/opencode-stack/opencode.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "openwebui": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Open WebUI Router & Gateway",
+      "options": {
+        "baseURL": "http://open-webui:8080/api",
+        "apiKey": "sk-opencode-router-dfebf885abbe47ad8e77"
+      },
+      "models": {
+        "Cortecs.gemini-3.7-flash": {
+          "name": "🛡️ Auto-Router (Hybrid Gateway + PII)"
+        },
+        "LMStudio.qwen2.5-coder-14b-instruct": {
+          "name": "⚡ Qwen 2.5 Coder 14B (Lokal via WebUI)"
+        },
+        "openrouter.anthropic/claude-sonnet-4.5": {
+          "name": "🧠 Claude Sonnet 4.5 (Cloud via Gateway)"
+        }
+      }
+    },
+    "lmstudio": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "LM Studio Workstation",
+      "options": {
+        "baseURL": "http://192.168.168.17:1234/v1"
+      },
+      "models": {
+        "qwen2.5-coder-14b-instruct": {
+          "name": "⚡ Qwen 2.5 Coder 14B (Standard)"
+        },
+        "deepseek-r1-distill-qwen-14b": {
+          "name": "🧠 DeepSeek-R1 Distill 14B (Reasoning)"
+        },
+        "google/gemma-4-12b-qat": {
+          "name": "🌐 Google Gemma 4 12B (Allrounder)"
+        },
+        "qwen3.8-9b-distill-uncensored-heretic-i1": {
+          "name": "🔓 Qwen 3.8 Heretic 9B (Unzensiert)"
+        }
+      }
+    }
+  }
+}
+```
+
+### 3. OpenCode Bedienung & Modell-Wahl
+Sobald OpenCode neu gestartet wurde (`docker restart opencode`), stehen die Modelle sowohl in der OpenCode Web-UI (`http://100.116.36.64:4096`) als auch im Terminal zur Verfügung:
+
+1. **Auto-Router Modus (`openwebui/Cortecs.gemini-3.7-flash`):**
+   * Automatische Intent- und PII-Erkennung.
+   * Bei großen Agenten-Sessions automatische Eskalation an Cloud-Coder (Claude Sonnet 4.5).
+   * Höchste Sicherheit und minimale Tokenkosten.
+2. **Direktes Cloud-Modell (`openwebui/openrouter.anthropic/claude-sonnet-4.5`):**
+   * 1:1 Routing an Claude Sonnet 4.5 mit 200k Kontextfenster.
+   * Voller PII-Schutz aktiv (Datenschutz-Inlet & Outlet-Rehydrierung).
+3. **Direktes lokales Modell (`openwebui/LMStudio.qwen2.5-coder-14b-instruct`):**
+   * 100% lokale Ausführung auf der RTX 4090 Workstation ohne Cloud-Traffic.
+   * Hinweis: Bitte in LM Studio die Context-Length für das Modell auf 16k oder 32k stellen, wenn große Codebases verarbeitet werden.
+
+
 

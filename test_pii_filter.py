@@ -98,6 +98,57 @@ class TestPIIFilter(unittest.TestCase):
         body = self.filter.inlet(body, __user__=user)
         self.assertEqual(body["messages"][0]["content"], text)
 
+    def test_stream_openai_delta_deanonymization(self):
+        text = "Kontakt: max.mustermann@example.com bitte antworten."
+        body = {"messages": [{"role": "user", "content": text}]}
+        metadata = {}
+        body = self.filter.inlet(body, __metadata__=metadata)
+
+        # Simuliere OpenAI SSE Chunks
+        chunk1 = {"choices": [{"delta": {"content": "Ihre Email lautet "}}]}
+        chunk2 = {"choices": [{"delta": {"content": "[[EMAIL_1]]"}}]}
+        chunk3 = {"choices": [{"delta": {"content": "."}, "finish_reason": "stop"}]}
+
+        res1 = self.filter.stream(chunk1, __metadata__=metadata)
+        self.assertEqual(res1["choices"][0]["delta"]["content"], "Ihre Email lautet ")
+
+        res2 = self.filter.stream(chunk2, __metadata__=metadata)
+        self.assertEqual(res2["choices"][0]["delta"]["content"], "max.mustermann@example.com")
+
+        res3 = self.filter.stream(chunk3, __metadata__=metadata)
+        self.assertEqual(res3["choices"][0]["delta"]["content"], ".")
+
+    def test_stream_tool_calls_arguments_deanonymization(self):
+        text = "Erstelle ein Skript mit Email max.mustermann@example.com"
+        body = {"messages": [{"role": "user", "content": text}]}
+        metadata = {}
+        body = self.filter.inlet(body, __metadata__=metadata)
+
+        # Simuliere OpenAI SSE Chunk für tool_calls Arguments
+        chunk = {
+            "choices": [
+                {
+                    "delta": {
+                        "tool_calls": [
+                            {
+                                "index": 0,
+                                "function": {
+                                    "name": "write_file",
+                                    "arguments": '{"content": "EMAIL=\\"[[EMAIL_1]]\\""}'
+                                }
+                            }
+                        ]
+                    },
+                    "finish_reason": "stop"
+                }
+            ]
+        }
+
+        res = self.filter.stream(chunk, __metadata__=metadata)
+        args = res["choices"][0]["delta"]["tool_calls"][0]["function"]["arguments"]
+        self.assertEqual(args, '{"content": "EMAIL=\\"max.mustermann@example.com\\""}')
+
 
 if __name__ == "__main__":
     unittest.main()
+
