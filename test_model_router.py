@@ -45,8 +45,8 @@ class TestModelRouter(unittest.TestCase):
         self.assertEqual(res["temperature"], PROFILES["coding"]["temperature"])
         self.assertEqual(res["top_p"], PROFILES["coding"]["top_p"])
 
-    def test_coding_complex_goes_to_claude_sonnet(self):
-        """Sehr komplexe Coding-/Architektur-Aufgaben ohne PII gehen an Claude Sonnet 4.5 in der Cloud."""
+    def test_coding_complex_goes_to_cloud_heavy(self):
+        """Sehr komplexe Coding-/Architektur-Aufgaben ohne PII gehen an das Cloud-Flaggschiff Qwen 3.5 397B MoE."""
         body = {
             "model": "default-ui-model",
             "messages": [
@@ -55,7 +55,7 @@ class TestModelRouter(unittest.TestCase):
             "metadata": {}
         }
         res = self.router.inlet(body)
-        self.assertEqual(res["model"], "openrouter.anthropic/claude-sonnet-4.5")
+        self.assertEqual(res["model"], "Cortecs.qwen3.5-397b-a17b")
         self.assertEqual(res["temperature"], PROFILES["cloud_heavy"]["temperature"])
         self.assertEqual(res["top_p"], PROFILES["cloud_heavy"]["top_p"])
 
@@ -290,7 +290,7 @@ class TestModelRouter(unittest.TestCase):
             "metadata": {}
         }
         res = self.router.inlet(body)
-        self.assertEqual(res["model"], "openrouter.anthropic/claude-sonnet-4.5")
+        self.assertEqual(res["model"], "Cortecs.qwen3.5-397b-a17b")
         self.assertIn("Coding-Agent / Großer Kontext", res["metadata"]["router_decision"]["reason"])
 
 

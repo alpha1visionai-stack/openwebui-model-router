@@ -17,7 +17,7 @@ Arbeitet nahtlos mit dem vorgelagerten PII-Filter (openwebui-pii-filter) zusamme
      in die Cloud (OpenRouter: Claude 4.5 Sonnet / Opus 4.6).
 
 2. Task- & Intent-Klassifikation:
-   - Coding: Routing an Qwen 2.5 Coder 14B (lokal) oder Claude 4.5 Sonnet (Cloud bei High-Complexity).
+   - Coding: Routing an Qwen 2.5 Coder 14B (lokal) oder Qwen 3.5 397B MoE (Cloud bei High-Complexity).
    - Reasoning: Routing an DeepSeek-R1 Distill 14B (lokal) mit erzwungenem Denkspielraum.
    - Writing & Chat: Routing an Gemma 4 12B (Human Master / Anti-KI Diktion).
    - Uncensored / Freies Denken: Routing an Heretic 9B (ohne Moralfilter).
@@ -75,11 +75,11 @@ PROFILES: dict[str, dict[str, Any]] = {
         "rationale": "Volle redaktionelle Freiheit, keine moralisierenden Refusals.",
     },
     "cloud_heavy": {
-        "label": "Cloud High-End (Claude Sonnet 4.5)",
-        "temperature": 0.40,
-        "top_p": 0.90,
+        "label": "Cloud High-End (Qwen 3.5 397B MoE)",
+        "temperature": 0.20,
+        "top_p": 0.85,
         "context_length": 64000,
-        "rationale": "Höchste Code- und Reasoning-Präzision in der Cloud.",
+        "rationale": "Höchste Code- und Reasoning-Präzision in der Cloud (Alibaba Qwen 3.5 397B MoE).",
     },
     "cloud_opus": {
         "label": "Cloud Flagship (Claude Opus 4.6)",
@@ -151,8 +151,8 @@ class Valves(BaseModel):
 
     # --- Cloud Modelle (OpenRouter / Fall-spezifisch flexibel konfigurierbar) ---
     MODEL_CLOUD_HEAVY: str = Field(
-        default="openrouter.anthropic/claude-sonnet-4.5",
-        description="Fall 1: High-End Coding & Systemarchitektur in der Cloud",
+        default="Cortecs.qwen3.5-397b-a17b",
+        description="Fall 1: High-End Coding & Systemarchitektur in der Cloud (Alibaba Qwen 3.5 397B MoE)",
     )
     MODEL_CLOUD_OPUS: str = Field(
         default="openrouter.anthropic/claude-opus-4.6",
