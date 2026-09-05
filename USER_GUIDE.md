@@ -1,6 +1,11 @@
 # 📘 Benutzer-Handbuch: Hybrid Model Router & Privacy Gate
 
 > **Setup:** Open WebUI auf Minisforum Server &bull; Compute Node via Tailscale (LM Studio Workstation) &bull; Cloud APIs (OpenRouter)
+> 
+> 📊 **Interaktives Live-Dashboard:**
+> - **Tailscale (Team & Remote):** [http://100.116.36.64:8089](http://100.116.36.64:8089)
+> - **Lokales Netzwerk (Office LAN):** [http://192.168.168.202:8089](http://192.168.168.202:8089)
+> - **Im Agentic Handbuch:** [http://100.116.36.64:8088](http://100.116.36.64:8088) (Direktaufruf-Karte 4 oder [/router/](http://100.116.36.64:8088/router/))
 
 ---
 

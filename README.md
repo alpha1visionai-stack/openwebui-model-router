@@ -6,6 +6,11 @@ Routet Anfragen dynamisch zwischen:
 1. **Lokaler Workstation (LM Studio via Tailscale/LAN):** Für vertrauliche Daten, PII, Routineaufgaben und unzensierte Recherchen (**0 Cloud-Credits**).
 2. **Cloud High-End (OpenRouter):** Für hochkomplexes Reasoning, Architektur und Mammut-Code (Claude 4.5 Sonnet / Opus 4.6).
 
+> 📊 **Interaktives Web-Dashboard:**
+> - **Tailscale:** [http://100.116.36.64:8089](http://100.116.36.64:8089)
+> - **Lokales LAN:** [http://192.168.168.202:8089](http://192.168.168.202:8089)
+> - **Im Agentic Handbuch:** [http://100.116.36.64:8088](http://100.116.36.64:8088) (Karte 4 oder [/router/](http://100.116.36.64:8088/router/))
+
 ---
 
 ## 🏗️ Topologie & Architektur
