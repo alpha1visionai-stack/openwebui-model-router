@@ -119,9 +119,12 @@ Du musst das Routing nicht der Automatik überlassen. Wenn du ein bestimmtes Mod
 
 ---
 
-## 🔍 6. Transparenz & Audit: Welches Modell hat geantwortet?
+## 🔍 6. Transparenz & Audit: Modell & PII-Verlauf im Info-Icon (ℹ️)
 
-Unter jeder Nachricht in Open WebUI findest du ein kleines **Info-Icon (ℹ️)** oder kannst auf die Nachrichtendetails klicken. Dort siehst du unter `metadata.router_decision` exakt, warum diese Entscheidung getroffen wurde:
+Unter jeder Antwortnachricht in Open WebUI kannst du im **Info-Icon (ℹ️)** die vollständige Historie und Herkunft der Nachricht einsehen.
+
+### 1. Das Routing (`router_decision`)
+Zeigt, welches Modell gewählt wurde, warum, und welche Parameter gesetzt wurden:
 
 ```json
 {
@@ -133,11 +136,55 @@ Unter jeder Nachricht in Open WebUI findest du ein kleines **Info-Icon (ℹ️)*
     "temperature": 0.2,
     "top_p": 0.85,
     "reason": "Standard Coding & Skripte -> Qwen 2.5 Coder 14B auf Workstation",
-    "pii_detected": 0,
-    "critical_pii_blocked": false
+    "pii_detected": 2,
+    "critical_pii_blocked": false,
+    "pii_behandelte_elemente": [
+      {
+        "token": "[[NAME_PER_1]]",
+        "kategorie": "NAME_PER",
+        "original": "Anna",
+        "status": "Im Prompt geschwärzt ➔ In Antwort wiederhergestellt"
+      },
+      {
+        "token": "[[NAME_PER_2]]",
+        "kategorie": "NAME_PER",
+        "original": "Schmidt",
+        "status": "Im Prompt geschwärzt ➔ In Antwort wiederhergestellt"
+      }
+    ]
   }
 }
 ```
+
+### 2. Das PII-Audit-Log (`pii_audit`)
+Zeigt lückenlos alle Teile, die vom PII-Filter erkannt, maskiert und nach der LLM-Antwort wieder zu den Originalen zusammengesetzt wurden:
+
+```json
+{
+  "pii_audit": {
+    "anzahl_behandelt": 2,
+    "status": "Vollständig deanonymisiert (Originaldaten wiederhergestellt)",
+    "elemente": [
+      {
+        "token": "[[NAME_PER_1]]",
+        "kategorie": "NAME_PER",
+        "original": "Anna",
+        "status": "Im Prompt geschwärzt ➔ In Antwort erfolgreich wiederhergestellt"
+      },
+      {
+        "token": "[[NAME_PER_2]]",
+        "kategorie": "NAME_PER",
+        "original": "Schmidt",
+        "status": "Im Prompt geschwärzt ➔ In Antwort erfolgreich wiederhergestellt"
+      }
+    ]
+  }
+}
+```
+
+Damit hast du die **100 %ige Gewissheit**:
+- Welche Daten das Modell im Rohzustand verlassen haben (nur neutrale Tokens wie `[[NAME_PER_1]]`).
+- Welche Daten nach Rückkehr des Modells wieder eingesetzt wurden.
 
 ---
 

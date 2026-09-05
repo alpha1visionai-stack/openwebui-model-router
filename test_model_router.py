@@ -97,6 +97,9 @@ class TestModelRouter(unittest.TestCase):
             "metadata": {
                 "pii_counters": {
                     "IBAN": 1
+                },
+                "pii_map": {
+                    "[[IBAN_1]]": "DE89370400440532013000"
                 }
             }
         }
@@ -104,6 +107,11 @@ class TestModelRouter(unittest.TestCase):
         self.assertEqual(res["model"], "LMStudio.qwen2.5-coder-14b-instruct")
         self.assertTrue(res["metadata"]["router_decision"]["critical_pii_blocked"])
         self.assertIn("Datenschutz-Sperre", res["metadata"]["router_decision"]["reason"])
+        self.assertEqual(len(res["metadata"]["router_decision"]["pii_behandelte_elemente"]), 1)
+        elem = res["metadata"]["router_decision"]["pii_behandelte_elemente"][0]
+        self.assertEqual(elem["token"], "[[IBAN_1]]")
+        self.assertEqual(elem["original"], "DE89370400440532013000")
+        self.assertIn("pii_audit", res["metadata"])
 
     def test_cloud_override_blocked_by_critical_pii(self):
         """Selbst wenn der User #cloud oder #opus angibt, schlägt die PII-Sperre zu."""

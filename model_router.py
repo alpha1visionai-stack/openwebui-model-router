@@ -310,7 +310,20 @@ class Filter:
         # 1. PII-Metadaten vom pii_filter abrufen
         metadata = body.get("metadata") or {}
         pii_counters = metadata.get("pii_counters") or {}
-        total_pii_count = sum(pii_counters.values())
+        pii_map = metadata.get("pii_map") or {}
+        total_pii_count = sum(pii_counters.values()) or len(pii_map)
+
+        # Audit-Liste der behandelten PII-Elemente für UI-Transparenz
+        pii_elements = []
+        for token, original in pii_map.items():
+            match = re.search(r"\[\[([A-Z_]+)_\d+\]\]", token)
+            cat = match.group(1) if match else "PII"
+            pii_elements.append({
+                "token": token,
+                "kategorie": cat,
+                "original": original,
+                "status": "Im Prompt geschwärzt ➔ In Antwort wiederhergestellt",
+            })
 
         # 2. Letzte User-Nachricht extrahieren
         user_idx, raw_user_text = self._extract_last_user_message(body)
@@ -478,7 +491,16 @@ class Filter:
             "reason": routing_reason,
             "pii_detected": total_pii_count,
             "critical_pii_blocked": has_critical_pii,
+            "pii_behandelte_elemente": pii_elements if pii_elements else [],
         }
+
+        # Separater pii_audit Key für direkte Sichtbarkeit in der Info-Box
+        if pii_elements:
+            body["metadata"]["pii_audit"] = {
+                "anzahl_behandelt": len(pii_elements),
+                "status": "Erfolgreich maskiert & zur Re-Hydrierung vorgemerkt",
+                "elemente": pii_elements,
+            }
 
         log.info(f"[Model Router] '{original_model}' -> '{selected_model}' [{routing_reason}] (T={body.get('temperature')}, P={body.get('top_p')})")
         return body
