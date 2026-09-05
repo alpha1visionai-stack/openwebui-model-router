@@ -128,6 +128,11 @@ class Valves(BaseModel):
         description="Optional: Ersten Buchstaben im geschwärzten Token erhalten "
         "(für leichtes Debugging). Standard: aus.",
     )
+    split_ner_entities: bool = Field(
+        default=False,
+        description="Wenn True: Zerlegt mehrteilige Namen in Einzelwörter. "
+        "Wenn False: Maskiert zusammenhängende Namen als eine konsistente Entität (empfohlen).",
+    )
 
 
 class UserValves(BaseModel):
@@ -366,49 +371,60 @@ def _redact_text(
             # durch bereits eingesetzte Tokens verschieben.
             replacements: list[tuple[int, int, str, str]] = []
             for ent in entities:
-                # spaCy gruppiert gelegentlich mehrere Titel-Wörter zu einer
-                # Entity ("Anna Peter", "Dr. Max Mustermann"). Damit jedes
-                # Vorkommen sein eigenes Token bekommt (und Wiederholungen
-                # konsistent bleiben), splitten wir die Entity in Whitespace-
-                # getrennte Bestandteile und mappen jeden einzeln.
-                parts = [p for p in ent.text.split() if p]
-                if not parts:
+                ent_text = ent.text.strip()
+                if not ent_text:
                     continue
-                spans: list[tuple[int, int]] = []
-                cursor = ent.start_char
-                ok = True
-                for part in parts:
-                    idx = text.find(part, cursor)
-                    if idx == -1:
-                        ok = False
-                        break
-                    spans.append((idx, idx + len(part)))
-                    cursor = idx + len(part)
-                if not ok:
-                    spans = [(ent.start_char, ent.end_char)]
-                    parts = [ent.text]
-                # Sehr kurze Bestandteile ("Bitte", "Mein") sind meist
-                # Falsch-Positive und erzeugen wirre Tokens wie
-                # "[[NAME_PER_1]] schick ...". Per Default aussortieren.
-                if valves.ner_min_token_len > 0:
-                    filtered_spans_parts = [
-                        (s, p)
-                        for s, p in zip(spans, parts)
-                        if len(p) >= valves.ner_min_token_len
-                        and p.lower() not in NER_STOPWORDS
-                    ]
-                    if not filtered_spans_parts:
+
+                if getattr(valves, "split_ner_entities", False):
+                    # Zerlegung in Einzelwörter (falls vom Nutzer explizit konfiguriert)
+                    parts = [p for p in ent_text.split() if p]
+                    if not parts:
                         continue
-                    spans = [s for s, _ in filtered_spans_parts]
-                    parts = [p for _, p in filtered_spans_parts]
-                for (start, end), part in zip(spans, parts):
-                    existing = next((t for t, o in mapping.items() if o == part), None)
+                    spans: list[tuple[int, int]] = []
+                    cursor = ent.start_char
+                    ok = True
+                    for part in parts:
+                        idx = text.find(part, cursor)
+                        if idx == -1:
+                            ok = False
+                            break
+                        spans.append((idx, idx + len(part)))
+                        cursor = idx + len(part)
+                    if not ok:
+                        spans = [(ent.start_char, ent.end_char)]
+                        parts = [ent_text]
+                    if valves.ner_min_token_len > 0:
+                        filtered_spans_parts = [
+                            (s, p)
+                            for s, p in zip(spans, parts)
+                            if len(p) >= valves.ner_min_token_len
+                            and p.lower() not in NER_STOPWORDS
+                        ]
+                        if not filtered_spans_parts:
+                            continue
+                        spans = [s for s, _ in filtered_spans_parts]
+                        parts = [p for _, p in filtered_spans_parts]
+                    for (start, end), part in zip(spans, parts):
+                        existing = next((t for t, o in mapping.items() if o == part), None)
+                        if existing:
+                            token = existing
+                        else:
+                            token = _next_token(valves, counters, f"NAME_{ent.label_}")
+                            mapping[token] = part
+                        replacements.append((start, end, token, part))
+                else:
+                    # Standard: Zusammenhängende Entitäten als eine Einheit maskieren
+                    if valves.ner_min_token_len > 0 and len(ent_text) < valves.ner_min_token_len:
+                        continue
+                    if ent_text.lower() in NER_STOPWORDS:
+                        continue
+                    existing = next((t for t, o in mapping.items() if o == ent_text), None)
                     if existing:
                         token = existing
                     else:
                         token = _next_token(valves, counters, f"NAME_{ent.label_}")
-                        mapping[token] = part
-                    replacements.append((start, end, token, part))
+                        mapping[token] = ent_text
+                    replacements.append((ent.start_char, ent.end_char, token, ent_text))
 
             # rechts-nach-links einsetzen
             replacements.sort(key=lambda r: r[0], reverse=True)
@@ -419,14 +435,26 @@ def _redact_text(
 
 
 def _deanonymize_text(text: str, mapping: dict[str, str]) -> str:
-    """Ersetzt Platzhalter zurück durch die Originale."""
+    """Ersetzt Platzhalter zurück durch die Originale.
+    Unterstützt sowohl Standard-Tokens [[TOKEN]] als auch vom LLM vereinfachte [TOKEN]
+    oder kleingeschriebene Varianten."""
 
     if not text or not mapping:
         return text
 
     # Längste Tokens zuerst, damit [[NAME_PER_10]] vor [[NAME_PER_1]] greift.
     for token in sorted(mapping.keys(), key=len, reverse=True):
-        text = text.replace(token, mapping[token])
+        original = mapping[token]
+        # 1. Exakte Ersetzung: z.B. [[IBAN_1]]
+        text = text.replace(token, original)
+
+        # 2. Einzelklammer-Ersetzung: z.B. [IBAN_1] (häufige LLM-Normalisierung)
+        inner = token.strip("[]")
+        text = text.replace(f"[{inner}]", original)
+
+        # 3. Case-Insensitive / Lowercase Varianten: z.B. [[iban_1]] oder [iban_1]
+        text = text.replace(token.lower(), original)
+        text = text.replace(f"[{inner.lower()}]", original)
     return text
 
 
@@ -455,6 +483,9 @@ PII_MAP_KEY = "pii_map"
 PII_COUNTERS_KEY = "pii_counters"
 
 
+_GLOBAL_PII_STORE: dict[str, tuple[dict[str, str], dict[str, int]]] = {}
+
+
 def _ensure_metadata(body: dict) -> dict:
     md = body.get("metadata")
     if not isinstance(md, dict):
@@ -466,7 +497,9 @@ def _ensure_metadata(body: dict) -> dict:
 def _load_mapping(
     body: dict,
     metadata: Optional[dict] = None,
-    __body__: Optional[dict] = None
+    __body__: Optional[dict] = None,
+    chat_id: Optional[str] = None,
+    message_id: Optional[str] = None,
 ) -> tuple[dict[str, str], dict[str, int]]:
     mapping = None
     counters = None
@@ -496,6 +529,18 @@ def _load_mapping(
             mapping = md.get(PII_MAP_KEY)
             counters = md.get(PII_COUNTERS_KEY)
 
+    # Ausfallsicherung über In-Memory Global Store
+    if not isinstance(mapping, dict) or not mapping:
+        cid = chat_id or (body.get("chat_id") if isinstance(body, dict) else None)
+        mid = message_id or (body.get("id") if isinstance(body, dict) else None)
+        for k in [mid, cid, f"{cid}:{mid}"]:
+            if k and str(k) in _GLOBAL_PII_STORE:
+                m_found, c_found = _GLOBAL_PII_STORE[str(k)]
+                if m_found:
+                    mapping = m_found
+                    counters = c_found
+                    break
+
     if not isinstance(mapping, dict):
         mapping = {}
     if not isinstance(counters, dict):
@@ -503,10 +548,29 @@ def _load_mapping(
     return mapping, counters
 
 
-def _store_mapping(body: dict, mapping: dict[str, str], counters: dict[str, int]) -> None:
+def _store_mapping(
+    body: dict,
+    mapping: dict[str, str],
+    counters: dict[str, int],
+    metadata: Optional[dict] = None,
+    chat_id: Optional[str] = None,
+    message_id: Optional[str] = None,
+) -> None:
     md = _ensure_metadata(body)
     md[PII_MAP_KEY] = mapping
     md[PII_COUNTERS_KEY] = counters
+
+    if isinstance(metadata, dict):
+        metadata[PII_MAP_KEY] = mapping
+        metadata[PII_COUNTERS_KEY] = counters
+
+    # Global in-memory cache als Ausfallsicherung
+    for k in [message_id, chat_id, f"{chat_id}:{message_id}"]:
+        if k:
+            _GLOBAL_PII_STORE[str(k)] = (dict(mapping), dict(counters))
+    if len(_GLOBAL_PII_STORE) > 200:
+        oldest = next(iter(_GLOBAL_PII_STORE))
+        _GLOBAL_PII_STORE.pop(oldest, None)
 
 
 # ---------------------------------------------------------------------------
@@ -551,14 +615,20 @@ def _get_last_assistant_text(body: dict) -> tuple[int, str]:
     return -1, ""
 
 
-def inlet(body: dict, __user__: Optional[dict] = None) -> dict:
+def inlet(
+    body: dict,
+    __metadata__: Optional[dict] = None,
+    __user__: Optional[dict] = None,
+    __event_emitter__: Optional[Callable] = None,
+    __chat_id__: Optional[str] = None,
+    __message_id__: Optional[str] = None,
+) -> dict:
     """
     Vor dem LLM-Aufruf: PII in der letzten User-Message schwärzen, Mapping
-    in body.metadata ablegen.
+    in body.metadata und __metadata__ ablegen.
     """
 
     valves: Valves = body.get("_valves")  # vom Framework injiziert? Fallback unten.
-    # Fallback: Valves aus dem Modul-Attribut ziehen, falls vorhanden.
     if valves is None:
         valves = getattr(inlet, "_valves_cache", Valves())
 
@@ -571,7 +641,10 @@ def inlet(body: dict, __user__: Optional[dict] = None) -> dict:
     if not isinstance(body, dict):
         return body
 
-    mapping, counters = _load_mapping(body)
+    chat_id = __chat_id__ or body.get("chat_id") or (isinstance(__metadata__, dict) and __metadata__.get("chat_id"))
+    message_id = __message_id__ or body.get("id") or (isinstance(__metadata__, dict) and __metadata__.get("message_id"))
+
+    mapping, counters = _load_mapping(body, __metadata__, chat_id=chat_id, message_id=message_id)
 
     for idx, content in _iter_user_texts(body):
         if not content:
@@ -583,11 +656,14 @@ def inlet(body: dict, __user__: Optional[dict] = None) -> dict:
             new_content = content
         _set_message_content(body, idx, new_content)
 
-    _store_mapping(body, mapping, counters)
+    _store_mapping(body, mapping, counters, metadata=__metadata__, chat_id=chat_id, message_id=message_id)
 
-    # Debug-Hinweis & Audit-Log für die UI (sichtbar unter Message-Metadata / Info-Icon)
+    # Debug-Hinweis & Audit-Log für die UI
     md = _ensure_metadata(body)
     md.setdefault("pii_debug", {})["last_inlet_tokens"] = len(mapping)
+    if isinstance(__metadata__, dict):
+        __metadata__.setdefault("pii_debug", {})["last_inlet_tokens"] = len(mapping)
+
     if mapping:
         inlet_elements = []
         for token, orig in mapping.items():
@@ -599,15 +675,27 @@ def inlet(body: dict, __user__: Optional[dict] = None) -> dict:
                 "original": orig,
                 "status": "Im Prompt geschwärzt (wird nach Antwort wiederhergestellt)",
             })
-        md["pii_audit"] = {
+        audit_payload = {
             "anzahl_behandelt": len(mapping),
             "status": "Im Prompt maskiert (wartet auf Antwort)",
             "elemente": inlet_elements,
         }
+        md["pii_audit"] = audit_payload
+        if isinstance(__metadata__, dict):
+            __metadata__["pii_audit"] = audit_payload
+
+    log.info(f"[PII Filter] {len(mapping)} Tokens im Prompt geschwärzt (Counters: {counters})")
     return body
 
 
-def outlet(body: dict, __metadata__: Optional[dict] = None, __user__: Optional[dict] = None) -> dict:
+def outlet(
+    body: dict,
+    __metadata__: Optional[dict] = None,
+    __user__: Optional[dict] = None,
+    __event_emitter__: Optional[Callable] = None,
+    __chat_id__: Optional[str] = None,
+    __message_id__: Optional[str] = None,
+) -> dict:
     """
     Nach dem LLM-Aufruf: Platzhalter in der letzten Assistant-Message wieder
     durch Originale ersetzen.
@@ -630,7 +718,10 @@ def outlet(body: dict, __metadata__: Optional[dict] = None, __user__: Optional[d
     if not valves.deanonymize_output:
         return body
 
-    mapping, _counters = _load_mapping(body, __metadata__)
+    chat_id = __chat_id__ or body.get("chat_id") or (isinstance(__metadata__, dict) and __metadata__.get("chat_id"))
+    message_id = __message_id__ or body.get("id") or (isinstance(__metadata__, dict) and __metadata__.get("message_id"))
+
+    mapping, _counters = _load_mapping(body, __metadata__, chat_id=chat_id, message_id=message_id)
     if not mapping:
         return body
 
@@ -654,7 +745,7 @@ def outlet(body: dict, __metadata__: Optional[dict] = None, __user__: Optional[d
     except Exception as exc:  # noqa: BLE001
         log.exception(f"[PII] Fehler beim Deanonymize: {exc}")
 
-    # Audit-Log für UI-Transparenz (Sichtbar im Info-Icon ℹ️)
+    # Audit-Log für UI-Transparenz
     outlet_elements = []
     for token, orig in mapping.items():
         match = re.search(r"\[\[([A-Z_]+)_\d+\]\]", token)
@@ -672,72 +763,58 @@ def outlet(body: dict, __metadata__: Optional[dict] = None, __user__: Optional[d
         "elemente": outlet_elements,
     }
 
-    # Mapping nach erfolgreichem Restore entfernen, damit es nicht in der
-    # nächsten Runde versehentlich wiederverwendet wird.
     if isinstance(__metadata__, dict):
-        __metadata__.pop(PII_MAP_KEY, None)
-        __metadata__.pop(PII_COUNTERS_KEY, None)
         __metadata__["pii_audit"] = audit_data
         __metadata__.setdefault("pii_debug", {})["last_outlet_replacements"] = len(mapping)
     else:
         md = _ensure_metadata(body)
-        md.pop(PII_MAP_KEY, None)
-        md.pop(PII_COUNTERS_KEY, None)
         md["pii_audit"] = audit_data
         md.setdefault("pii_debug", {})["last_outlet_replacements"] = len(mapping)
 
+    log.info(f"[PII Filter] {len(mapping)} Tokens erfolgreich in der Antwort rehydriert.")
     return body
 
 
 # ---------------------------------------------------------------------------
 # Stream-Hook (optional)
 # ---------------------------------------------------------------------------
-# Open WebUI ruft für jedes Token-Chunk `stream(event)` auf. Wenn das Modell
-# streamt, sehen wir die finale Antwort erst Chunk für Chunk. Wir parsen hier
-# konservative Substrings: sobald ein Platzhalter komplett im Puffer steht,
-# wird er expandiert.
-#
-# Aktiviert wird das automatisch durch Definition der Funktion `stream`.
-# Sie ist optional; ohne sie läuft der Filter weiterhin nur über inlet/outlet.
 
 _STREAM_BUFFER_KEY = "_pii_stream_buffer"
 
 
-def stream(event: dict, __metadata__: Optional[dict] = None, __body__: Optional[dict] = None) -> dict:
+def stream(
+    event: dict,
+    __metadata__: Optional[dict] = None,
+    __body__: Optional[dict] = None,
+    __chat_id__: Optional[str] = None,
+    __message_id__: Optional[str] = None,
+) -> dict:
     """Live-Deanonymisierung für Streaming-Responses."""
 
     if not isinstance(event, dict):
         return event
 
-    # Typische Open-WebUI-Stream-Events tragen den Chunk unter "content".
     content = event.get("content")
     if not isinstance(content, str):
         return event
 
-    mapping, _ = _load_mapping(event, __metadata__, __body__)
+    chat_id = __chat_id__ or (isinstance(__metadata__, dict) and __metadata__.get("chat_id"))
+    message_id = __message_id__ or (isinstance(__metadata__, dict) and __metadata__.get("message_id"))
+
+    mapping, _ = _load_mapping(event, __metadata__, __body__, chat_id=chat_id, message_id=message_id)
     if not mapping:
         return event
 
-    # Pro Event einen Buffer pflegen, damit ein Platzhalter, der über zwei
-    # Chunks verteilt ankommt, korrekt zusammengesetzt wird.
     buf = event.get(_STREAM_BUFFER_KEY) or ""
     buf += content
 
-    # Finde alle Tokens im Mapping; ersetze vollständige Vorkommen.
-    replaced = buf
-    for token, original in mapping.items():
-        if token in replaced:
-            replaced = replaced.replace(token, original)
+    replaced = _deanonymize_text(buf, mapping)
 
-    # Falls ein Token aktuell unvollständig im Buffer liegt, halten wir den
-    # Rest als Buffer. Wir geben aber den bereits expandierbaren Teil zurück.
-    # Heuristik: wenn ein '[[' ohne schließendes ']]' im Puffer ist, behalten
-    # wir ab dort den Original-Puffer.
     cut = len(replaced)
     open_idx = replaced.rfind("[[")
     close_idx = replaced.find("]]", open_idx) if open_idx != -1 else -1
     if open_idx != -1 and close_idx == -1:
-        cut = open_idx  # ab hier noch nicht ausgeben
+        cut = open_idx
 
     out = replaced[:cut]
     event["content"] = out
@@ -752,15 +829,58 @@ class Filter:
     def __init__(self):
         self.valves = Valves()
 
-    def inlet(self, body: dict, __user__: Optional[dict] = None) -> dict:
+    def inlet(
+        self,
+        body: dict,
+        __metadata__: Optional[dict] = None,
+        __user__: Optional[dict] = None,
+        __event_emitter__: Optional[Callable] = None,
+        __chat_id__: Optional[str] = None,
+        __message_id__: Optional[str] = None,
+    ) -> dict:
         inlet._valves_cache = self.valves
-        return inlet(body, __user__)
+        return inlet(
+            body,
+            __metadata__=__metadata__,
+            __user__=__user__,
+            __event_emitter__=__event_emitter__,
+            __chat_id__=__chat_id__,
+            __message_id__=__message_id__,
+        )
 
-    def outlet(self, body: dict, __metadata__: Optional[dict] = None, __user__: Optional[dict] = None) -> dict:
+    def outlet(
+        self,
+        body: dict,
+        __metadata__: Optional[dict] = None,
+        __user__: Optional[dict] = None,
+        __event_emitter__: Optional[Callable] = None,
+        __chat_id__: Optional[str] = None,
+        __message_id__: Optional[str] = None,
+    ) -> dict:
         outlet._valves_cache = self.valves
-        return outlet(body, __metadata__=__metadata__, __user__=__user__)
+        return outlet(
+            body,
+            __metadata__=__metadata__,
+            __user__=__user__,
+            __event_emitter__=__event_emitter__,
+            __chat_id__=__chat_id__,
+            __message_id__=__message_id__,
+        )
 
-    def stream(self, event: dict, __metadata__: Optional[dict] = None, __body__: Optional[dict] = None) -> dict:
-        return stream(event, __metadata__=__metadata__, __body__=__body__)
+    def stream(
+        self,
+        event: dict,
+        __metadata__: Optional[dict] = None,
+        __body__: Optional[dict] = None,
+        __chat_id__: Optional[str] = None,
+        __message_id__: Optional[str] = None,
+    ) -> dict:
+        return stream(
+            event,
+            __metadata__=__metadata__,
+            __body__=__body__,
+            __chat_id__=__chat_id__,
+            __message_id__=__message_id__,
+        )
 
 

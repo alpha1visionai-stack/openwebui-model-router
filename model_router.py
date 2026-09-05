@@ -198,6 +198,17 @@ class Valves(BaseModel):
     )
 
 
+    # --- UI & Transparenz ---
+    SHOW_ROUTING_BANNER: bool = Field(
+        default=True,
+        description="Fügt am Anfang jeder KI-Antwort ein transparentes Routing- & Datenschutz-Banner ein.",
+    )
+    ROUTING_BANNER_COLLAPSIBLE: bool = Field(
+        default=False,
+        description="Wenn True: Rendert das Banner als aufklappbare <details>-Box. Wenn False: Rendert ein kompaktes Zitat-Banner (>).",
+    )
+
+
 class UserValves(BaseModel):
     enabled: bool = Field(
         default=True,
@@ -211,6 +222,10 @@ class UserValves(BaseModel):
         default="",
         description="Optionale Nutzer-Präferenz: Eigenes bevorzugtes Cloud-Modell (z.B. openrouter.openai/gpt-5.2), das standardmäßig für alle Cloud-Routings genutzt wird.",
     )
+
+
+# In-Memory Cache zur Ausfallsicherung zwischen Inlet und Outlet
+_GLOBAL_ROUTER_STORE: dict[str, dict[str, Any]] = {}
 
 
 # ---------------------------------------------------------------------------
@@ -323,7 +338,15 @@ class Filter:
         is_complex = word_count >= self.valves.COMPLEXITY_WORD_THRESHOLD
         return "general", is_complex
 
-    def inlet(self, body: dict, __user__: Optional[dict] = None) -> dict:
+    def inlet(
+        self,
+        body: dict,
+        __metadata__: Optional[dict] = None,
+        __user__: Optional[dict] = None,
+        __event_emitter__: Optional[Callable] = None,
+        __chat_id__: Optional[str] = None,
+        __message_id__: Optional[str] = None,
+    ) -> dict:
         """
         Interzeptiert den Request vor dem Absenden an das LLM:
         - Wertet PII-Metadaten und Prompt-Inhalt aus
@@ -547,7 +570,7 @@ class Filter:
             body["top_p"] = profile_data["top_p"]
 
         # 9. Audit- & Debug-Metadaten für die Open-WebUI Sprechblasen-Info
-        body["metadata"]["router_decision"] = {
+        decision = {
             "original_model": original_model,
             "routed_to": selected_model,
             "target_node": "Workstation (LM Studio via Tailscale)" if "LMStudio" in selected_model else "Cloud Provider (OpenRouter)",
@@ -559,14 +582,147 @@ class Filter:
             "critical_pii_blocked": has_critical_pii,
             "pii_behandelte_elemente": pii_elements if pii_elements else [],
         }
+        body["metadata"]["router_decision"] = decision
+        if isinstance(__metadata__, dict):
+            __metadata__["router_decision"] = decision
+
+        # Ausfallsicherung über In-Memory Store
+        cid = __chat_id__ or body.get("chat_id") or (isinstance(__metadata__, dict) and __metadata__.get("chat_id"))
+        mid = __message_id__ or body.get("id") or (isinstance(__metadata__, dict) and __metadata__.get("message_id"))
+        for k in [mid, cid, f"{cid}:{mid}"]:
+            if k:
+                _GLOBAL_ROUTER_STORE[str(k)] = decision
+        if len(_GLOBAL_ROUTER_STORE) > 200:
+            oldest = next(iter(_GLOBAL_ROUTER_STORE))
+            _GLOBAL_ROUTER_STORE.pop(oldest, None)
 
         # Separater pii_audit Key für direkte Sichtbarkeit in der Info-Box
         if pii_elements:
-            body["metadata"]["pii_audit"] = {
+            audit_payload = {
                 "anzahl_behandelt": len(pii_elements),
                 "status": "Erfolgreich maskiert & zur Re-Hydrierung vorgemerkt",
                 "elemente": pii_elements,
             }
+            body["metadata"]["pii_audit"] = audit_payload
+            if isinstance(__metadata__, dict):
+                __metadata__["pii_audit"] = audit_payload
+
+        # Optionaler Status-Event an UI emittieren
+        if __event_emitter__:
+            try:
+                import asyncio
+                import inspect
+                target_short = "Workstation (LM Studio)" if "LMStudio" in selected_model else "Cloud Provider"
+                payload = {
+                    "type": "status",
+                    "data": {
+                        "description": f"🛡️ Hybrid Gateway: {routing_reason} ➔ {selected_model} ({target_short})",
+                        "done": True,
+                    }
+                }
+                res = __event_emitter__(payload)
+                if inspect.isawaitable(res):
+                    try:
+                        loop = asyncio.get_event_loop()
+                        if loop.is_running():
+                            loop.create_task(res)
+                        else:
+                            loop.run_until_complete(res)
+                    except Exception:
+                        pass
+            except Exception as emitter_err:
+                log.debug(f"[Model Router] Event emitter notice: {emitter_err}")
 
         log.info(f"[Model Router] '{original_model}' -> '{selected_model}' [{routing_reason}] (T={body.get('temperature')}, P={body.get('top_p')})")
+        return body
+
+    def outlet(
+        self,
+        body: dict,
+        __metadata__: Optional[dict] = None,
+        __user__: Optional[dict] = None,
+        __event_emitter__: Optional[Callable] = None,
+        __chat_id__: Optional[str] = None,
+        __message_id__: Optional[str] = None,
+    ) -> dict:
+        """
+        Interzeptiert die Modell-Antwort vor der Anzeige in der UI:
+        - Liest die Routing-Entscheidung und PII-Metadaten aus
+        - Fügt bei aktiviertem SHOW_ROUTING_BANNER eine transparente Callout-Box
+          am Anfang der Antwort ein, damit der/die Nutzer:in genau sieht, welches
+          Modell geantwortet hat und warum.
+        """
+        if not isinstance(body, dict):
+            return body
+
+        if not self.valves.SHOW_ROUTING_BANNER:
+            return body
+
+        decision = None
+        if isinstance(__metadata__, dict):
+            decision = __metadata__.get("router_decision")
+
+        if not decision and isinstance(body.get("metadata"), dict):
+            decision = body["metadata"].get("router_decision")
+
+        if not decision:
+            cid = __chat_id__ or body.get("chat_id") or (isinstance(__metadata__, dict) and __metadata__.get("chat_id"))
+            mid = __message_id__ or body.get("id") or (isinstance(__metadata__, dict) and __metadata__.get("message_id"))
+            for k in [mid, cid, f"{cid}:{mid}"]:
+                if k and str(k) in _GLOBAL_ROUTER_STORE:
+                    decision = _GLOBAL_ROUTER_STORE[str(k)]
+                    break
+
+        if not decision:
+            return body
+
+        msgs = body.get("messages") or []
+        target_idx = -1
+        for i in range(len(msgs) - 1, -1, -1):
+            if isinstance(msgs[i], dict) and msgs[i].get("role") == "assistant":
+                target_idx = i
+                break
+
+        if target_idx == -1:
+            return body
+
+        routed_to = decision.get("routed_to", "Unbekannt")
+        original_model = decision.get("original_model", "")
+        reason = decision.get("reason", "")
+        pii_count = decision.get("pii_detected", 0)
+        target_node = decision.get("target_node", "")
+        is_local = "LMStudio" in routed_to or "Workstation" in target_node
+
+        if self.valves.ROUTING_BANNER_COLLAPSIBLE:
+            node_label = "Lokale GPU Workstation (0 Credits)" if is_local else "Cloud Provider (OpenRouter)"
+            banner = (
+                f"<details>\n"
+                f"<summary>🛡️ <b>Routing:</b> {node_label} &bull; <code>{routed_to}</code> &bull; 🔒 {pii_count} PII</summary>\n\n"
+                f"- **Ausgeführtes Modell:** `{routed_to}`"
+                f"{f' *(ursprünglich gewählt: `{original_model}`)*' if original_model and original_model != routed_to else ''}\n"
+                f"- **Ausführungsort:** {'Lokale GPU Workstation (LM Studio via LAN/Tailscale)' if is_local else 'Cloud Provider (OpenRouter)'}\n"
+                f"- **Routing-Grund:** {reason}\n"
+                f"- **Datenschutz:** {pii_count} PII-Elemente im Prompt geschwärzt & in der Antwort wiederhergestellt\n"
+                f"</details>"
+            )
+        else:
+            if is_local:
+                banner = (
+                    f"> 🛡️ **Hybrid Gateway Routing:** **Lokale GPU Workstation** (`{routed_to}`) &bull; **0 Cloud-Credits**\n"
+                    f"> 🔒 **Privacy Gate:** {pii_count} PII-Elemente geschwärzt & wiederhergestellt &bull; *Grund: {reason}*"
+                )
+            else:
+                banner = (
+                    f"> ☁️ **Hybrid Gateway Routing:** **Cloud Provider** (`{routed_to}`)\n"
+                    f"> 🛡️ **Privacy Gate:** {f'{pii_count} unkritische PII geschwärzt' if pii_count else 'Keine PII erkannt'} &bull; *Grund: {reason}*"
+                )
+
+        current_content = msgs[target_idx].get("content") or ""
+        if (
+            not current_content.startswith("> 🛡️ **Hybrid Gateway Routing")
+            and not current_content.startswith("> ☁️ **Hybrid Gateway Routing")
+            and not current_content.startswith("<details>\n<summary>🛡️ <b>Routing:")
+        ):
+            msgs[target_idx]["content"] = f"{banner}\n\n{current_content}"
+
         return body
