@@ -1,0 +1,708 @@
+import os
+
+html_parts = []
+
+html_parts.append("""<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hybrid Model Router & Privacy Gate — Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        surface: {
+                            800: '#131b2e',
+                            850: '#0f172a',
+                            900: '#0b0f19',
+                            950: '#070a12',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #070a12;
+            color: #e2e8f0;
+        }
+        .font-display { font-family: 'Outfit', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card-hover:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.15);
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    </style>
+</head>
+<body class="min-h-screen selection:bg-indigo-500 selection:text-white pb-20">
+
+    <!-- Top Navigation -->
+    <nav class="border-b border-slate-800/80 bg-surface-900/90 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-emerald-400 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-microchip"></i>
+                </div>
+                <div>
+                    <span class="font-display font-bold text-lg text-white tracking-tight flex items-center gap-2">
+                        Hybrid Model Router &bull; Privacy Gate
+                        <span class="text-[10px] uppercase font-bold tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">Live Active</span>
+                    </span>
+                    <p class="text-xs text-slate-400 hidden sm:block">Perplexity Computer Hybrid Architecture &bull; Minisforum + Workstation + OpenRouter</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-4 text-xs font-mono">
+                <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-800 border border-slate-800">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="text-slate-300">Minisforum:</span>
+                    <span class="text-emerald-400 font-semibold">:8080</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-800 border border-slate-800">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                    <span class="text-slate-300 hidden sm:inline">Workstation:</span>
+                    <span class="text-cyan-400 font-semibold">:1234</span>
+                </div>
+                <button onclick="window.print()" class="px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 border border-indigo-500/30 transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-print"></i>
+                    <span class="hidden sm:inline">Drucken / PDF</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+""")
+html_parts.append("""
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-10">
+
+        <!-- Hero Section -->
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-b from-surface-850 to-surface-900 border border-slate-800 p-6 sm:p-10">
+            <div class="relative z-10 max-w-3xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium mb-4">
+                    <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+                    2-Schichten Privacy Gate &bull; Auto-Sampling &bull; Zero Cloud Credits
+                </div>
+                <h1 class="text-3xl sm:text-5xl font-extrabold font-display text-white tracking-tight leading-tight">
+                    Die intelligente Brücke zwischen <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">lokaler GPU</span> & <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Cloud High-End</span>.
+                </h1>
+                <p class="mt-4 text-slate-300 text-base sm:text-lg leading-relaxed">
+                    Sensible Geschäftsdaten, Passwörter und Bankverbindungen verlassen niemals dein Heimnetzwerk. Gleichzeitig stehen für anspruchsvolles Coding und tiefste Recherchen die stärksten Cloud-Modelle bereit – mit <strong>100 %iger automatischer Deanonymisierung</strong> bei der Rückkehr.
+                </p>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-slate-800/80">
+                <div class="p-4 rounded-2xl bg-surface-950/60 border border-slate-800">
+                    <div class="text-slate-400 text-xs flex items-center gap-2">
+                        <i class="fa-solid fa-lock text-emerald-400"></i> Datenschutz-Garantie
+                    </div>
+                    <div class="text-lg font-bold font-display text-white mt-1">100% On-Prem PII</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">IBAN, Karten, Keys &rarr; Workstation</div>
+                </div>
+                <div class="p-4 rounded-2xl bg-surface-950/60 border border-slate-800">
+                    <div class="text-slate-400 text-xs flex items-center gap-2">
+                        <i class="fa-solid fa-coins text-amber-400"></i> Kosten-Effizienz
+                    </div>
+                    <div class="text-lg font-bold font-display text-white mt-1">0 Cloud-Credits</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">Für Routine, Chat & Writing</div>
+                </div>
+                <div class="p-4 rounded-2xl bg-surface-950/60 border border-slate-800">
+                    <div class="text-slate-400 text-xs flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-cyan-400"></i> Auto-Sampling
+                    </div>
+                    <div class="text-lg font-bold font-display text-white mt-1">Modellspezifisch</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">R1: 0.60 | Coder: 0.20 | Gemma: 0.55</div>
+                </div>
+                <div class="p-4 rounded-2xl bg-surface-950/60 border border-slate-800">
+                    <div class="text-slate-400 text-xs flex items-center gap-2">
+                        <i class="fa-solid fa-eye text-indigo-400"></i> UI-Transparenz
+                    </div>
+                    <div class="text-lg font-bold font-display text-white mt-1">Info-Icon (ℹ️)</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">Lückenloses PII-Audit-Log</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4-Phase Architecture Pipeline -->
+        <section class="space-y-4">
+            <h2 class="text-2xl font-bold font-display text-white">1. Der 4-Stufen Datenfluss (Architektur)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden">
+                    <div class="text-xs font-mono font-semibold text-emerald-400 mb-2 flex items-center justify-between">
+                        <span>PHASE 1 (P=0)</span>
+                        <i class="fa-solid fa-shield-virus text-emerald-500"></i>
+                    </div>
+                    <h3 class="font-display font-bold text-white text-base">PII-Maskierung</h3>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                        Regex + spaCy NER schwärzen Namen, Orte, E-Mails und Kontonummern zu neutralen Tokens wie <code>[[NAME_PER_1]]</code>.
+                    </p>
+                    <div class="mt-4 text-[11px] font-mono text-slate-400 bg-surface-950 p-2.5 rounded-xl border border-slate-800">
+                        Input: "Herr Schmidt aus München"<br>
+                        &rarr; <span class="text-emerald-400">[[NAME_PER_1]] aus [[NAME_LOC_1]]</span>
+                    </div>
+                </div>
+
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden">
+                    <div class="text-xs font-mono font-semibold text-indigo-400 mb-2 flex items-center justify-between">
+                        <span>PHASE 2 (P=10)</span>
+                        <i class="fa-solid fa-route text-indigo-500"></i>
+                    </div>
+                    <h3 class="font-display font-bold text-white text-base">Model Router Gate</h3>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                        Entscheidet anhand von PII-Status, Intent und Komplexität. Kritische PII sperrt die Cloud. Injiziert modellspezifische Temp & Top-P.
+                    </p>
+                    <div class="mt-4 text-[11px] font-mono text-slate-400 bg-surface-950 p-2.5 rounded-xl border border-slate-800">
+                        Prüfung: Keine kritische PII.<br>
+                        Task: Coding &gt; 120 W &rarr; <span class="text-indigo-400">Claude 4.5</span>
+                    </div>
+                </div>
+
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden">
+                    <div class="text-xs font-mono font-semibold text-cyan-400 mb-2 flex items-center justify-between">
+                        <span>PHASE 3 (EXEC)</span>
+                        <i class="fa-solid fa-server text-cyan-500"></i>
+                    </div>
+                    <h3 class="font-display font-bold text-white text-base">Inferenz & Execution</h3>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                        Request geht via Tailscale an LM Studio auf die Workstation oder an die Cloud. Die Cloud sieht nur Platzhalter, keine echten Daten!
+                    </p>
+                    <div class="mt-4 text-[11px] font-mono text-slate-400 bg-surface-950 p-2.5 rounded-xl border border-slate-800">
+                        Node: <span class="text-cyan-400">Workstation LAN (:1234)</span><br>
+                        Kosten: <strong>0 Cloud-Credits</strong>
+                    </div>
+                </div>
+
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden">
+                    <div class="text-xs font-mono font-semibold text-purple-400 mb-2 flex items-center justify-between">
+                        <span>PHASE 4 (OUTLET)</span>
+                        <i class="fa-solid fa-wand-magic-sparkles text-purple-500"></i>
+                    </div>
+                    <h3 class="font-display font-bold text-white text-base">Re-Hydrierung</h3>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                        Das PII-Outlet ersetzt alle Tokens wieder durch die Originaldaten. Unter <code>pii_audit</code> wird ein lückenloses Audit-Log abgelegt.
+                    </p>
+                    <div class="mt-4 text-[11px] font-mono text-slate-400 bg-surface-950 p-2.5 rounded-xl border border-slate-800">
+                        Output: "Guten Tag Herr Schmidt!"<br>
+                        Status: <span class="text-emerald-400">Deanonymisiert ✓</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+""")
+html_parts.append("""
+        <!-- Live Interactive Simulator / Sandbox -->
+        <section class="glass-card p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold font-display text-white flex items-center gap-2">
+                        <i class="fa-solid fa-vial-circle-check text-indigo-400"></i>
+                        2. Interaktiver Prompt- & Routing-Simulator
+                    </h2>
+                    <p class="text-slate-400 text-sm">Probiere aus, wie das Gateway auf deine Eingaben reagiert und wohin es geroutet wird.</p>
+                </div>
+                <!-- Preset Buttons -->
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="setSample('iban')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
+                        🏦 IBAN / Finanzen
+                    </button>
+                    <button onclick="setSample('math')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
+                        🧠 Mathe / Beweis (#r1)
+                    </button>
+                    <button onclick="setSample('code_local')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
+                        💻 Python Skript
+                    </button>
+                    <button onclick="setSample('cloud_arch')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
+                        ☁️ Cloud Architektur
+                    </button>
+                    <button onclick="setSample('heretic')" class="px-3 py-1.5 text-xs rounded-xl bg-surface-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
+                        🔓 Unzensiert
+                    </button>
+                </div>
+            </div>
+
+            <!-- Input Box -->
+            <div class="space-y-2">
+                <label class="text-xs font-mono text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                    <span>Eingabe-Prompt testen:</span>
+                    <span id="char-counter" class="text-slate-500">0 Wörter</span>
+                </label>
+                <div class="relative">
+                    <textarea id="prompt-input" rows="3" oninput="simulateRouting()" class="w-full bg-surface-950 border border-slate-800 rounded-2xl p-4 text-sm text-white focus:outline-none focus:border-indigo-500 font-sans transition-all placeholder:text-slate-600" placeholder="Schreibe einen beliebigen Prompt (z.B. mit IBAN, Code, Namen oder #tags)...">Erstelle eine Abrechnungsfunktion für Anna Schmidt mit IBAN DE89 3704 0044 0532 0130 00.</textarea>
+                </div>
+            </div>
+
+            <!-- Simulation Result Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                <!-- Box 1: PII Detection -->
+                <div class="p-5 rounded-2xl bg-surface-950/80 border border-slate-800/80 space-y-3">
+                    <div class="text-xs font-mono uppercase text-slate-400 flex items-center justify-between">
+                        <span>1. PII-Erkennung</span>
+                        <span id="sim-pii-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Kritisch</span>
+                    </div>
+                    <div id="sim-pii-list" class="space-y-1.5 text-xs">
+                        <!-- Populated by JS -->
+                    </div>
+                    <div id="sim-pii-gate" class="text-[11px] text-emerald-400 pt-2 border-t border-slate-800/60 font-mono">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Box 2: Model Target -->
+                <div class="p-5 rounded-2xl bg-surface-950/80 border border-slate-800/80 space-y-3">
+                    <div class="text-xs font-mono uppercase text-slate-400 flex items-center justify-between">
+                        <span>2. Routing-Ziel</span>
+                        <span id="sim-target-node" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Workstation</span>
+                    </div>
+                    <div>
+                        <div id="sim-model-name" class="text-base font-bold font-display text-white">Qwen 2.5 Coder 14B</div>
+                        <div id="sim-model-id" class="text-xs font-mono text-cyan-400 mt-0.5">LMStudio.qwen2.5-coder-14b-instruct</div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-800/60 flex items-center justify-between text-xs font-mono">
+                        <span class="text-slate-400">Temp: <strong id="sim-temp" class="text-white">0.20</strong></span>
+                        <span class="text-slate-400">Top-P: <strong id="sim-topp" class="text-white">0.85</strong></span>
+                        <span class="text-slate-400">Credits: <strong id="sim-credits" class="text-emerald-400">0</strong></span>
+                    </div>
+                </div>
+
+                <!-- Box 3: Reason & Decision -->
+                <div class="p-5 rounded-2xl bg-surface-950/80 border border-slate-800/80 space-y-3">
+                    <div class="text-xs font-mono uppercase text-slate-400 flex items-center justify-between">
+                        <span>3. Begründung</span>
+                        <span class="text-slate-500"><i class="fa-solid fa-circle-info"></i></span>
+                    </div>
+                    <p id="sim-reason" class="text-xs text-slate-300 leading-relaxed">
+                        Datenschutz-Sperre: Kritische PII (IBAN) erkannt. Cloud-Call blockiert, Ausführung zwingend auf lokaler Workstation.
+                    </p>
+                    <div class="pt-2 border-t border-slate-800/60 text-[11px] text-slate-400 font-mono">
+                        Audit-Key: <code class="text-indigo-400">router_decision</code> &bull; <code class="text-purple-400">pii_audit</code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simulated Metadata Preview (Accordion) -->
+            <details class="bg-surface-950 rounded-2xl border border-slate-800 text-xs">
+                <summary class="p-4 font-mono text-slate-400 cursor-pointer hover:text-white flex items-center justify-between">
+                    <span><i class="fa-solid fa-code text-indigo-400 mr-2"></i> Live Open WebUI Metadata Preview (Was im Info-Icon ℹ️ steht)</span>
+                    <span class="text-slate-500 text-[10px]">JSON anzeigen</span>
+                </summary>
+                <div class="p-4 pt-0">
+                    <pre id="sim-json-preview" class="bg-slate-950 p-4 rounded-xl text-emerald-400 font-mono text-[11px] overflow-x-auto border border-slate-900 leading-relaxed"></pre>
+                </div>
+            </details>
+        </section>
+""")
+html_parts.append("""
+        <!-- Model Catalog Grid -->
+        <section class="space-y-4">
+            <h2 class="text-2xl font-bold font-display text-white">3. Vollständiger Modell-Katalog</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- DeepSeek-R1 -->
+                <div class="glass-card glass-card-hover p-5 rounded-2xl flex flex-col justify-between transition-all">
+                    <div>
+                        <div class="flex items-center justify-between text-xs mb-3">
+                            <span class="px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 font-mono font-semibold border border-cyan-500/20">Workstation</span>
+                            <span class="text-slate-500 text-xs font-mono">Tag: #r1</span>
+                        </div>
+                        <h3 class="font-display font-bold text-white text-lg">🧠 DeepSeek-R1</h3>
+                        <p class="text-xs font-mono text-slate-400 mt-1 truncate">LMStudio.deepseek-r1-distill-qwen-14b</p>
+                        <p class="text-xs text-slate-300 mt-3 leading-relaxed">
+                            Logik, mathematische Beweise, formale Deduktion und ausführliche Chain-of-Thought Denkschritte.
+                        </p>
+                    </div>
+                    <div class="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono">
+                        <span class="text-slate-400">Temp: <strong class="text-cyan-300">0.60</strong></span>
+                        <span class="text-slate-400">Top-P: <strong class="text-slate-200">0.95</strong></span>
+                        <span class="text-emerald-400 font-semibold">0 Credits</span>
+                    </div>
+                </div>
+
+                <!-- Qwen Coder -->
+                <div class="glass-card glass-card-hover p-5 rounded-2xl flex flex-col justify-between transition-all">
+                    <div>
+                        <div class="flex items-center justify-between text-xs mb-3">
+                            <span class="px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 font-mono font-semibold border border-cyan-500/20">Workstation</span>
+                            <span class="text-slate-500 text-xs font-mono">Tag: #code</span>
+                        </div>
+                        <h3 class="font-display font-bold text-white text-lg">💻 Qwen 2.5 Coder</h3>
+                        <p class="text-xs font-mono text-slate-400 mt-1 truncate">LMStudio.qwen2.5-coder-14b-instruct</p>
+                        <p class="text-xs text-slate-300 mt-3 leading-relaxed">
+                            Python, TypeScript, SQL, Bash, Regex und präzise Dateidiffs mit deterministischer Syntax.
+                        </p>
+                    </div>
+                    <div class="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono">
+                        <span class="text-slate-400">Temp: <strong class="text-cyan-300">0.20</strong></span>
+                        <span class="text-slate-400">Top-P: <strong class="text-slate-200">0.85</strong></span>
+                        <span class="text-emerald-400 font-semibold">0 Credits</span>
+                    </div>
+                </div>
+
+                <!-- Gemma 4 -->
+                <div class="glass-card glass-card-hover p-5 rounded-2xl flex flex-col justify-between transition-all">
+                    <div>
+                        <div class="flex items-center justify-between text-xs mb-3">
+                            <span class="px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 font-mono font-semibold border border-cyan-500/20">Workstation</span>
+                            <span class="text-slate-500 text-xs font-mono">Tag: #write</span>
+                        </div>
+                        <h3 class="font-display font-bold text-white text-lg">✍️ Gemma 4 (Anti-KI)</h3>
+                        <p class="text-xs font-mono text-slate-400 mt-1 truncate">LMStudio.google/gemma-4-12b-qat</p>
+                        <p class="text-xs text-slate-300 mt-3 leading-relaxed">
+                            Authentische menschliche Diktion, Lektorat, Zusammenfassungen, E-Mails und Alltagschat.
+                        </p>
+                    </div>
+                    <div class="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono">
+                        <span class="text-slate-400">Temp: <strong class="text-cyan-300">0.55</strong></span>
+                        <span class="text-slate-400">Top-P: <strong class="text-slate-200">0.90</strong></span>
+                        <span class="text-emerald-400 font-semibold">0 Credits</span>
+                    </div>
+                </div>
+
+                <!-- Heretic 9B -->
+                <div class="glass-card glass-card-hover p-5 rounded-2xl flex flex-col justify-between transition-all">
+                    <div>
+                        <div class="flex items-center justify-between text-xs mb-3">
+                            <span class="px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 font-mono font-semibold border border-cyan-500/20">Workstation</span>
+                            <span class="text-slate-500 text-xs font-mono">Tag: #heretic</span>
+                        </div>
+                        <h3 class="font-display font-bold text-white text-lg">🔓 Heretic 9B</h3>
+                        <p class="text-xs font-mono text-slate-400 mt-1 truncate">LMStudio.qwen3.8-9b-distill-uncensored</p>
+                        <p class="text-xs text-slate-300 mt-3 leading-relaxed">
+                            Volle redaktionelle Freiheit ohne moralisierende Refusals, Firmenfilter oder KI-Belehrungen.
+                        </p>
+                    </div>
+                    <div class="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono">
+                        <span class="text-slate-400">Temp: <strong class="text-cyan-300">0.70</strong></span>
+                        <span class="text-slate-400">Top-P: <strong class="text-slate-200">0.90</strong></span>
+                        <span class="text-emerald-400 font-semibold">0 Credits</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cloud Tier Row -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                <div class="glass-card glass-card-hover p-5 rounded-2xl border-l-4 border-l-indigo-500">
+                    <span class="px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 font-mono font-semibold text-xs border border-indigo-500/20">Cloud Tier</span>
+                    <h3 class="font-display font-bold text-white text-lg mt-2">🚀 Claude Sonnet 4.5</h3>
+                    <p class="text-xs font-mono text-slate-400 truncate">openrouter.anthropic/claude-sonnet-4.5</p>
+                    <p class="text-xs text-slate-300 mt-2">Große Refactorings, Microservices und Prompts &gt; 120 Wörter.</p>
+                </div>
+                <div class="glass-card glass-card-hover p-5 rounded-2xl border-l-4 border-l-purple-500">
+                    <span class="px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-400 font-mono font-semibold text-xs border border-purple-500/20">Cloud Flagship</span>
+                    <h3 class="font-display font-bold text-white text-lg mt-2">🏛️ Claude Opus 4.6</h3>
+                    <p class="text-xs font-mono text-slate-400 truncate">openrouter.anthropic/claude-opus-4.6</p>
+                    <p class="text-xs text-slate-300 mt-2">Tiefste philosophische Synthesen, Mammut-Texte und Strategie.</p>
+                </div>
+                <div class="glass-card glass-card-hover p-5 rounded-2xl border-l-4 border-l-blue-500">
+                    <span class="px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 font-mono font-semibold text-xs border border-blue-500/20">Cloud High-Speed</span>
+                    <h3 class="font-display font-bold text-white text-lg mt-2">⚡ Gemini 3 Flash</h3>
+                    <p class="text-xs font-mono text-slate-400 truncate">openrouter.google/gemini-3-flash-preview</p>
+                    <p class="text-xs text-slate-300 mt-2">Ultrakurze Latenzen, allgemeine Websynthesen und Quick Checks.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Command Cheatsheet -->
+        <section class="glass-card p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-4">
+            <h2 class="text-2xl font-bold font-display text-white flex items-center gap-2">
+                <i class="fa-solid fa-keyboard text-emerald-400"></i>
+                4. Kurzbefehle & Tags für deinen Chat
+            </h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                <div class="p-3.5 rounded-xl bg-surface-950 border border-slate-800/80 flex items-center justify-between">
+                    <div><code class="text-emerald-400 font-mono font-bold text-sm">#r1</code><div class="text-[11px] text-slate-400 mt-0.5">DeepSeek-R1</div></div>
+                    <button onclick="navigator.clipboard.writeText('#r1 ')" class="text-slate-500 hover:text-white"><i class="fa-regular fa-copy"></i></button>
+                </div>
+                <div class="p-3.5 rounded-xl bg-surface-950 border border-slate-800/80 flex items-center justify-between">
+                    <div><code class="text-cyan-400 font-mono font-bold text-sm">#code</code><div class="text-[11px] text-slate-400 mt-0.5">Qwen Coder</div></div>
+                    <button onclick="navigator.clipboard.writeText('#code ')" class="text-slate-500 hover:text-white"><i class="fa-regular fa-copy"></i></button>
+                </div>
+                <div class="p-3.5 rounded-xl bg-surface-950 border border-slate-800/80 flex items-center justify-between">
+                    <div><code class="text-indigo-400 font-mono font-bold text-sm">#write</code><div class="text-[11px] text-slate-400 mt-0.5">Gemma 4</div></div>
+                    <button onclick="navigator.clipboard.writeText('#write ')" class="text-slate-500 hover:text-white"><i class="fa-regular fa-copy"></i></button>
+                </div>
+                <div class="p-3.5 rounded-xl bg-surface-950 border border-slate-800/80 flex items-center justify-between">
+                    <div><code class="text-amber-400 font-mono font-bold text-sm">#heretic</code><div class="text-[11px] text-slate-400 mt-0.5">Uncensored</div></div>
+                    <button onclick="navigator.clipboard.writeText('#heretic ')" class="text-slate-500 hover:text-white"><i class="fa-regular fa-copy"></i></button>
+                </div>
+                <div class="p-3.5 rounded-xl bg-surface-950 border border-slate-800/80 flex items-center justify-between">
+                    <div><code class="text-purple-400 font-mono font-bold text-sm">#opus</code><div class="text-[11px] text-slate-400 mt-0.5">Claude Opus</div></div>
+                    <button onclick="navigator.clipboard.writeText('#opus ')" class="text-slate-500 hover:text-white"><i class="fa-regular fa-copy"></i></button>
+                </div>
+                <div class="p-3.5 rounded-xl bg-surface-950 border border-slate-800/80 flex items-center justify-between">
+                    <div><code class="text-blue-400 font-mono font-bold text-sm">#sonnet</code><div class="text-[11px] text-slate-400 mt-0.5">Claude Sonnet</div></div>
+                    <button onclick="navigator.clipboard.writeText('#sonnet ')" class="text-slate-500 hover:text-white"><i class="fa-regular fa-copy"></i></button>
+                </div>
+                <div class="p-3.5 rounded-xl bg-surface-950 border border-slate-800/80 flex items-center justify-between">
+                    <div><code class="text-emerald-300 font-mono font-bold text-sm">#local</code><div class="text-[11px] text-slate-400 mt-0.5">Force Workstation</div></div>
+                    <button onclick="navigator.clipboard.writeText('#local ')" class="text-slate-500 hover:text-white"><i class="fa-regular fa-copy"></i></button>
+                </div>
+                <div class="p-3.5 rounded-xl bg-surface-950 border border-slate-800/80 flex items-center justify-between">
+                    <div><code class="text-indigo-300 font-mono font-bold text-sm">#cloud</code><div class="text-[11px] text-slate-400 mt-0.5">Cloud Preferred</div></div>
+                    <button onclick="navigator.clipboard.writeText('#cloud ')" class="text-slate-500 hover:text-white"><i class="fa-regular fa-copy"></i></button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 border-t border-slate-900 text-center text-xs text-slate-500 space-y-2">
+        <p>Hybrid Model Router &bull; Open WebUI v0.5+ &bull; Minisforum UM690 &bull; Workstation Keller</p>
+    </footer>
+
+    <!-- Interactive Script -->
+    <script>
+        const SAMPLES = {
+            iban: "Erstelle eine Abrechnungsfunktion fuer Anna Schmidt mit IBAN DE89 3704 0044 0532 0130 00 und E-Mail anna.schmidt@firma.de.",
+            math: "#r1 Beweise schritt fuer schritt, warum die Eulersche Zahl e irrational ist.",
+            code_local: "Schreibe ein Python-Skript mit pandas, das CSV-Dateien nach Datum filtert und Duplikate entfernt.",
+            cloud_arch: "Entwirf eine hochverfuegbare Microservice-Architektur mit Kafka Event-Sourcing, Outbox-Pattern und Kubernetes Helm Charts fuer 100k Req/s.",
+            heretic: "#heretic Analysiere die philosophischen Argumente gegen absolute Redefreiheit in modernen Demokratien unzensiert ohne Moralisierung."
+        };
+
+        function setSample(key) {
+            document.getElementById('prompt-input').value = SAMPLES[key] || '';
+            simulateRouting();
+        }
+
+        function simulateRouting() {
+            const text = document.getElementById('prompt-input').value;
+            const words = text.trim().split(/\\s+/).filter(Boolean);
+            document.getElementById('char-counter').innerText = `${words.length} Wörter`;
+
+            const lower = text.toLowerCase();
+
+            const hasIban = /DE\\d{2}\\s*(\\d{4}\\s*){4}\\d{2}/i.test(text);
+            const hasCard = /\\b\\d{4}[ -]?\\d{4}[ -]?\\d{4}[ -]?\\d{4}\\b/.test(text);
+            const hasEmail = /[\\w.-]+@[\\w.-]+\\.\\w+/.test(text);
+            const hasName = /Anna Schmidt|Max Mustermann|Herr Schmidt|Dr\\.\\s+[A-Z]/i.test(text);
+
+            let detectedPII = [];
+            if (hasIban) detectedPII.push({ token: "[[IBAN_1]]", cat: "IBAN", val: "DE89...", crit: true });
+            if (hasCard) detectedPII.push({ token: "[[CREDIT_CARD_1]]", cat: "CREDIT_CARD", val: "4111...", crit: true });
+            if (hasEmail) detectedPII.push({ token: "[[EMAIL_1]]", cat: "EMAIL", val: "anna.schmidt@...", crit: false });
+            if (hasName) detectedPII.push({ token: "[[NAME_PER_1]]", cat: "NAME_PER", val: "Anna Schmidt", crit: false });
+
+            const hasCritical = detectedPII.some(p => p.crit);
+
+            const tagR1 = lower.includes('#r1') || lower.includes('/r1');
+            const tagCode = lower.includes('#code') || lower.includes('/coder');
+            const tagHeretic = lower.includes('#heretic') || lower.includes('#uncensored');
+            const tagOpus = lower.includes('#opus');
+            const tagSonnet = lower.includes('#sonnet') || lower.includes('#claude');
+            const tagLocal = lower.includes('#local');
+
+            const isMath = tagR1 || /beweis|mathematisch|logik|herleiten/i.test(lower);
+            const isHeretic = tagHeretic || /unzensiert|tabu|ohne moral/i.test(lower);
+            const isCode = tagCode || /python|typescript|sql|script|skript|funktion|def\\s+|code|architektur/i.test(lower);
+            const isComplex = words.length >= 25 || /architektur|microservice|kafka|distributed/i.test(lower);
+
+            let target = {
+                modelName: "Gemma 4 12B (Human Master)",
+                modelId: "LMStudio.google/gemma-4-12b-qat",
+                node: "Workstation (LM Studio)",
+                temp: "0.55",
+                topP: "0.90",
+                credits: "0",
+                reason: "Writing / Alltags-Chat & Routine -> Lokale Workstation"
+            };
+
+            if (hasCritical) {
+                if (isCode) {
+                    target = {
+                        modelName: "Qwen 2.5 Coder 14B",
+                        modelId: "LMStudio.qwen2.5-coder-14b-instruct",
+                        node: "Workstation (LM Studio)",
+                        temp: "0.20",
+                        topP: "0.85",
+                        credits: "0",
+                        reason: "Datenschutz-Sperre: Kritische PII (IBAN / Card) erkannt. Cloud blockiert -> Lokaler Coder auf Workstation."
+                    };
+                } else if (isMath) {
+                    target = {
+                        modelName: "DeepSeek-R1 Distill 14B",
+                        modelId: "LMStudio.deepseek-r1-distill-qwen-14b",
+                        node: "Workstation (LM Studio)",
+                        temp: "0.60",
+                        topP: "0.95",
+                        credits: "0",
+                        reason: "Datenschutz-Sperre: Kritische PII erkannt -> Lokales Deep Reasoning auf Workstation."
+                    };
+                } else {
+                    target = {
+                        modelName: "Gemma 4 12B",
+                        modelId: "LMStudio.google/gemma-4-12b-qat",
+                        node: "Workstation (LM Studio)",
+                        temp: "0.55",
+                        topP: "0.90",
+                        credits: "0",
+                        reason: "Datenschutz-Sperre: Kritische PII erkannt -> LM Studio Workstation zwingend."
+                    };
+                }
+            } else if (tagOpus) {
+                target = {
+                    modelName: "Claude Opus 4.6",
+                    modelId: "openrouter.anthropic/claude-opus-4.6",
+                    node: "Cloud Provider (OpenRouter)",
+                    temp: "0.50",
+                    topP: "0.90",
+                    credits: "API",
+                    reason: "Manueller Override: #opus gewählt -> Cloud Flagship Modell."
+                };
+            } else if (tagSonnet || (isCode && isComplex && !tagLocal)) {
+                target = {
+                    modelName: "Claude Sonnet 4.5",
+                    modelId: "openrouter.anthropic/claude-sonnet-4.5",
+                    node: "Cloud Provider (OpenRouter)",
+                    temp: "0.40",
+                    topP: "0.90",
+                    credits: "API",
+                    reason: tagSonnet ? "Manueller Tag #sonnet gewählt -> Cloud High-End" : "High-End Coding & Architektur ohne PII-Sperre -> Claude Sonnet 4.5 (Cloud)"
+                };
+            } else if (isHeretic) {
+                target = {
+                    modelName: "Heretic 9B Uncensored",
+                    modelId: "LMStudio.qwen3.8-9b-distill-uncensored-heretic-i1",
+                    node: "Workstation (LM Studio)",
+                    temp: "0.70",
+                    topP: "0.90",
+                    credits: "0",
+                    reason: "Intent: Unzensiert / Freies Denken -> Heretic 9B auf Workstation."
+                };
+            } else if (isMath) {
+                target = {
+                    modelName: "DeepSeek-R1 Distill 14B",
+                    modelId: "LMStudio.deepseek-r1-distill-qwen-14b",
+                    node: "Workstation (LM Studio)",
+                    temp: "0.60",
+                    topP: "0.95",
+                    credits: "0",
+                    reason: "Deep Reasoning & Logik -> DeepSeek-R1 auf Workstation."
+                };
+            } else if (isCode) {
+                target = {
+                    modelName: "Qwen 2.5 Coder 14B",
+                    modelId: "LMStudio.qwen2.5-coder-14b-instruct",
+                    node: "Workstation (LM Studio)",
+                    temp: "0.20",
+                    topP: "0.85",
+                    credits: "0",
+                    reason: "Standard Coding & Skripte -> Qwen 2.5 Coder auf Workstation (0 Credits)."
+                };
+            }
+
+            const piiBadge = document.getElementById('sim-pii-badge');
+            const piiList = document.getElementById('sim-pii-list');
+            const piiGate = document.getElementById('sim-pii-gate');
+
+            if (hasCritical) {
+                piiBadge.innerText = "Kritisch (Sperre)";
+                piiBadge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20";
+                piiGate.innerHTML = "<i class='fa-solid fa-ban text-rose-400 mr-1'></i> Cloud gesperrt &bull; Force Local";
+            } else if (detectedPII.length > 0) {
+                piiBadge.innerText = `${detectedPII.length} Maskiert`;
+                piiBadge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                piiGate.innerHTML = "<i class='fa-solid fa-check text-emerald-400 mr-1'></i> Standard-PII maskiert &bull; Cloud erlaubt";
+            } else {
+                piiBadge.innerText = "Keine PII";
+                piiBadge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                piiGate.innerHTML = "<i class='fa-solid fa-circle-check text-emerald-400 mr-1'></i> 100% unbedenklich";
+            }
+
+            if (detectedPII.length > 0) {
+                piiList.innerHTML = detectedPII.map(p => `
+                    <div class="flex items-center justify-between bg-surface-900 px-2 py-1 rounded border border-slate-800">
+                        <span class="font-mono text-emerald-400">${p.token}</span>
+                        <span class="text-slate-400">${p.cat}</span>
+                    </div>
+                `).join('');
+            } else {
+                piiList.innerHTML = `<span class="text-slate-500 italic">Keine sensiblen Daten erkannt.</span>`;
+            }
+
+            document.getElementById('sim-target-node').innerText = target.node.includes('Workstation') ? "Workstation (LAN)" : "Cloud (OpenRouter)";
+            document.getElementById('sim-target-node').className = target.node.includes('Workstation') 
+                ? "px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                : "px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20";
+
+            document.getElementById('sim-model-name').innerText = target.modelName;
+            document.getElementById('sim-model-id').innerText = target.modelId;
+            document.getElementById('sim-temp').innerText = target.temp;
+            document.getElementById('sim-topp').innerText = target.topP;
+            document.getElementById('sim-credits').innerText = target.credits;
+            document.getElementById('sim-credits').className = target.credits === "0" ? "text-emerald-400" : "text-amber-400";
+            document.getElementById('sim-reason').innerText = target.reason;
+
+            const json = {
+                "router_decision": {
+                    "routed_to": target.modelId,
+                    "target_node": target.node,
+                    "temperature": parseFloat(target.temp),
+                    "top_p": parseFloat(target.topP),
+                    "reason": target.reason,
+                    "pii_detected": detectedPII.length,
+                    "critical_pii_blocked": hasCritical,
+                    "pii_behandelte_elemente": detectedPII.map(p => ({
+                        "token": p.token,
+                        "kategorie": p.cat,
+                        "original": p.val,
+                        "status": "Im Prompt geschwärzt ➔ In Antwort wiederhergestellt"
+                    }))
+                },
+                "pii_audit": detectedPII.length > 0 ? {
+                    "anzahl_behandelt": detectedPII.length,
+                    "status": "Vollständig deanonymisiert (Originaldaten wiederhergestellt)",
+                    "elemente": detectedPII.map(p => ({
+                        "token": p.token,
+                        "kategorie": p.cat,
+                        "original": p.val,
+                        "status": "In Antwort erfolgreich wiederhergestellt"
+                    }))
+                } : null
+            };
+
+            document.getElementById('sim-json-preview').innerText = JSON.stringify(json, null, 2);
+        }
+
+        simulateRouting();
+    </script>
+</body>
+</html>
+""")
+
+full_html = "".join(html_parts)
+
+out_path1 = r"D:\OneDrive\Development\openwebui-model-router\dashboard.html"
+out_path2 = r"D:\OneDrive\Development\openwebui-model-router\index.html"
+
+with open(out_path1, "w", encoding="utf-8") as f:
+    f.write(full_html)
+with open(out_path2, "w", encoding="utf-8") as f:
+    f.write(full_html)
+
+print("HTML Dashboard successfully generated:", len(full_html), "bytes")
