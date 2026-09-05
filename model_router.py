@@ -149,22 +149,26 @@ class Valves(BaseModel):
         description="Lokales unzensiertes Modell für freies Denken & sensible Recherche",
     )
 
-    # --- Cloud Modelle (OpenRouter auf Minisforum Server) ---
+    # --- Cloud Modelle (OpenRouter / Fall-spezifisch flexibel konfigurierbar) ---
     MODEL_CLOUD_HEAVY: str = Field(
         default="openrouter.anthropic/claude-sonnet-4.5",
-        description="Cloud High-End Modell für hochkomplexes Coding & Architektur",
+        description="Fall 1: High-End Coding & Systemarchitektur in der Cloud",
     )
     MODEL_CLOUD_OPUS: str = Field(
         default="openrouter.anthropic/claude-opus-4.6",
-        description="Cloud Flagship Modell für tiefste Synthesen",
+        description="Fall 2: Deep Reasoning, Philosophie & Strategie in der Cloud",
+    )
+    MODEL_CLOUD_WRITING: str = Field(
+        default="openrouter.anthropic/claude-sonnet-4.5",
+        description="Fall 3: Komplexe Textanalyse & Redaktion in der Cloud (lange Prompts)",
     )
     MODEL_CLOUD_FAST: str = Field(
         default="openrouter.google/gemini-3-flash-preview",
-        description="Schnelles Cloud Modell für mittlere, unkritische Anfragen",
+        description="Fall 4: Schnelle unkritische Cloud-Abfragen (High-Speed)",
     )
     MODEL_CLOUD_GPT: str = Field(
         default="openrouter.openai/gpt-5.2",
-        description="Cloud High-End Modell von OpenAI (GPT-5.2)",
+        description="Fall 5: Analytik, Data-Science & OpenAI-spezifische Aufgaben",
     )
 
     # --- Datenschutz & Privacy Gate ---
@@ -202,6 +206,10 @@ class UserValves(BaseModel):
     prefer_local: bool = Field(
         default=False,
         description="Nutzer-Präferenz: Wenn möglich immer lokale Modelle bevorzugen.",
+    )
+    preferred_cloud_model: str = Field(
+        default="",
+        description="Optionale Nutzer-Präferenz: Eigenes bevorzugtes Cloud-Modell (z.B. openrouter.openai/gpt-5.2), das standardmäßig für alle Cloud-Routings genutzt wird.",
     )
 
 
@@ -331,8 +339,17 @@ class Filter:
             if isinstance(uv, UserValves) and not uv.enabled:
                 return body
             prefer_local_user = bool(getattr(uv, "prefer_local", False))
+            user_cloud_pref = str(getattr(uv, "preferred_cloud_model", "")).strip()
         else:
             prefer_local_user = False
+            user_cloud_pref = ""
+
+        # Effektiv konfigurierte Cloud-Zielmodelle pro Fall
+        effective_cloud_heavy = user_cloud_pref or self.valves.MODEL_CLOUD_HEAVY
+        effective_cloud_opus = user_cloud_pref or self.valves.MODEL_CLOUD_OPUS
+        effective_cloud_writing = user_cloud_pref or self.valves.MODEL_CLOUD_WRITING
+        effective_cloud_fast = user_cloud_pref or self.valves.MODEL_CLOUD_FAST
+        effective_cloud_gpt = user_cloud_pref or self.valves.MODEL_CLOUD_GPT
 
         # 1. PII-Metadaten vom pii_filter abrufen
         metadata = body.get("metadata") or {}
@@ -391,9 +408,9 @@ class Filter:
                 routing_reason = "Manueller Override: #r1 / Reasoning gewählt"
             elif manual_profile == "coding":
                 if forced_location == "cloud" and not force_local_privacy:
-                    selected_model = self.valves.MODEL_CLOUD_HEAVY
+                    selected_model = effective_cloud_heavy
                     applied_profile = "cloud_heavy"
-                    routing_reason = "Manueller Override: Cloud Coder gewählt"
+                    routing_reason = f"Manueller Override: Cloud Coder gewählt -> {selected_model}"
                 else:
                     selected_model = self.valves.MODEL_LOCAL_CODING
                     applied_profile = "coding"
@@ -408,26 +425,27 @@ class Filter:
                 routing_reason = "Manueller Override: #heretic / Unzensiert gewählt"
             elif manual_profile == "cloud_opus":
                 if not force_local_privacy:
-                    selected_model = self.valves.MODEL_CLOUD_OPUS
+                    selected_model = effective_cloud_opus
                     applied_profile = "cloud_opus"
-                    routing_reason = "Manueller Override: #opus gewählt"
+                    routing_reason = f"Manueller Override: #opus gewählt -> {selected_model}"
                 else:
                     selected_model = self.valves.MODEL_LOCAL_REASONING
                     applied_profile = "reasoning"
+                    routing_reason = f"#opus angefordert, aber wegen {privacy_reason} auf DeepSeek-R1 (WS) umgeleitet"
             elif manual_profile == "cloud_gpt":
                 if not force_local_privacy:
-                    selected_model = self.valves.MODEL_CLOUD_GPT
+                    selected_model = effective_cloud_gpt
                     applied_profile = "cloud_gpt"
-                    routing_reason = "Manueller Override: #gpt / OpenAI GPT-5.2 gewählt"
+                    routing_reason = f"Manueller Override: #gpt / OpenAI gewählt -> {selected_model}"
                 else:
                     selected_model = self.valves.MODEL_LOCAL_CODING if intent == "coding" else self.valves.MODEL_LOCAL_REASONING
                     applied_profile = "coding" if intent == "coding" else "reasoning"
                     routing_reason = f"#gpt angefordert, aber wegen {privacy_reason} auf Workstation umgeleitet"
             elif manual_profile in ("cloud_heavy", "cloud_fast"):
                 if not force_local_privacy:
-                    selected_model = self.valves.MODEL_CLOUD_HEAVY if manual_profile == "cloud_heavy" else self.valves.MODEL_CLOUD_FAST
+                    selected_model = effective_cloud_heavy if manual_profile == "cloud_heavy" else effective_cloud_fast
                     applied_profile = manual_profile
-                    routing_reason = f"Manueller Override: {manual_profile} gewählt"
+                    routing_reason = f"Manueller Override: {manual_profile} gewählt -> {selected_model}"
                 else:
                     selected_model = self.valves.MODEL_LOCAL_CODING if intent == "coding" else self.valves.MODEL_LOCAL_REASONING
                     applied_profile = "coding" if intent == "coding" else "reasoning"
@@ -475,32 +493,38 @@ class Filter:
 
             # Fall 4: High-End Coding & Deep Reasoning (Cloud)
             elif (intent == "coding" and is_complex) or (forced_location == "cloud" and intent == "coding"):
-                selected_model = self.valves.MODEL_CLOUD_HEAVY
+                selected_model = effective_cloud_heavy
                 applied_profile = "cloud_heavy"
-                routing_reason = "High-End Coding & Architektur -> Claude Sonnet 4.5 (Cloud)"
+                routing_reason = f"High-End Coding & Architektur -> {selected_model} (Cloud)"
 
             # Fall 5: Standard Coding & Skripte -> Lokaler Coder (schnell, gratis)
             elif intent == "coding":
                 selected_model = self.valves.MODEL_LOCAL_CODING
                 applied_profile = "coding"
-                routing_reason = "Standard Coding & Skripte -> Qwen 2.5 Coder 14B auf Workstation"
+                routing_reason = f"Standard Coding & Skripte -> {self.valves.MODEL_LOCAL_CODING} auf Workstation"
 
             # Fall 6: Mathematische Herleitungen & Logik
             elif intent == "reasoning":
-                selected_model = self.valves.MODEL_LOCAL_REASONING
-                applied_profile = "reasoning"
-                routing_reason = "Deep Reasoning & Logik -> DeepSeek-R1 Distill 14B auf Workstation"
+                if forced_location == "cloud":
+                    selected_model = effective_cloud_opus
+                    applied_profile = "cloud_opus"
+                    routing_reason = f"Deep Reasoning (Cloud forciert) -> {selected_model}"
+                else:
+                    selected_model = self.valves.MODEL_LOCAL_REASONING
+                    applied_profile = "reasoning"
+                    routing_reason = f"Deep Reasoning & Logik -> {self.valves.MODEL_LOCAL_REASONING} auf Workstation"
 
             # Fall 7: Sehr lange / hochkomplexe Textanalyse ohne PII-Sperre
             elif is_complex and not total_pii_count:
-                selected_model = self.valves.MODEL_CLOUD_HEAVY
+                selected_model = effective_cloud_writing
                 applied_profile = "cloud_heavy"
-                routing_reason = "Hohe Textkomplexität ohne PII -> Claude Sonnet 4.5 (Cloud)"
+                routing_reason = f"Hohe Textkomplexität ohne PII -> {selected_model} (Cloud)"
 
             # Fall 8: Standard Writing, Lektorat, Chat, Routine
             else:
                 selected_model = self.valves.MODEL_LOCAL_WRITING
                 applied_profile = "writing"
+                routing_reason = f"Writing, Chat & Routine -> {self.valves.MODEL_LOCAL_WRITING} auf Workstation (0 Cloud-Credits)"
         # 6b. Auto-Fallback für bekannte defekte oder inaktive Modell-IDs
         if selected_model in KNOWN_INACTIVE_MODELS:
             fallback = KNOWN_INACTIVE_MODELS[selected_model]

@@ -66,23 +66,29 @@ Routet Anfragen dynamisch zwischen:
 
 ---
 
-## ☁️ Cloud Modell-Profile (OpenRouter auf Minisforum Server)
+## ☁️ Cloud Modell-Profile (Flexible Fallkonfiguration via Valves)
 
-| Profil | Modellbezeichnung (Open WebUI ID) | Temp | Top-P | Einsatzzweck |
-| :--- | :--- | :--- | :--- | :--- |
-| **🚀 Cloud High-End** | `openrouter.anthropic/claude-sonnet-4.5` | `0.40` | `0.90` | Hochkomplexe Fullstack-Architekturen, Bug-Hunting & Systementwürfe. |
-| **🏛️ Cloud Flagship** | `openrouter.anthropic/claude-opus-4.6` | `0.50` | `0.90` | Strategische Grundsatzanalysen & Mammut-Dokumente. |
-| **⚡ Cloud High-Speed** | `openrouter.google/gemini-3-flash-preview` | `0.60` | `0.90` | Schnelle allgemeine Cloud-Abfragen mit minimaler Latenz. |
-| **🌐 OpenAI Flagship** | `openrouter.openai/gpt-5.2` | `0.30` | `0.90` | OpenAI GPT-5.2 für analytische Aufgaben, Data-Science & GPT-Prompts. |
+In den Admin-Valves können die Cloud-Modelle für alle 5 typischen Praxisfälle flexibel und ohne Code-Änderung konfiguriert werden:
+
+| Fall / Profil | Valve-Parameter | Standard-Modell (Open WebUI ID) | Temp | Top-P | Einsatzzweck |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Fall 1: High-End Coding** | `MODEL_CLOUD_HEAVY` | `openrouter.anthropic/claude-sonnet-4.5` | `0.40` | `0.90` | Hochkomplexe Fullstack-Architekturen & Mammut-Code. |
+| **Fall 2: Deep Reasoning** | `MODEL_CLOUD_OPUS` | `openrouter.anthropic/claude-opus-4.6` | `0.50` | `0.90` | Tiefste strategische & philosophische Grundsatzanalysen (`#opus`). |
+| **Fall 3: Complex Writing** | `MODEL_CLOUD_WRITING` | `openrouter.anthropic/claude-sonnet-4.5` | `0.45` | `0.90` | Anspruchsvolle Textanalyse & lange Ausarbeitungen (> 120 Wörter). |
+| **Fall 4: Cloud Fast** | `MODEL_CLOUD_FAST` | `openrouter.google/gemini-3-flash-preview` | `0.60` | `0.90` | Schnelle allgemeine Cloud-Recherchen mit minimaler Latenz (`#flash`). |
+| **Fall 5: Analytics & OpenAI** | `MODEL_CLOUD_GPT` | `openrouter.openai/gpt-5.2` | `0.30` | `0.90` | Analytische Aufgaben, Data Science & GPT-spezifische Workflows (`#gpt`). |
+
+> 👤 **User-Valves:** Jeder Nutzer kann über `UserValves.preferred_cloud_model` ein persönliches Standard-Cloud-Modell in seinen Profileinstellungen hinterlegen.
 
 ---
 
-## 🛡️ Das 4-Stufen Privacy Gate
+## 🛡️ Das 4-Aktionen Privacy Gate (Perplexity Blueprint Parität)
 
-1. **Kritische PII:** Erkennt der PII-Filter `IBAN`, `CREDIT_CARD`, `SSN_US`, `URL_WITH_AUTH` oder `TAX_ID_DE`, wird ein Routing in die Cloud **sofort blockiert**. Die Anfrage wird zwingend an die lokale Workstation übergeben.
-2. **Maskierte Standard-PII:** Namen, Städte und Firmen werden vom PII-Filter maskiert (`[[NAME_PER_1]]`). Das Cloud-Modell sieht nur abstrakte Entitäten und liefert die Struktur zurück.
-3. **Zero Cloud Credits:** Routine-Aufgaben (Zusammenfassungen, Übersetzungen, Standard-Chat) bleiben lokal auf der Workstation und verbrauchen **0 API-Credits**.
-4. **Manueller Override Schutz:** Selbst wenn der Nutzer explizit `#cloud` oder `#opus` angibt, verhindert das Privacy Gate bei kritischen PII das Verlassen des lokalen Netzes.
+Das integrierte Privacy Gate implementiert die 4 Säulen des Blueprint-Klassifikators (2-stufig: Regex + spaCy ML NER):
+1. **Mask Value:** Namen, Orte, Organisationen und E-Mails werden mit reversiblen Tokens maskiert (`[[NAME_PER_1]]`). Cloud-Modelle operieren auf der Struktur, ohne private Daten zu halten.
+2. **Keep Local:** Kritisches PII (`IBAN`, `CREDIT_CARD`, `SSN_US`, `URL_WITH_AUTH`) erzwingt einen sofortigen Hardware-Lockdown auf die lokale GPU-Workstation (**0 Cloud-Credits**).
+3. **Refuse / Sanitize:** Sicherheitskritische URL-Zugangsdaten (`user:pass@`) werden bereinigt und neutralisiert.
+4. **User Control / Override:** Nutzer können via Tags (`#local`, `#cloud`, `#opus`, `#sonnet`, `#r1`, `#code`) eingreifen und über User-Valves eigene Cloud-Präferenzen setzen. Selbst manuelle Cloud-Tags werden bei unmaskierter IBAN/Kreditkarte zum Schutz des Nutzers überstimmt.
 
 ---
 

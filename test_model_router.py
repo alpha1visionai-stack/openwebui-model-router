@@ -180,6 +180,37 @@ class TestModelRouter(unittest.TestCase):
         self.assertIn("Auto-Fallback", res["metadata"]["router_decision"]["reason"])
 
 
+    def test_flexible_cloud_model_valve(self):
+        """Prüft, ob Administratoren das Cloud-Modell in den Valves flexibel ändern können."""
+        self.router.valves.MODEL_CLOUD_HEAVY = "openrouter.openai/gpt-5.2"
+        body = {
+            "model": "default-ui-model",
+            "messages": [
+                {"role": "user", "content": "Entwirf eine Microservice-Architektur für verteilte Transaktionen mit Event Sourcing und Dockerfile."}
+            ],
+            "metadata": {}
+        }
+        res = self.router.inlet(body)
+        self.assertEqual(res["model"], "openrouter.openai/gpt-5.2")
+        self.assertIn("openrouter.openai/gpt-5.2", res["metadata"]["router_decision"]["reason"])
+
+    def test_user_preferred_cloud_model(self):
+        """Prüft, ob Nutzer ihr bevorzugtes Cloud-Modell in den UserValves individuell setzen können."""
+        uv = UserValves(enabled=True, prefer_local=False, preferred_cloud_model="openrouter.~x-ai/grok-latest")
+        user = {"valves": uv}
+        body = {
+            "model": "default-ui-model",
+            "messages": [
+                {"role": "user", "content": "#opus Analysiere diese strategische Ausrichtung."}
+            ],
+            "metadata": {}
+        }
+        res = self.router.inlet(body, __user__=user)
+        self.assertEqual(res["model"], "openrouter.~x-ai/grok-latest")
+        self.assertIn("openrouter.~x-ai/grok-latest", res["metadata"]["router_decision"]["reason"])
+
+
 if __name__ == "__main__":
     unittest.main()
+
 

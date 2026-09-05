@@ -21,6 +21,44 @@ Dein KI-System kombiniert zwei Sicherheits- und Performance-Ebenen zu einer voll
 
 ---
 
+## 🏛️ 1.1 Architektur-Reflexion: Perplexity Hybrid Compute Blueprint vs. Unsere Implementierung
+
+Wir haben unsere Architektur exakt gegen die drei Kernpfeiler des **Perplexity Hybrid Compute Blueprints** abgeglichen und im Detail umgesetzt:
+
+### 📸 Pfeiler 1: Hybrid Compute – Ein Task, zwei Welten (Vorlage Screenshot 1)
+* **Perplexity Blueprint:** Ein Orchestrator teilt eine Gesamtaufgabe intelligent auf. Die Cloud übernimmt anspruchsvolles Reasoning & Websuche, während lokale Modelle vertrauliche Dokumente und sensible Daten verarbeiten. Ein zentraler Orchestrator führt die Ergebnisse nahtlos zusammen.
+* **Unsere Implementierung in Open WebUI:**
+  - **Realisierung:** Unser zweistufiges Pipeline-System (`pii_filter.py` auf Priority 0 + `model_router.py` auf Priority 10) übernimmt genau diese Orchestrierung.
+  - **Verteilung:** Reine Struktur- und Architekturfragen ohne PII werden an High-End Cloud-Modelle (Claude 4.5 Sonnet / Opus 4.6) übergeben. Sobald PII oder unkritische Routineaufgaben vorliegen, übernimmt die lokale Workstation (LM Studio via Tailscale).
+  - **Zusammenführung:** Durch den Re-Hydrierungs-Outlet und den Streaming-Subtoken-Buffer werden die vertraulichen Daten erst auf dem Minisforum-Server wieder in die Antwort eingefügt. Die Cloud sieht zu keinem Zeitpunkt Rohdaten.
+
+### 📸 Pfeiler 2: Modell-Split & Zero Cloud Credits (Vorlage Screenshot 2)
+* **Perplexity Blueprint:** Aufgaben werden auf spezialisierte lokale Modelle aufgeteilt, um 0 Cloud-Credits zu verbrauchen: Gemma 4 für Writing, Qwen Coder für Code, DeepSeek für Reasoning.
+* **Unsere Implementierung in Open WebUI:**
+  - **1:1 Parität erreicht:**
+    - `LMStudio.deepseek-r1-distill-qwen-14b`: Deep Reasoning, formale Logik, mathematische Beweise (Temp `0.60`, Top-P `0.95`).
+    - `LMStudio.qwen2.5-coder-14b-instruct`: Syntax-präzises Programmieren, Skripte, Refactorings (Temp `0.20`, Top-P `0.85`).
+    - `LMStudio.google/gemma-4-12b-qat`: Natürliche menschliche Diktion, Anti-KI Schreibstil, E-Mails und Zusammenfassungen (Temp `0.55`, Top-P `0.90`).
+    - `LMStudio.qwen3.8-9b-distill-uncensored-heretic-i1`: Unzensierte historische und kontroverse Recherchen ohne Moralisierung (Temp `0.70`, Top-P `0.90`).
+  - **Kosten:** Alltägliche Chat- und Arbeitslasten laufen zu 100 % lokal über die GPU-Workstation (**0 API-Kosten**).
+
+### 📸 Pfeiler 3: Privacy Gate & 4-Aktionen-Klassifikator (Vorlage Screenshot 3)
+* **Perplexity Blueprint:** Ein Privacy Gate mit einem vollwertigen PII-Klassifikator (nicht nur einfache Regex). 4 Aktionen:
+  1. *Mask Value:* Wert durch Platzhalter ersetzen.
+  2. *Keep Local:* Bei sensiblen Inhalten lokal auf dem Gerät bleiben.
+  3. *Refuse:* Anfrage bereinigen / blockieren.
+  4. *Ask You:* Benutzer entscheiden lassen / kontrollieren.
+  Cloud-Modelle operieren ausschließlich auf abstrakter Struktur, ohne private Daten zu halten.
+* **Unsere Implementierung in Open WebUI:**
+  - **2-Schichten Klassifikator:** Kombination aus deterministischer Regex-Engine (IBAN, Kreditkarten, Passwörter in URLs, SSN, E-Mail, Telefon, IPs) und Machine-Learning NLP (**spaCy NER** `de_core_news_sm` für Personen, Orte, Organisationen).
+  - **Die 4 Aktionen umgesetzt:**
+    1. **Mask Value:** Namen, Orte, Organisationen und E-Mails werden mit reversiblen Tokens (`[[NAME_PER_1]]`, `[[EMAIL_1]]`) maskiert. Cloud-Modelle analysieren die Satz- und Logikstruktur, besitzen aber keine echten Personendaten.
+    2. **Keep Local:** Kritisches Finanz-PII (`IBAN`, `CREDIT_CARD`, `SSN_US`, `URL_WITH_AUTH`) löst einen sofortigen **Hard Lockdown** aus. Selbst wenn der Nutzer ein Cloud-Modell oder `#opus` gewählt hat, wird der Request hardware-seitig lokal erzwungen.
+    3. **Refuse / Sanitization:** Gefährliche Authentifizierungs-Muster in URLs (`user:pass@`) werden bereinigt und neutralisiert.
+    4. **Ask You / Benutzer-Souveränität:** Benutzer können über Chat-Tags (`#local`, `#cloud`, `#r1`, `#code`, `#write`, `#heretic`, `#opus`, `#sonnet`, `#flash`, `#gpt`) die Kontrolle übernehmen und in den `UserValves` ihr bevorzugtes Cloud-Standardmodell individuell festlegen.
+
+---
+
 ## 🏗️ 2. Die System-Topologie
 
 ```
@@ -74,14 +112,21 @@ Dein KI-System kombiniert zwei Sicherheits- und Performance-Ebenen zu einer voll
 | **✍️ Writing & Chat** | `LMStudio.google/gemma-4-12b-qat` | `0.55` | `0.90` | Text-Veredelung, Aufsätze, Mails, Zusammenfassungen, Standard-Chat (Human Master / Anti-KI). |
 | **🔓 Unzensiert** | `LMStudio.qwen3.8-9b-distill-uncensored-heretic-i1` | `0.70` | `0.90` | Tabuthemen, kontroverse Fragen, unzensierte historische Analysen ohne Moralisierung. |
 
-### B. Cloud-Modelle (OpenRouter)
+### B. Cloud-Modelle (OpenRouter) & Flexible Fallkonfiguration
 
-| Profil | Modell in Open WebUI | Temp | Top-P | Wann wählt das Gateway dieses Modell? |
-| :--- | :--- | :--- | :--- | :--- |
-| **🚀 Cloud High-End** | `openrouter.anthropic/claude-sonnet-4.5` | `0.40` | `0.90` | Sehr lange Prompts (> 120 Wörter), Microservice-Architekturen, komplexe Refactorings ohne PII. |
-| **🏛️ Cloud Flagship** | `openrouter.anthropic/claude-opus-4.6` | `0.50` | `0.90` | Wird bei manuellem Tag `#opus` für tiefste philosophische/strategische Analysen aufgerufen. |
-| **⚡ Cloud High-Speed** | `openrouter.google/gemini-3-flash-preview` | `0.60` | `0.90` | Schnelle allgemeine Cloud-Recherchen bei manuellem Tag `#flash` oder `#gemini`. |
-| **🌐 OpenAI Flagship** | `openrouter.openai/gpt-5.2` | `0.30` | `0.90` | Analytische Aufgaben, Data Science & OpenAI-spezifische Prompts bei `#gpt` oder `#openai`. |
+Über die Admin-Valves können die Cloud-Modelle für alle 5 typischen Praxisfälle flexibel und ohne Code-Änderung ausgetauscht werden:
+
+| Profil | Fall / Einsatzzweck | Valve-Name | Standard-Modell (Open WebUI ID) | Temp | Top-P |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **🚀 Cloud High-End** | **Fall 1: High-End Coding & Architektur** (Prompts > 120 Wörter oder `#sonnet` / `#claude`) | `MODEL_CLOUD_HEAVY` | `openrouter.anthropic/claude-sonnet-4.5` | `0.40` | `0.90` |
+| **🏛️ Cloud Flagship** | **Fall 2: Deep Reasoning, Philosophie & Strategie** (Erfordert `#opus`) | `MODEL_CLOUD_OPUS` | `openrouter.anthropic/claude-opus-4.6` | `0.50` | `0.90` |
+| **✍️ Cloud Writing** | **Fall 3: Komplexe Textanalyse & Mammut-Texte** (Lange Schreibaufträge > 120 Wörter) | `MODEL_CLOUD_WRITING` | `openrouter.anthropic/claude-sonnet-4.5` | `0.45` | `0.90` |
+| **⚡ Cloud Fast** | **Fall 4: Schnelle unkritische Abfragen & Suche** (Erfordert `#flash` / `#gemini`) | `MODEL_CLOUD_FAST` | `openrouter.google/gemini-3-flash-preview` | `0.60` | `0.90` |
+| **🌐 OpenAI Flagship** | **Fall 5: Analytik, Data Science & OpenAI-Tasks** (Erfordert `#gpt` / `#openai`) | `MODEL_CLOUD_GPT` | `openrouter.openai/gpt-5.2` | `0.30` | `0.90` |
+
+> [!TIP]
+> **👤 Individuelle Benutzer-Präferenz (`UserValves.preferred_cloud_model`):**
+> Jeder Benutzer kann in seinen Profileinstellungen unter **Account ➔ Functions ➔ Hybrid Model Router** ein persönliches Standard-Cloud-Modell hinterlegen. Wird dieses gesetzt, wird es bei generellen Cloud-Anfragen bevorzugt verwendet.
 
 > [!NOTE]
 > **🛡️ Intelligenter Auto-Fallback Schutz:**
@@ -266,17 +311,38 @@ Damit hast du die **100 %ige Gewissheit**:
 
 ---
 
-## ⚙️ 7. Einstellungen & Feinjustierung (Admin Valves)
+## ⚙️ 7. Einstellungen & Feinjustierung (Admin & User Valves)
 
-Als Administrator kannst du das Verhalten des Routers jederzeit in der Open-WebUI-Oberfläche anpassen:
+Sowohl Administratoren als auch Endanwender können das Verhalten des Routers ohne jede Code-Änderung über die Web-Oberfläche anpassen.
 
-1. Gehe zu **Workspace ➔ Functions**.
-2. Klicke bei **Hybrid Model Router** auf das Zahnrad / Edit-Icon.
-3. Unter **Valves** kannst du folgende Parameter ändern:
-   * `priority`: Muss auf `10` bleiben (damit er nach dem PII-Filter mit `0` läuft).
-   * `STRICT_LOCAL_ON_ANY_PII`: Wenn auf `True` gesetzt, darf bei *irgendeiner* PII (auch maskierten Namen) überhaupt nichts mehr in die Cloud.
-   * `COMPLEXITY_WORD_THRESHOLD`: Standard `120` Wörter. Ab dieser Länge werden unkritische Anfragen an Claude Sonnet 4.5 in die Cloud geschickt.
-   * `MODEL_LOCAL_*` & `MODEL_CLOUD_*`: Falls du in LM Studio neue Modelle lädst, kannst du die Modell-IDs hier direkt im Web-Interface aktualisieren.
+### 7.1 Admin Valves (Globale Systemkonfiguration)
+
+1. Navigiere zu **Workspace ➔ Functions**.
+2. Klicke bei **Hybrid Model Router** auf das Zahnrad / Edit-Icon (⚙️ Valves).
+3. Folgende Parameter stehen zur Verfügung:
+
+| Parameter | Typ / Standard | Beschreibung |
+| :--- | :--- | :--- |
+| `priority` | `10` | **Wichtig:** Muss immer auf `10` stehen, damit der Router nach dem PII-Filter (`0`) ausgeführt wird. |
+| `COMPLEXITY_WORD_THRESHOLD` | `120` | Ab wie vielen Wörtern ein unkritischer Prompt automatisch als komplex eingestuft und an die Cloud delegiert wird. |
+| `STRICT_LOCAL_ON_ANY_PII` | `false` | Wenn `true`, wird bei *jeder* PII (auch maskierten Namen/Orten) der Cloud-Abfluss komplett gesperrt. Standard `false` erlaubt maskierte Standard-PII für Struktur-Reasoning. |
+| `MODEL_LOCAL_ROUTINE` | `LMStudio.google/gemma-4-12b-qat` | Lokales Modell für Routine-Chat, Zusammenfassungen, E-Mails und Standard-Prompts. |
+| `MODEL_LOCAL_CODING` | `LMStudio.qwen2.5-coder-14b-instruct` | Lokales Modell für Code-Generierung, Bash, SQL, Regex und Debugging. |
+| `MODEL_LOCAL_REASONING` | `LMStudio.deepseek-r1-distill-qwen-14b` | Lokales Modell für formale Logik, mathematische Beweise und Denkketten. |
+| `MODEL_LOCAL_UNCENSORED` | `LMStudio.qwen3.8-9b-distill-uncensored-heretic-i1` | Lokales Modell für Tabuthemen und unzensierte Recherchen (`#heretic`). |
+| `MODEL_CLOUD_HEAVY` | `openrouter.anthropic/claude-sonnet-4.5` | **Fall 1:** Cloud-Modell für High-End Coding & Architektur (lange Prompts oder `#sonnet` / `#claude`). |
+| `MODEL_CLOUD_OPUS` | `openrouter.anthropic/claude-opus-4.6` | **Fall 2:** Cloud-Modell für tiefstes Reasoning, Philosophie & Strategie (`#opus`). |
+| `MODEL_CLOUD_WRITING` | `openrouter.anthropic/claude-sonnet-4.5` | **Fall 3:** Cloud-Modell für komplexe Textanalyse & Mammut-Texte (> 120 Wörter). |
+| `MODEL_CLOUD_FAST` | `openrouter.google/gemini-3-flash-preview` | **Fall 4:** Cloud-Modell für schnelle, latenzkritische Cloud-Abfragen (`#flash` / `#gemini`). |
+| `MODEL_CLOUD_GPT` | `openrouter.openai/gpt-5.2` | **Fall 5:** Cloud-Modell für Data Science, Analytik & OpenAI-spezifische Aufgaben (`#gpt` / `#openai`). |
+
+### 7.2 User Valves (Persönliche Einstellungen pro Account)
+
+Jeder Nutzer kann im WebUI sein persönliches Profil individualisieren:
+1. Klicke links unten auf deinen **Benutzernamen / Profilbild ➔ Settings ➔ Functions**.
+2. Wähle **Hybrid Model Router**:
+   - `preferred_cloud_model`: Frei wählbare Modell-ID (z. B. `openrouter.anthropic/claude-sonnet-4.5`, `openrouter.google/gemini-3-flash-preview` oder ein beliebiges anderes in Open WebUI aktives Modell).
+   - Wenn gesetzt, wird dieses Modell als persönliche Standard-Wahl bei generellen Cloud-Anfragen verwendet, anstelle des globalen Systemstandards.
 
 ---
 
