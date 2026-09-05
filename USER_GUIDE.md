@@ -612,6 +612,8 @@ Die Konfigurationsdatei befindet sich auf dem Minisforum-Server unter `/root/sta
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
+  "model": "openwebui/Cortecs.gemini-3.7-flash",
+  "small_model": "openwebui/LMStudio.qwen2.5-coder-14b-instruct",
   "provider": {
     "openwebui": {
       "npm": "@ai-sdk/openai-compatible",
@@ -694,6 +696,58 @@ Sobald OpenCode neu gestartet wurde (`docker restart opencode`), stehen alle 8 M
 
 4. **Proprietäres Cloud-Fallback (`openwebui/openrouter.anthropic/claude-sonnet-4.5`):**
    * Optionales Fallback-Modell für Vergleiche oder spezielle Workflows.
+
+---
+
+### 4. Erste Schritte in der OpenCode Web-UI (Port 4096): Projekt öffnen & Modelle finden
+
+Wenn du die Web-Oberfläche unter `http://100.116.36.64:4096` im Browser aufrufst, siehst du initial eventuell einen leeren Bildschirm:
+> *"Hier ist noch nichts – Erstellen Sie eine Sitzung, um loszulegen"*
+
+#### Warum ist die Startseite anfangs leer?
+OpenCode ist ein **projektbasierter Coding-Agent** (wie VS Code oder Cursor). Er arbeitet immer im Kontext eines konkreten Dateiordners. Ohne geöffnetes Projekt existiert noch keine aktive Chat-Sitzung und kein Eingabefeld für Prompts.
+
+```
+1. Projekt öffnen         2. Neue Sitzung            3. Einstellungen / Modelle
+[+ Projekt hinzufügen] ➔   [+ / Neue Sitzung]  ➔      [⚙️ Einstellungen ➔ Modelle]
+   z.B. /projekte             (Strg + T)                  Alle 8 Profile sichtbar
+```
+
+#### Schritt 1: Projekt / Arbeitsordner öffnen
+1. Klicke links in der Seitenleiste auf **`+ Projekt hinzufügen`** (oder auf das Ordner-Icon mit dem `+` neben *Projekte*).
+2. Es öffnet sich der Dialog *„Projekt öffnen“*.
+3. Wähle deinen Arbeitsordner aus:
+   * Auf dem Minisforum-Server ist der Ordner **`/projekte`** (gemountet vom Host-Pfad `/opt/projekte`) als Standard-Workspace im Docker-Container eingehängt.
+
+#### Schritt 2: Eine Sitzung starten
+Sobald das Projekt geladen ist:
+* Klicke ganz oben links auf **`Neue Sitzung`** (oder das `+`-Symbol bzw. Shortcut **`Strg + T`**).
+* Nun öffnet sich das eigentliche Prompt- und Chatfenster:
+  *„Beliebige Frage stellen, / für Befehle, @ für Kontext…“*
+
+#### Schritt 3: Wo sieht und verwaltet man die Modelle?
+1. **Global in den Einstellungen (⚙️ Einstellungen ➔ 🪄 Modelle):**
+   * Klicke links unten auf **`⚙️ Einstellungen`** und wähle den Reiter **`Modelle`**.
+   * Dort findest du die vollständige Liste aller konfigurierten Provider:
+     - **Open WebUI Router & Gateway** (unsere 8 Modelle: Auto-Router, die 4 lokalen LM-Studio Profile, Qwen 3.5 397B MoE, DeepSeek V4 Flash, Claude Sonnet 4.5).
+     - **LM Studio Workstation (Direkt)** (die 4 lokalen Modelle direkt via LAN).
+     - **OpenCode Zen** (kostenlose Cloud-Modelle).
+   * Mit den Toggle-Schaltern kannst du Modelle aktivieren oder deaktivieren (z. B. Zen ausschalten, wenn du nur deine eigenen Modelle nutzen möchtest).
+
+2. **Automatischer Standard (`model` in `opencode.json`):**
+   In der Server-Konfiguration ist der Auto-Router fest als Standard hinterlegt:
+   ```json
+   "model": "openwebui/Cortecs.gemini-3.7-flash",
+   "small_model": "openwebui/LMStudio.qwen2.5-coder-14b-instruct"
+   ```
+   Dadurch startet jede neue Sitzung automatisch geschützt: Routineaufgaben bleiben lokal auf der Workstation (Qwen Coder, 0 Credits), während große Agenten-Prompts (> 7.000 Tokens) oder komplexe Architektur-Aufgaben automatisch an **Qwen 3.5 397B MoE** eskaliert werden.
+
+3. **Modell per CLI im Terminal vorgeben:**
+   Wenn du OpenCode auf der Konsole ausführst, kannst du das gewünschte Modell über das Flag `--model` bzw. `-m` direkt übergeben:
+   ```bash
+   opencode run --model openwebui/Cortecs.qwen3.5-397b-a17b "Schreibe eine Microservice-Architektur..."
+   ```
+
 
 
 
